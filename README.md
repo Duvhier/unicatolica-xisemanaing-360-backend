@@ -1,77 +1,200 @@
-## Backend - Unicatólica Semana Ingeniería
+# 🌐 UniCatólica XI Semana Ingeniería 360°
 
-API REST para gestionar inscripciones. Incluye persistencia en SQLite y generación de QR.
+Aplicación web desarrollada para gestionar las **inscripciones** a los eventos de la  
+**XI Semana de la Ingeniería 360°: Innovación, Liderazgo y Futuro**  
+de la **Universidad Católica Lumen Gentium (UniCatólica)**.
 
-### Requisitos
-- Node.js 18+
+---
 
-### Instalación
+## 🚀 Tecnologías utilizadas
 
+### 🖥️ Frontend
+<div align="left">
+  <img src="https://skillicons.dev/icons?i=react,typescript,vite,html,css,tailwind" alt="Frontend stack" />
+</div>
+
+### ⚙️ Backend
+<div align="left">
+  <img src="https://skillicons.dev/icons?i=nodejs,express,mongodb,js" alt="Backend stack" />
+</div>
+
+### 🛠️ Herramientas adicionales
+<div align="left">
+  <img src="https://skillicons.dev/icons?i=git,github,vercel,postman,vscode" alt="Tools" />
+</div>
+
+---
+
+## 🧭 Descripción del proyecto
+
+Esta plataforma permite registrar estudiantes y equipos en los distintos eventos académicos y tecnológicos de la **Semana de Ingeniería 360°**.  
+Cuenta con un **frontend interactivo en React** y un **backend en Express + MongoDB**, el cual genera un **código QR único** para cada inscripción.
+
+---
+
+## ✨ Características principales
+
+- ✅ Formulario dinámico con validaciones de campos obligatorios.  
+- 🧩 Inscripción individual o por equipo (según la actividad).  
+- 🧾 Generación de código QR con datos del participante.  
+- 💾 Almacenamiento en base de datos MongoDB.  
+- 🛡️ Validación y protección mediante CORS y `.env`.  
+- 📱 Interfaz adaptable a dispositivos móviles.  
+
+---
+
+## 📁 Estructura del repositorio
+
+```
+.
+├── backend/
+│   ├── routes/
+│   │   └── inscripciones.js
+│   ├── mongo.js
+│   ├── server.js
+│   └── .env
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── routes/
+│   │   └── App.tsx
+│   ├── public/
+│   └── .env
+└── README.md
+```
+
+---
+
+## ⚙️ Instalación y ejecución
+
+### 1️⃣ Clonar el repositorio
+```bash
+git clone https://github.com/Duvhier/unicatolica-xisemanaing-360-.git
+cd unicatolica-xisemanaing-360-
+```
+
+---
+
+### 2️⃣ Configurar el backend
 ```bash
 cd backend
 npm install
 ```
 
-La primera instalación crea/migra la base de datos automáticamente (script `postinstall`). Si necesitas forzar la migración:
-
-```bash
-node ./src/db.js --migrate
-```
-
-### Ejecutar en desarrollo
-
+Ejecutar el servidor:
 ```bash
 npm run dev
 ```
 
-La API quedará en `http://localhost:4000` (si `PORT=4000`).
+Verificar que funcione:
+👉 http://localhost:4000/health
 
-### Endpoint principal
+---
 
-- POST `/inscripciones/registro`
-  - Body esperado (ejemplo mínimo):
-
-```json
-{
-  "nombre": "Juan Pérez",
-  "cedula": "12345678",
-  "correo": "juan@unicatolica.edu.co",
-  "telefono": "3000000000",
-  "programa": "ingenieria-sistemas",
-  "semestre": "VI",
-  "actividades": ["hackathon"],
-  "grupo": {
-    "nombre": "Team Alfa",
-    "integrantes": ["Juan Pérez"],
-    "proyecto": {"nombre": "App X", "descripcion": "Desc", "categoria": "programacion"},
-    "institucion": "Unicatólica",
-    "correo": "team@correo.com",
-    "telefono": "3001112222"
-  }
-}
+### 3️⃣ Configurar el frontend
+```bash
+cd frontend
+npm install
 ```
 
-Respuesta exitosa `201`:
-
-```json
-{
-  "message": "Inscripción registrada",
-  "id": 1,
-  "qr": "data:image/png;base64,....",
-  "qrData": {"id":1, "estudiante":{"nombre":"Juan Pérez","cedula":"12345678"}, "actividad":"hackathon", "emitido":"..."},
-  "estudiante": {"nombre":"Juan Pérez","cedula":"12345678"}
-}
+Crear un archivo `.env`:
+```
+VITE_API_URL=http://localhost:4000
 ```
 
-### Conectar con el frontend
-
-En el frontend, asegúrate de que la URL base de la API esté disponible como variable de entorno. Si ya usas `process.env.REACT_APP_API_URL`, define en el entorno del build (o `.env`) del frontend:
-
-```
-REACT_APP_API_URL=http://localhost:4000
+Ejecutar el cliente:
+```bash
+npm run dev
 ```
 
-Si usas Vite, también puedes usar `VITE_API_URL` e inyectarla como `import.meta.env.VITE_API_URL` desde el código del frontend.
+Abrir en el navegador:  
+👉 http://localhost:5173
+
+---
+
+## 🔁 Flujo de funcionamiento
+
+1. El usuario completa el formulario seleccionando el evento deseado.  
+2. Si la actividad requiere equipo, se activan campos adicionales (nombre de equipo, integrantes, etc.).  
+3. El frontend envía los datos a:  
+   ```
+   POST /inscripciones/registro
+   ```
+4. El backend valida los datos, guarda el registro en MongoDB y genera un **QR**.  
+5. El usuario recibe confirmación visual y puede visualizar el código QR asociado a su registro.  
+
+---
+
+## 🧩 Endpoints principales
+
+| Método | Ruta | Descripción |
+|--------|------|--------------|
+| `POST` | `/inscripciones/registro` | Registra una nueva inscripción |
+| `GET`  | `/inscripciones/listar`   | Muestra las últimas inscripciones registradas |
+| `GET`  | `/health`                 | Verifica el estado del servidor |
+
+---
+
+## ✅ Buenas prácticas
+
+- No subir el archivo `.env` al repositorio (ya está en `.gitignore`).  
+- Usar siempre URLs absolutas definidas en `VITE_API_URL`.  
+- En producción, incluir el dominio de Vercel en `ALLOWED_ORIGINS`.  
+- Validar campos en frontend antes de enviar el formulario.  
+- Mantener logs controlados y limpiar `console.log` en producción.  
+
+---
+
+## 🧠 Dependencias principales
+
+### Backend
+- **Express** — servidor web.  
+- **MongoDB Driver** — conexión directa a la base de datos.  
+- **QRCode** — generación de códigos QR.  
+- **Cors & Dotenv** — seguridad y configuración de entorno.
+
+### Frontend
+- **React + Vite + TypeScript** — entorno rápido y modular.  
+- **TailwindCSS** — diseño responsivo y moderno.  
+
+---
+
+## 🧪 Pruebas locales
+
+- Correr simultáneamente frontend (`5173`) y backend (`4000`).  
+- Probar distintas actividades y verificar que se guarden en la colección `inscripciones`.  
+- Revisar el QR generado en la respuesta JSON del servidor.  
+- Consultar inscripciones:  
+  ```
+  GET http://localhost:4000/inscripciones/listar
+  ```
+
+---
+
+## 🧑‍💻 Autor
+
+**Duvier Tavera**  
+📧 [duvier.tavera01@unicatolica.edu.co](mailto:duvier.tavera01@unicatolica.edu.co)  
+🎓 Proyecto académico — Universidad Católica Lumen Gentium
+
+---
+
+## 🖼️ Capturas (opcional)
+
+```
+
+![Formulario de inscripción](https://drive.google.com/uc?export=view&id=1_tNSnUwUrRjgnQPodIfxRDxjy5MMALHN)
+
+![Código QR generado](https://drive.google.com/uc?export=view&id=1lSUFYWvq3Ry5xaJwlunD-WeHyOWsXpeR)
 
 
-# unicatolica-xisemanaing-360-backend
+```
+
+---
+
+## 🏁 Licencia
+
+Este proyecto fue desarrollado con fines académicos para la  
+**XI Semana de la Ingeniería 360°** — UniCatólica.
+
+© 2025 — Todos los derechos reservados.
