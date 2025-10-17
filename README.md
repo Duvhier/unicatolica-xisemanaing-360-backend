@@ -5,15 +5,6 @@ API REST para gestionar inscripciones. Incluye persistencia en SQLite y generaci
 ### Requisitos
 - Node.js 18+
 
-### Variables de entorno
-Copiar `.env.example` a `.env` y ajustar si es necesario:
-
-```
-PORT=4000
-DATABASE_PATH=./data/database.sqlite
-ALLOWED_ORIGINS=http://localhost:5173
-```
-
 ### Instalación
 
 ```bash
