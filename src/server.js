@@ -8,38 +8,57 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({
-  origin: (origin, cb) => {
-    const allowed = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-    if (!origin || allowed.length === 0 || allowed.includes(origin)) return cb(null, true);
-    return cb(new Error('CORS no permitido para este origen'));
-  },
-  credentials: true
-}));
+// ✅ Configurar orígenes permitidos
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
 
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        cb(null, true);
+      } else {
+        cb(new Error('CORS no permitido para este origen'));
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  })
+);
+
+// ✅ Permitir preflight requests
 app.options('*', cors());
+
+// ✅ Añadir encabezados de seguridad recomendados
+app.use((req, res, next) => {
+  res.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.header('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 
 app.use(express.json({ limit: '2mb' }));
 
-// healthcheck
+// 🩺 Healthcheck
 app.get('/health', (req, res) => {
   res.json({ ok: true, uptime: process.uptime() });
 });
 
+// 🧩 Rutas
 app.use('/inscripciones', inscripcionesRouter);
 
 const port = Number(process.env.PORT) || 4000;
 
-// Conectar a Mongo y luego levantar el servidor
 connectMongo()
   .then(() => {
     app.listen(port, () => {
-      console.log(`API escuchando en http://localhost:${port}`);
+      console.log(`✅ API corriendo en puerto ${port}`);
     });
   })
   .catch((err) => {
-    console.error('Error conectando a MongoDB:', err);
+    console.error('❌ Error conectando a MongoDB:', err);
     process.exit(1);
   });
-
-
