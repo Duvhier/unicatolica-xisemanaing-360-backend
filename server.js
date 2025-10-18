@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { connectMongo, sync } from "./src/mongo.js";
 import inscripcionesRouter from "./src/routes/inscripciones.js";
-import { connectMongo } from "./src/mongo.js";
 
 dotenv.config();
 
@@ -68,16 +68,34 @@ app.use("/inscripciones", inscripcionesRouter);
 const port = Number(process.env.PORT) || 4000;
 
 // ✅ Conectar a Mongo y levantar servidor
-connectMongo()
-  .then(() => {
+async function startServer() {
+  try {
+    console.log("🔄 Conectando a MongoDB...");
+    await connectMongo();
+    
+    console.log("✅ MongoDB conectado exitosamente");
+    
+    // Verificar que la conexión esté activa usando sync
+    const db = sync();
+    if (!db) {
+      throw new Error("No se pudo obtener la conexión a la base de datos");
+    }
+    
+    // Realizar una operación de prueba para confirmar la conexión
+    await db.admin().ping();
+    console.log("✅ Conexión a MongoDB verificada con ping");
+    
     app.listen(port, () => {
       console.log(`✅ API corriendo en puerto ${port}`);
       console.log(`🌍 Orígenes permitidos: ${allowedOrigins.join(", ")}`);
     });
-  })
-  .catch((err) => {
-    console.error("❌ Error conectando a MongoDB:", err);
+    
+  } catch (err) {
+    console.error("❌ Error iniciando el servidor:", err);
     process.exit(1);
-  });
+  }
+}
+
+startServer();
 
 export default app;
