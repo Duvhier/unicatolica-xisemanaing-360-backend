@@ -8,22 +8,24 @@ dotenv.config();
 
 const app = express();
 
-// ✅ Dominio frontend permitido
-// Puedes agregar varios separados por comas en tu .env:
-// ALLOWED_ORIGINS=https://unicatolica-xisemanaing-360.vercel.app,https://otro-dominio.com
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || "https://unicatolica-xisemanaing-360.vercel.app" || "https://si.cidt.unicatolica.edu.co" )
-  .split(",")
-  .map(s => s.trim())
-  .filter(Boolean);
+// ✅ Configurar orígenes permitidos (local + producción)
+const allowedOrigins = [
+  ...(process.env.ALLOWED_ORIGINS?.split(",").map(s => s.trim()) || []),
+  "https://unicatolica-xisemanaing-360.vercel.app",
+  "https://si.cidt.unicatolica.edu.co",
+  "http://localhost:5173",
+  "http://localhost:4000"
+].filter(Boolean);
 
-// ✅ Middleware CORS
 app.use(
   cors({
     origin: (origin, cb) => {
-      // En caso de peticiones internas o sin origin (ej: Postman)
-      if (!origin) return cb(null, true);
+      if (!origin) return cb(null, true); // Permitir Postman u orígenes internos
 
-      if (allowedOrigins.includes(origin)) {
+      // ✅ Permitir si el origen coincide parcialmente (evita error por slash final)
+      const permitido = allowedOrigins.some(o => origin.startsWith(o));
+
+      if (permitido) {
         cb(null, true);
       } else {
         console.warn(`🚫 CORS bloqueado para origen: ${origin}`);
@@ -36,7 +38,7 @@ app.use(
   })
 );
 
-// ✅ Permitir preflight requests
+// ✅ Preflight
 app.options("*", cors());
 
 // ✅ Encabezados de seguridad recomendados
@@ -50,8 +52,12 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "2mb" }));
 
 // 🩺 Ruta de prueba
-app.get("/health", (req, res) => {
-  res.json({ ok: true, uptime: process.uptime() });
+app.get("/debug-cors", (req, res) => {
+  res.json({
+    origin: req.headers.origin || null,
+    allowed: allowedOrigins,
+    message: "Prueba de CORS desde el backend en Vercel",
+  });
 });
 
 // 🧩 Rutas
