@@ -20,10 +20,12 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, cb) => {
-      if (!origin) return cb(null, true); // Permitir Postman u orígenes internos
+      console.log("🌐 Solicitud desde origen:", origin);
 
-      // ✅ Permitir si el origen coincide parcialmente (evita error por slash final)
-      const permitido = allowedOrigins.some(o => origin.startsWith(o));
+      if (!origin) return cb(null, true); // Permitir Postman o llamadas sin origin
+
+      // Permitir si coincide exactamente o si incluye dominio base
+      const permitido = allowedOrigins.some(o => origin?.replace(/\/$/, "") === o.replace(/\/$/, ""));
 
       if (permitido) {
         cb(null, true);
