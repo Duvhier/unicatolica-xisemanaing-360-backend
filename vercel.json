@@ -18,7 +18,7 @@
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://tudominio.com"
+          "value": "https://si.cidt.unicatolica.edu.co/formulario"
         },
         {
           "key": "Access-Control-Allow-Methods",
