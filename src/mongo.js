@@ -39,40 +39,10 @@ export async function connectMongo() {
   const db = client.db(dbNameFromUri);
   cachedClient = client;
   cachedDb = db;
-  
-  console.log(`✅ Conectado a MongoDB: ${dbNameFromUri}`);
   return { client, db };
 }
 
-// 🔄 CAMBIO: Renombrar getDbSync por sync
-export function sync() {
+export function getDbSync() {
   if (!cachedDb) throw new Error('MongoDB no conectado. Llama a connectMongo() primero.');
   return cachedDb;
-}
-
-// 🔄 MANTENER: Alias para compatibilidad (opcional)
-export function getDbSync() {
-  return sync();
-}
-
-// Función para verificar la conexión
-export async function checkConnection() {
-  try {
-    const db = sync();
-    await db.admin().ping();
-    return true;
-  } catch (error) {
-    console.error('❌ Error verificando conexión a MongoDB:', error);
-    return false;
-  }
-}
-
-// Función para cerrar la conexión
-export async function closeMongo() {
-  if (cachedClient) {
-    await cachedClient.close();
-    cachedClient = null;
-    cachedDb = null;
-    console.log('🔌 Conexión a MongoDB cerrada');
-  }
 }
