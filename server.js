@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import inscripcionesRouter from "./routes/inscripciones.js";
-import { connectMongo } from "./mongo.js";
+import inscripcionesRouter from "./src/routes/inscripciones.js";
+import { connectMongo } from "./src/mongo.js";
 
 dotenv.config();
 
