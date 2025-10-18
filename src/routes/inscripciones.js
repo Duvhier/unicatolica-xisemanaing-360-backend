@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import QRCode from 'qrcode';
-import { getDbSync } from '../mongo.js';
+import { getDb } from '../mongo.js'; // 🔹 se cambia getDbSync por getDb
 
 const router = Router();
 
@@ -32,7 +32,6 @@ function validatePayload(body) {
     if (!g.proyecto || !isNonEmptyString(g.proyecto.categoria)) errors.push('grupo.proyecto.categoria requerido');
     if (!isNonEmptyString(g.institucion)) errors.push('grupo.institucion requerido');
     if (!isNonEmptyString(g.correo)) errors.push('grupo.correo requerido');
-    // telefono del equipo es opcional
   }
 
   return { ok: errors.length === 0, errors, actividad };
@@ -47,7 +46,7 @@ router.post('/registro', async (req, res) => {
     }
 
     const nowIso = new Date().toISOString();
-    const db = getDbSync();
+    const db = await getDb(); // 🔹 conexión segura y asíncrona
     const col = db.collection('inscripciones');
 
     const grupo = payload.grupo ?? null;
@@ -95,18 +94,17 @@ router.post('/registro', async (req, res) => {
       estudiante: { nombre: payload.nombre, cedula: payload.cedula }
     });
   } catch (err) {
-    console.error(err);
+    console.error('❌ Error en POST /registro:', err);
     return res.status(500).json({ message: 'Error interno del servidor' });
   }
 });
 
-// Endpoint para listar inscripciones (solo para verificación)
 router.get('/listar', async (req, res) => {
   try {
-    const db = getDbSync();
+    const db = await getDb(); // 🔹 conexión segura y asíncrona
     const col = db.collection('inscripciones');
     const inscripciones = await col.find({}).limit(10).toArray();
-    
+
     return res.json({
       message: 'Inscripciones encontradas',
       total: inscripciones.length,
@@ -121,11 +119,9 @@ router.get('/listar', async (req, res) => {
       }))
     });
   } catch (err) {
-    console.error(err);
+    console.error('❌ Error en GET /listar:', err);
     return res.status(500).json({ message: 'Error interno del servidor' });
   }
 });
 
 export default router;
-
-
