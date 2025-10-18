@@ -40,6 +40,7 @@ function validatePayload(body) {
 
 router.post('/registro', async (req, res) => {
   try {
+    console.log("📦 Datos recibidos en /registro:", req.body);
     const payload = req.body || {};
     const { ok, errors, actividad } = validatePayload(payload);
     if (!ok) {
@@ -121,7 +122,7 @@ router.get('/listar', async (req, res) => {
       }))
     });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error interno en /registro:", err);
     return res.status(500).json({ message: 'Error interno del servidor' });
   }
 });
