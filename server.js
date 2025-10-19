@@ -11,10 +11,6 @@ const app = express();
 // ✅ Configurar orígenes permitidos (local + producción)
 const allowedOrigins = [
   ...(process.env.ALLOWED_ORIGINS?.split(",").map(s => s.trim()) || []),
-  "https://unicatolica-xisemanaing-360.vercel.app",
-  "https://si.cidt.unicatolica.edu.co",
-  "http://localhost:5173",
-  "http://localhost:4000"
 ].filter(Boolean);
 
 app.use(
