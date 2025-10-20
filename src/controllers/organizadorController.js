@@ -22,9 +22,29 @@ export const loginOrganizador = async (req, res) => {
     const organizadoresCollection = db.collection('usuariosOrganizadores');
 
     // Buscar el organizador por usuario
-    const organizador = await organizadoresCollection.findOne({ 
+    let organizador = await organizadoresCollection.findOne({ 
       usuario: usuario.trim() 
     });
+
+    // Si no existe el usuario demo, crearlo automáticamente
+    if (!organizador && usuario.trim() === 'organizadorDemo' && password.trim() === 'org123') {
+      console.log('🔧 Creando usuario demo automáticamente...');
+      
+      const usuarioDemo = {
+        usuario: 'organizadorDemo',
+        password: 'org123',
+        nombre: 'Organizador Demo',
+        rol: 'organizador',
+        email: 'organizador.demo@unicatolica.edu.co',
+        activo: true,
+        created_at: new Date().toISOString()
+      };
+
+      const resultado = await organizadoresCollection.insertOne(usuarioDemo);
+      organizador = { ...usuarioDemo, _id: resultado.insertedId };
+      
+      console.log('✅ Usuario demo creado automáticamente');
+    }
 
     if (!organizador) {
       return res.status(401).json({
