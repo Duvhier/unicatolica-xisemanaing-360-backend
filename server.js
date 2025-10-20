@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import inscripcionesRouter from "../src/routes/inscripciones.js";
-import organizadorRouter from "../src/routes/organizadorRoutes.js";
+import inscripcionesRouter from "./src/routes/inscripciones.js";
+import organizadorRouter from "./src/routes/organizadorRoutes.js";
 import dns from "dns";
 
 dotenv.config();
