@@ -2,10 +2,14 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import inscripcionesRouter from "./src/routes/inscripciones.js";
+import dns from "dns";
 
 dotenv.config();
 
 const app = express();
+
+// Fuerza preferencia IPv4 para evitar issues TLS/IPv6 en algunos hosts
+dns.setDefaultResultOrder?.("ipv4first");
 
 // =========================================================
 // 🌍 CONFIGURACIÓN DE CORS

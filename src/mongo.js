@@ -6,7 +6,7 @@ let cachedDb = null;
 export async function connectMongo() {
   if (cachedDb && cachedClient) return { client: cachedClient, db: cachedDb };
 
-  const uri = process.env.MONGO_URI;
+  const uri = process.env.MONGO_URI || process.env.MONGODB_URI;
   if (!uri) throw new Error("❌ MONGO_URI no configurada en entorno");
 
   const client = new MongoClient(uri, {
@@ -15,7 +15,8 @@ export async function connectMongo() {
       strict: true,
       deprecationErrors: true,
     },
-    ssl: true, // 🔐 Fuerza TLS
+    // Usar flags TLS modernas; el driver habilita TLS automáticamente para SRV (mongodb+srv)
+    tls: true,
     tlsAllowInvalidCertificates: false,
     tlsAllowInvalidHostnames: false,
   });
