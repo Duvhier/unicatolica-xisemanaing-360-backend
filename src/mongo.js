@@ -7,8 +7,7 @@ export async function connectMongo() {
   if (cachedDb && cachedClient) return { client: cachedClient, db: cachedDb };
 
   const uri = process.env.MONGO_URI;
-
-  if (!uri) throw new Error("❌ MONGO_URI no configurada en .env o en Vercel.");
+  if (!uri) throw new Error("❌ MONGO_URI no configurada en entorno");
 
   const client = new MongoClient(uri, {
     serverApi: {
@@ -16,9 +15,9 @@ export async function connectMongo() {
       strict: true,
       deprecationErrors: true,
     },
-    ssl: true,
-    retryWrites: true,
-    connectTimeoutMS: 20000,
+    ssl: true, // 🔐 Fuerza TLS
+    tlsAllowInvalidCertificates: false,
+    tlsAllowInvalidHostnames: false,
   });
 
   try {
@@ -26,7 +25,7 @@ export async function connectMongo() {
     const db = client.db("eventoIngenieria");
     cachedClient = client;
     cachedDb = db;
-    console.log("✅ Conectado a MongoDB Atlas correctamente.");
+    console.log("✅ Conexión a MongoDB Atlas establecida correctamente.");
     return { client, db };
   } catch (err) {
     console.error("❌ Error conectando a MongoDB:", err);
