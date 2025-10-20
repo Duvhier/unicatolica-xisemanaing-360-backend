@@ -1,4 +1,8 @@
+import dotenv from 'dotenv';
 import { connectMongo } from './src/mongo.js';
+
+// Cargar variables de entorno
+dotenv.config();
 
 /**
  * Script para crear datos de prueba de organizadores
