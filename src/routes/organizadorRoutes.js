@@ -77,4 +77,53 @@ router.get('/stats', authMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * POST /organizador/setup-demo
+ * Endpoint temporal para crear usuario de prueba en producción
+ * Solo para uso de desarrollo/setup inicial
+ */
+router.post('/setup-demo', async (req, res) => {
+  try {
+    const { connectMongo } = await import('../mongo.js');
+    const { db } = await connectMongo();
+    const organizadoresCollection = db.collection('usuariosOrganizadores');
+
+    const usuarioDemo = {
+      usuario: 'organizadorDemo',
+      password: 'org123',
+      nombre: 'Organizador Demo',
+      rol: 'organizador',
+      email: 'organizador.demo@unicatolica.edu.co',
+      activo: true,
+      updated_at: new Date().toISOString(),
+    };
+
+    const resultado = await organizadoresCollection.updateOne(
+      { usuario: 'organizadorDemo' },
+      { 
+        $set: usuarioDemo, 
+        $setOnInsert: { created_at: new Date().toISOString() } 
+      },
+      { upsert: true }
+    );
+
+    res.json({
+      success: true,
+      message: 'Usuario demo creado/actualizado correctamente',
+      usuario: 'organizadorDemo',
+      password: 'org123',
+      inserted: resultado.upsertedCount === 1,
+      updated: resultado.matchedCount === 1
+    });
+
+  } catch (error) {
+    console.error('❌ Error creando usuario demo:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: error.message
+    });
+  }
+});
+
 export default router;

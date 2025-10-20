@@ -7,6 +7,7 @@ dotenv.config();
 /**
  * Script para crear datos de prueba de organizadores
  * Ejecutar con: node seed-organizadores.js
+ * Opcional upsert único: node seed-organizadores.js --upsert --usuario=organizadorDemo --password=org123 --rol=organizador --nombre="Organizador Demo"
  */
 async function seedOrganizadores() {
   try {
@@ -15,6 +16,54 @@ async function seedOrganizadores() {
     const { db } = await connectMongo();
     const organizadoresCollection = db.collection('usuariosOrganizadores');
 
+    const args = process.argv.slice(2);
+    const isUpsert = args.includes('--upsert');
+
+    if (isUpsert) {
+      // Parseo simple de argumentos --clave=valor
+      const params = Object.fromEntries(
+        args
+          .filter(a => a.startsWith('--') && a.includes('='))
+          .map(a => {
+            const [k, v] = a.replace(/^--/, '').split('=');
+            return [k, v];
+          })
+      );
+
+      const usuario = params.usuario || 'organizadorDemo';
+      const password = params.password || 'org123';
+      const nombre = params.nombre || 'Organizador Demo';
+      const rol = params.rol || 'organizador';
+      const email = params.email || 'organizador.demo@unicatolica.edu.co';
+
+      const doc = {
+        usuario,
+        password,
+        nombre,
+        rol,
+        email,
+        activo: true,
+        updated_at: new Date().toISOString(),
+      };
+
+      const res = await organizadoresCollection.updateOne(
+        { usuario },
+        { $set: doc, $setOnInsert: { created_at: new Date().toISOString() } },
+        { upsert: true }
+      );
+
+      if (res.upsertedCount === 1) {
+        console.log(`✅ Insertado usuario de prueba: ${usuario} / ${password}`);
+      } else if (res.matchedCount === 1) {
+        console.log(`✅ Actualizado usuario existente: ${usuario} / ${password}`);
+      } else {
+        console.log('ℹ️ No se realizaron cambios');
+      }
+
+      return;
+    }
+
+    // Modo por defecto: re-seed controlado (borrar e insertar nuevos)
     // Datos de organizadores de prueba
     const organizadoresPrueba = [
       {
