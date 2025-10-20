@@ -4,109 +4,91 @@ import { connectMongo } from '../mongo.js';
 
 const router = Router();
 
-function isNonEmptyString(value) {
-  return typeof value === 'string' && value.trim().length > 0;
-}
-
+// ✅ Validación de campos
 function validatePayload(body) {
   const errors = [];
-  const requiredStudent = ['nombre', 'cedula', 'correo', 'telefono', 'programa', 'semestre'];
-  for (const key of requiredStudent) {
-    if (!isNonEmptyString(body[key])) errors.push(`Campo requerido: ${key}`);
+  const required = ['nombre', 'cedula', 'correo', 'telefono', 'programa', 'semestre'];
+
+  for (const key of required) {
+    if (!body[key] || typeof body[key] !== 'string' || !body[key].trim()) {
+      errors.push(`Campo requerido o inválido: ${key}`);
+    }
   }
 
   if (!Array.isArray(body.actividades) || body.actividades.length === 0) {
-    errors.push('actividades debe ser un arreglo con al menos un elemento');
+    errors.push('El campo "actividades" debe ser un arreglo con al menos una actividad.');
   }
 
-  const actividad = Array.isArray(body.actividades) ? body.actividades[0] : undefined;
-  if (!isNonEmptyString(actividad)) {
-    errors.push('actividad inválida');
-  }
-
-  if (body.grupo) {
-    const g = body.grupo;
-    if (!isNonEmptyString(g.nombre)) errors.push('grupo.nombre requerido');
-    if (!g.proyecto || !isNonEmptyString(g.proyecto.nombre)) errors.push('grupo.proyecto.nombre requerido');
-    if (!g.proyecto || !isNonEmptyString(g.proyecto.descripcion)) errors.push('grupo.proyecto.descripcion requerido');
-    if (!g.proyecto || !isNonEmptyString(g.proyecto.categoria)) errors.push('grupo.proyecto.categoria requerido');
-    if (!isNonEmptyString(g.institucion)) errors.push('grupo.institucion requerido');
-    if (!isNonEmptyString(g.correo)) errors.push('grupo.correo requerido');
-    // telefono del equipo es opcional
-  }
-
-  return { ok: errors.length === 0, errors, actividad };
+  return { ok: errors.length === 0, errors };
 }
 
 router.post('/registro', async (req, res) => {
   try {
     const payload = req.body || {};
-    const { ok, errors, actividad } = validatePayload(payload);
+    const { ok, errors } = validatePayload(payload);
+
     if (!ok) {
       return res.status(400).json({ message: 'Validación fallida', errors });
     }
 
-    const nowIso = new Date().toISOString();
+    // 🔹 Conexión segura a MongoDB (ideal para entornos serverless)
     const { db } = await connectMongo();
     const col = db.collection('inscripciones');
 
-    const grupo = payload.grupo ?? null;
-    const integrantes = Array.isArray(grupo?.integrantes) ? grupo.integrantes : [payload.nombre];
+    const nowIso = new Date().toISOString();
+    const actividad = payload.actividades[0];
 
+    // 🔹 Construcción del documento a guardar
     const doc = {
-      nombre: payload.nombre,
-      cedula: payload.cedula,
-      correo: payload.correo,
-      telefono: payload.telefono,
-      programa: payload.programa,
-      semestre: payload.semestre,
+      nombre: payload.nombre.trim(),
+      cedula: payload.cedula.trim(),
+      correo: payload.correo.trim(),
+      telefono: payload.telefono.trim(),
+      programa: payload.programa.trim(),
+      semestre: payload.semestre.trim(),
+      actividades: payload.actividades,
       actividad,
-      grupo_nombre: grupo ? grupo.nombre : null,
-      grupo_institucion: grupo ? grupo.institucion : null,
-      grupo_correo: grupo ? grupo.correo : null,
-      grupo_telefono: grupo ? (grupo.telefono || null) : null,
-      proyecto_nombre: grupo ? grupo.proyecto?.nombre : null,
-      proyecto_descripcion: grupo ? grupo.proyecto?.descripcion : null,
-      proyecto_categoria: grupo ? grupo.proyecto?.categoria : null,
-      integrantes,
+      grupo: payload.grupo ?? null,
       created_at: nowIso
     };
 
+    // 🔹 Inserción en la colección
     const insertRes = await col.insertOne(doc);
     const insertedId = insertRes.insertedId;
 
+    // 🔹 Generar el código QR
     const qrPayload = {
       id: insertedId,
-      estudiante: {
-        nombre: payload.nombre,
-        cedula: payload.cedula
-      },
+      estudiante: { nombre: payload.nombre, cedula: payload.cedula },
       actividad,
       emitido: nowIso
     };
 
     const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrPayload), { errorCorrectionLevel: 'M' });
 
+    // 🔹 Respuesta exitosa
     return res.status(201).json({
-      message: 'Inscripción registrada',
+      message: 'Inscripción registrada correctamente',
       id: insertedId,
       qr: qrDataUrl,
-      qrData: qrPayload,
-      estudiante: { nombre: payload.nombre, cedula: payload.cedula }
+      qrData: qrPayload
     });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Error interno del servidor' });
+    console.error('❌ Error en /inscripciones/registro:', err);
+    return res.status(500).json({
+      message: 'Error interno del servidor',
+      error: err.message
+    });
   }
 });
 
-// Endpoint para listar inscripciones (solo para verificación)
+// ✅ Endpoint opcional para verificar las inscripciones (modo debug)
 router.get('/listar', async (req, res) => {
   try {
     const { db } = await connectMongo();
     const col = db.collection('inscripciones');
     const inscripciones = await col.find({}).limit(10).toArray();
-    
+
     return res.json({
       message: 'Inscripciones encontradas',
       total: inscripciones.length,
@@ -116,16 +98,13 @@ router.get('/listar', async (req, res) => {
         cedula: insc.cedula,
         programa: insc.programa,
         actividad: insc.actividad,
-        grupo: insc.grupo_nombre,
         created_at: insc.created_at
       }))
     });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Error interno del servidor' });
+    console.error('❌ Error en /inscripciones/listar:', err);
+    return res.status(500).json({ message: 'Error interno del servidor', error: err.message });
   }
 });
 
 export default router;
-
-
