@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import QRCode from 'qrcode';
-import { getDbSync } from '../mongo.js';
+import { connectMongo } from '../mongo.js';
 
 const router = Router();
 
@@ -47,7 +47,7 @@ router.post('/registro', async (req, res) => {
     }
 
     const nowIso = new Date().toISOString();
-    const db = getDbSync();
+    const { db } = await connectMongo();
     const col = db.collection('inscripciones');
 
     const grupo = payload.grupo ?? null;
@@ -103,7 +103,7 @@ router.post('/registro', async (req, res) => {
 // Endpoint para listar inscripciones (solo para verificación)
 router.get('/listar', async (req, res) => {
   try {
-    const db = getDbSync();
+    const { db } = await connectMongo();
     const col = db.collection('inscripciones');
     const inscripciones = await col.find({}).limit(10).toArray();
     
