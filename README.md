@@ -198,3 +198,6 @@ Este proyecto fue desarrollado con fines académicos para la
 **XI Semana de la Ingeniería 360°** — UniCatólica.
 
 © 2025 — Todos los derechos reservados.
+
+---
+*Última actualización: Sistema de organizadores implementado*
