@@ -1,7 +1,7 @@
 // routes/liderazgo.js
 import { Router } from "express";
 import QRCode from "qrcode";
-import { connectMongo } from "../database/mongo.js"; // ajusta la ruta si tu archivo de conexión tiene otro nombre
+import { connectMongo } from '../mongo.js';
 
 const router = Router();
 
