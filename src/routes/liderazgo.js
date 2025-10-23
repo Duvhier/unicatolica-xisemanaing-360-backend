@@ -1,147 +1,247 @@
-// controllers/emailController.js
-import nodemailer from "nodemailer";
+// routes/liderazgo.js
+import { Router } from "express";
+import QRCode from "qrcode";
+import { connectMongo } from '../mongo.js';
+import { enviarCorreoRegistro } from "../controllers/emailController.js";
 
-export const enviarCorreoRegistro = async (usuario) => {
-  console.log("🚀 INICIANDO ENVÍO DE CORREO PARA:", usuario.correo);
-  
-  try {
-    // 🔹 VERIFICAR VARIABLES DE ENTORNO
-    console.log("🔑 Verificando variables de entorno...");
-    console.log("📧 Email user:", "eventoxisemanaingenieria@si.cidt.unicatolica.edu.co");
-    console.log("🔐 Password disponible:", process.env.EMAIL_PASSWORD ? "✅ SÍ" : "❌ NO");
-    
-    if (!process.env.EMAIL_PASSWORD) {
-      throw new Error("EMAIL_PASSWORD no está configurada en las variables de entorno");
+const router = Router();
+
+// ✅ Validación mejorada de los campos
+function validateLiderazgo(body) {
+    const errors = [];
+    const requiredFields = ["nombre", "cedula", "correo", "telefono", "rol", "area"];
+
+    for (const field of requiredFields) {
+        if (!body[field] || typeof body[field] !== "string" || !body[field].trim()) {
+            errors.push(`Campo requerido o inválido: ${field}`);
+        }
     }
 
-    // Validar datos esenciales
-    if (!usuario.correo || !usuario.nombre) {
-      throw new Error("Datos de usuario incompletos");
+    // 🔹 Validación específica para cédula (solo números)
+    if (body.cedula) {
+        const cedulaRegex = /^\d+$/;
+        if (!cedulaRegex.test(body.cedula.trim())) {
+            errors.push("La cédula debe contener solo números");
+        }
     }
 
-    console.log("📧 Configurando transporter...");
+    // 🔹 Validación específica para teléfono
+    if (body.telefono) {
+        const telefonoRegex = /^\d+$/;
+        if (!telefonoRegex.test(body.telefono.trim())) {
+            errors.push("El teléfono debe contener solo números");
+        }
+    }
+
+    return { ok: errors.length === 0, errors };
+}
+
+// 🔹 Función para validar correo institucional
+function validarCorreoInstitucional(correo) {
+    const correoInstitucionalRegex = /^[a-zA-Z0-9._%+-]+@unicatolica\.edu\.co$/i;
+    return correoInstitucionalRegex.test(correo);
+}
+
+// 🔹 Función para verificar duplicados
+async function verificarDuplicados(db, cedula, correo) {
+    const col = db.collection("liderazgo");
     
-    const transporter = nodemailer.createTransport({
-      host: "mail.si.cidt.unicatolica.edu.co",
-      port: 465,
-      secure: true,
-      auth: {
-        user: "eventoxisemanaingenieria@si.cidt.unicatolica.edu.co",
-        pass: process.env.EMAIL_PASSWORD,
-      },
-      debug: true,
-      logger: true,
-      tls: {
-        rejectUnauthorized: false
-      }
+    const existente = await col.findOne({
+        $or: [{ cedula }, { correo }],
     });
 
-    console.log("🔍 Verificando conexión SMTP...");
-    await transporter.verify();
-    console.log("✅ Conexión SMTP verificada");
-
-    // Contenido HTML (igual que antes)
-    const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: #001b5e; color: white; padding: 20px; text-align: center;">
-          <h1>🎉 ¡Registro Exitoso!</h1>
-        </div>
-        <div style="padding: 20px; background: #f9f9f9;">
-          <p>Estimado/a <strong>${usuario.nombre}</strong>,</p>
-          <p>Tu registro para la ponencia <strong>"Desarrollo Personal y Liderazgo"</strong> ha sido exitoso.</p>
-          
-          <h3>📋 Tus Datos de Registro:</h3>
-          <ul>
-            <li><strong>Nombre:</strong> ${usuario.nombre}</li>
-            <li><strong>Cédula:</strong> ${usuario.cedula}</li>
-            <li><strong>Correo:</strong> ${usuario.correo}</li>
-            <li><strong>Teléfono:</strong> ${usuario.telefono}</li>
-            <li><strong>Área:</strong> ${usuario.area}</li>
-            <li><strong>Rol:</strong> ${usuario.rol}</li>
-          </ul>
-
-          <h3>📅 Información del Evento:</h3>
-          <p><strong>Fecha:</strong> 10 de Noviembre de 2025</p>
-          <p><strong>Hora:</strong> 3:00 p.m. - 5:00 p.m.</p>
-          <p><strong>Lugar:</strong> Auditorio 1 - Sede Pance, Unicatólica</p>
-          
-          ${usuario.qr ? `
-          <div style="text-align: center; margin: 20px 0;">
-            <p><strong>Presenta este código QR el día del evento:</strong></p>
-            <img src="${usuario.qr}" alt="QR de Registro" style="width: 200px; height: 200px; border: 2px solid #ddd; border-radius: 10px;"/>
-          </div>
-          ` : '<p>💡 Presenta tu documento de identidad el día del evento.</p>'}
-        </div>
-        <div style="text-align: center; padding: 20px; font-size: 12px; color: #666;">
-          <p>Universidad Católica de Cali © 2025 - XI Semana de la Ingeniería</p>
-        </div>
-      </div>
-    `;
-
-    // Preparar adjuntos si existe QR
-    let attachments = [];
-    if (usuario.qr && usuario.qr.startsWith('data:image/png;base64,')) {
-      try {
-        const base64Data = usuario.qr.replace(/^data:image\/png;base64,/, "");
-        attachments.push({
-          filename: "codigo_qr_registro.png",
-          content: base64Data,
-          encoding: 'base64',
-          contentType: "image/png",
-        });
-        console.log("📎 QR preparado como adjunto");
-      } catch (qrError) {
-        console.warn("⚠️ Error procesando QR:", qrError.message);
-      }
+    if (existente) {
+        if (existente.cedula === cedula && existente.correo === correo) {
+            return { duplicado: true, mensaje: "Ya existe un registro con esta cédula y correo electrónico." };
+        } else if (existente.cedula === cedula) {
+            return { duplicado: true, mensaje: "Ya existe un registro con este número de cédula." };
+        } else if (existente.correo === correo) {
+            return { duplicado: true, mensaje: "Ya existe un registro con este correo electrónico." };
+        }
     }
-
-    // Configurar correo
-    const mailOptions = {
-      from: '"Evento XI Semana Ingeniería" <eventoxisemanaingenieria@si.cidt.unicatolica.edu.co>',
-      to: usuario.correo,
-      subject: "✅ Confirmación de Registro - Ponencia Desarrollo Personal y Liderazgo",
-      html: htmlContent,
-      text: `
-        Registro Exitoso - Ponencia Desarrollo Personal y Liderazgo
-        
-        Estimado/a ${usuario.nombre},
-        
-        Tu registro ha sido exitoso.
-        
-        📋 Tus datos:
-        - Nombre: ${usuario.nombre}
-        - Cédula: ${usuario.cedula} 
-        - Correo: ${usuario.correo}
-        - Teléfono: ${usuario.telefono}
-        - Área: ${usuario.area}
-        - Rol: ${usuario.rol}
-        
-        📅 Información del evento:
-        - Fecha: 10 de Noviembre de 2025
-        - Hora: 3:00 p.m. - 5:00 p.m.
-        - Lugar: Auditorio 1 - Sede Pance
-        
-        Universidad Católica de Cali © 2025
-      `,
-      attachments: attachments
-    };
-
-    console.log("📤 Enviando correo a:", usuario.correo);
     
-    const info = await transporter.sendMail(mailOptions);
-    
-    console.log("✅ CORREO ENVIADO EXITOSAMENTE");
-    console.log("📨 Message ID:", info.messageId);
-    console.log("👤 Destinatario:", usuario.correo);
-    console.log("🆔 ID del servidor:", info.response);
-    
-    return info;
+    return { duplicado: false };
+}
 
-  } catch (error) {
-    console.error("❌ ERROR AL ENVIAR CORREO:");
-    console.error("🔴 Mensaje:", error.message);
-    console.error("🔴 Código:", error.code);
-    console.error("🔴 Stack:", error.stack);
-    throw error;
-  }
-};
+router.post("/registro", async (req, res) => {
+    try {
+        const payload = req.body || {};
+        const { ok, errors } = validateLiderazgo(payload);
+
+        if (!ok) {
+            return res.status(400).json({ 
+                message: "Validación fallida", 
+                errors 
+            });
+        }
+
+        const { db } = await connectMongo();
+        const col = db.collection("liderazgo");
+
+        const correo = payload.correo.trim().toLowerCase();
+        const cedula = payload.cedula.trim();
+
+        // 🔹 Validar que el correo sea institucional
+        if (!validarCorreoInstitucional(correo)) {
+            console.log("❌ Correo no institucional bloqueado:", correo);
+            return res.status(400).json({
+                message: "El correo debe ser institucional (ejemplo@unicatolica.edu.co)",
+                details: "Solo se permiten correos con el dominio @unicatolica.edu.co"
+            });
+        }
+
+        // 🔹 Verificar duplicados con mensajes específicos
+        const { duplicado, mensaje } = await verificarDuplicados(db, cedula, correo);
+        
+        if (duplicado) {
+            return res.status(400).json({
+                message: mensaje,
+                details: "No se permiten registros duplicados"
+            });
+        }
+
+        const nowIso = new Date().toISOString();
+
+        const doc = {
+            nombre: payload.nombre.trim(),
+            cedula,
+            correo,
+            telefono: payload.telefono.trim(),
+            rol: payload.rol.trim(),
+            area: payload.area.trim(),
+            created_at: nowIso,
+            // 🔹 Agregar campos de auditoría
+            updated_at: nowIso,
+            estado: "activo"
+        };
+
+        // 🔹 Insertar el documento en la base de datos
+        const insertRes = await col.insertOne(doc);
+        const insertedId = insertRes.insertedId;
+
+        // 🔹 Crear datos para el QR
+        const qrPayload = {
+            id: insertedId.toString(),
+            nombre: payload.nombre.trim(),
+            cedula,
+            evento: "Desarrollo Personal y Liderazgo",
+            emitido: nowIso,
+            tipo: "liderazgo"
+        };
+
+        // 🔹 Generar QR como base64
+        const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrPayload), {
+            errorCorrectionLevel: "M",
+            width: 300,
+            margin: 2
+        });
+
+        // 🔹 Actualizar el documento con el QR
+        await col.updateOne(
+            { _id: insertedId },
+            { 
+                $set: { 
+                    qr_data: qrPayload,
+                    qr_generated_at: nowIso
+                } 
+            }
+        );
+
+        // 🔹 Enviar el correo de confirmación
+        try {
+            console.log("📧 Preparando envío de correo a:", correo);
+            await enviarCorreoRegistro({
+                nombre: payload.nombre.trim(),
+                cedula,
+                correo,
+                telefono: payload.telefono.trim(),
+                area: payload.area.trim(),
+                rol: payload.rol.trim(),
+                qr: qrDataUrl,
+            });
+            console.log("✅ Correo enviado exitosamente a:", correo);
+        } catch (emailError) {
+            console.error("❌ Error al enviar correo:", emailError);
+            // No retornamos error aquí, solo logueamos
+        }
+
+        // 🔹 Responder al frontend con el resultado
+        return res.status(201).json({
+            message: "Inscripción registrada correctamente",
+            id: insertedId,
+            qr: qrDataUrl,
+            qrData: qrPayload,
+            emailEnviado: true
+        });
+
+    } catch (err) {
+        console.error("❌ Error en /liderazgo/registro:", err);
+        return res.status(500).json({
+            message: "Error interno del servidor",
+            error: process.env.NODE_ENV === 'development' ? err.message : 'Contacte al administrador'
+        });
+    }
+});
+
+// ✅ Endpoint adicional para verificar disponibilidad
+router.post("/verificar", async (req, res) => {
+    try {
+        const { cedula, correo } = req.body;
+        
+        if (!cedula && !correo) {
+            return res.status(400).json({
+                message: "Se requiere cédula o correo para verificar"
+            });
+        }
+
+        const { db } = await connectMongo();
+        
+        if (correo && !validarCorreoInstitucional(correo.trim().toLowerCase())) {
+            return res.status(400).json({
+                message: "El correo debe ser institucional",
+                disponible: false
+            });
+        }
+
+        const { duplicado, mensaje } = await verificarDuplicados(
+            db, 
+            cedula ? cedula.trim() : null, 
+            correo ? correo.trim().toLowerCase() : null
+        );
+
+        return res.json({
+            disponible: !duplicado,
+            message: duplicado ? mensaje : "Datos disponibles para registro"
+        });
+
+    } catch (err) {
+        console.error("❌ Error en /liderazgo/verificar:", err);
+        return res.status(500).json({
+            message: "Error interno del servidor",
+            error: err.message
+        });
+    }
+});
+
+// ✅ Endpoint para listar los inscritos
+router.get("/listar", async (req, res) => {
+    try {
+        const { db } = await connectMongo();
+        const col = db.collection("liderazgo");
+        const docs = await col.find({}).sort({ created_at: -1 }).toArray();
+
+        res.json({
+            message: "Listado de inscritos obtenido correctamente",
+            total: docs.length,
+            registros: docs
+        });
+    } catch (err) {
+        console.error("❌ Error en /liderazgo/listar:", err);
+        res.status(500).json({ 
+            message: "Error interno del servidor", 
+            error: err.message 
+        });
+    }
+});
+
+export default router;
