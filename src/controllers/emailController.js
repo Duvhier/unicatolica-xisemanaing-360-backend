@@ -263,9 +263,9 @@ export const enviarCorreoRegistro = async (usuario) => {
               }
               
               .footer-logo {
-                  max-width: 120px;
-                  margin-bottom: 10px;
-                  opacity: 0.7;
+                  max-width: 250px;
+                  height: auto;
+                  margin-bottom: 15px;
               }
               
               @media (max-width: 600px) {
@@ -338,36 +338,7 @@ export const enviarCorreoRegistro = async (usuario) => {
                           </ul>
                       </div>
                   </div>
-                  
-}
-                  
-                  <!-- Detalles destacados del evento -->
-                  <div class="event-details">
-                      <h3 class="event-title">📍 Información del Evento</h3>
-                      <div class="event-info">
-                          <div class="event-item">
-                              <div class="event-icon">📅</div>
-                              <div class="event-label">FECHA</div>
-                              <div class="event-value">10 Nov 2025</div>
-                          </div>
-                          <div class="event-item">
-                              <div class="event-icon">🕒</div>
-                              <div class="event-label">HORA</div>
-                              <div class="event-value">3:00 - 5:00 PM</div>
-                          </div>
-                          <div class="event-item">
-                              <div class="event-icon">🏛️</div>
-                              <div class="event-label">LUGAR</div>
-                              <div class="event-value">Auditorio 1</div>
-                          </div>
-                          <div class="event-item">
-                              <div class="event-icon">📍</div>
-                              <div class="event-label">SEDE</div>
-                              <div class="event-value">Pance</div>
-                          </div>
-                      </div>
-                  </div>
-                  
+
                   <!-- Instrucciones adicionales -->
                   <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin-top: 25px;">
                       <h4 style="color: #856404; margin: 0 0 10px 0; font-size: 16px;">📋 Recomendaciones:</h4>
