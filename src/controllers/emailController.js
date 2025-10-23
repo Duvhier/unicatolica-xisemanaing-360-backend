@@ -275,7 +275,7 @@ export const enviarCorreoRegistro = async (usuario) => {
             }
             
             .logo {
-                max-width: 150px;
+                max-width: 200px;
             }
             
             .header-title {
@@ -288,6 +288,10 @@ export const enviarCorreoRegistro = async (usuario) => {
             
             .content {
                 padding: 20px 15px;
+            }
+
+            .conferencia-image {
+                max-height: 200px;
             }
             
             .welcome-title {
@@ -345,6 +349,10 @@ export const enviarCorreoRegistro = async (usuario) => {
         @media screen and (max-width: 600px) {
             .mobile-break {
                 display: block;
+            }
+
+            .conferencia-image {
+                max-height: 300px;
             }
         }
         
