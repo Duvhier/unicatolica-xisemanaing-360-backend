@@ -292,6 +292,11 @@ export const enviarCorreoRegistro = async (usuario) => {
 
             .conferencia-image {
                 max-height: 200px;
+                display: block;
+                margin: 0;
+                padding: 0;
+                position:relative;
+                top: 0;
             }
             
             .welcome-title {
@@ -352,7 +357,12 @@ export const enviarCorreoRegistro = async (usuario) => {
             }
 
             .conferencia-image {
-                max-height: 300px;
+                max-height: 250px;
+                display: block;
+                margin: 0;
+                padding: 0;
+                position: relative;
+                top: 0;
             }
         }
         
