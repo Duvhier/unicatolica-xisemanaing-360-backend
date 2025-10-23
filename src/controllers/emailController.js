@@ -353,9 +353,10 @@ export const enviarCorreoRegistro = async (usuario) => {
               <div class="footer">
                   <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="footer-logo">
                   <p>
-                      <strong>Universidad Católica de Cali</strong><br>
-                      Fundación Universitaria Católica Lumen Gentium<br>
-                      SNIES 2731 • Cali, Colombia
+                      <strong>Fundación Universitaria Católica Lumen Gentium</strong><br>
+                      Institución de Educación Superior sujeta a inspección y vigilancia por el Ministerio de Educación Nacional – Resolución No. 944 de 1996 MEN – SNIES 2731
+                      <br>
+                      Sede Principal Cra. 122 No. 12-459 Pance, Cali – Colombia
                   </p>
                   <p style="margin-top: 15px; font-size: 11px; opacity: 0.7;">
                       Este es un correo automático de confirmación. Por favor no responder.<br>
