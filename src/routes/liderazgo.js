@@ -149,6 +149,7 @@ router.post("/registro", async (req, res) => {
 
         // 🔹 Enviar el correo de confirmación
         try {
+            console.log("📧 Preparando envío de correo a:", correo);
             await enviarCorreoRegistro({
                 nombre: payload.nombre.trim(),
                 cedula,
@@ -158,6 +159,7 @@ router.post("/registro", async (req, res) => {
                 rol: payload.rol.trim(),
                 qr: qrDataUrl,
             });
+            console.log("✅ Correo enviado exitosamente a:", correo);
         } catch (emailError) {
             console.error("❌ Error al enviar correo:", emailError);
             // No retornamos error aquí, solo logueamos
