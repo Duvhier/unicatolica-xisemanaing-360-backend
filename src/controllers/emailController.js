@@ -72,7 +72,7 @@ export const enviarCorreoRegistro = async (usuario) => {
               }
               
               .header {
-                  background: linear-gradient(135deg, #001b5e 0%, #0033a0 100%);
+                  background: linear-gradient(135deg, #2b97ed 0%, #0033a0 100%);
                   padding: 30px 40px;
                   text-align: center;
               }
@@ -85,9 +85,11 @@ export const enviarCorreoRegistro = async (usuario) => {
               
               .header-title {
                   color: white;
+                  font-family: 'Poppins', Arial, sans-serif;
                   font-size: 24px;
                   font-weight: 600;
                   margin: 10px 0 5px 0;
+
               }
               
               .header-subtitle {
@@ -254,7 +256,7 @@ export const enviarCorreoRegistro = async (usuario) => {
               .footer {
                   text-align: center;
                   padding: 25px;
-                  background: #f8f9fa;
+                  background: #2b97ed;
                   color: #666;
                   font-size: 12px;
                   border-top: 1px solid #e9ecef;
@@ -301,7 +303,6 @@ export const enviarCorreoRegistro = async (usuario) => {
               <div class="content">
                   <!-- Mensaje de bienvenida -->
                   <div class="welcome-section">
-                      <div class="welcome-icon">🎉</div>
                       <h1 class="welcome-title">¡Confirmación de Registro Exitosa!</h1>
                       <p class="welcome-text">
                           Estimado/a <strong>${usuario.nombre}</strong>,<br>
@@ -338,17 +339,7 @@ export const enviarCorreoRegistro = async (usuario) => {
                       </div>
                   </div>
                   
-                  <!-- Sección QR -->
-                  ${usuario.qr ? `
-                  <div class="qr-section">
-                      <h3 class="qr-title">🎫 Código QR de Acceso</h3>
-                      <img src="${usuario.qr}" alt="Código QR de Registro" class="qr-image">
-                      <p class="qr-instructions">
-                          <strong>Importante:</strong> Presenta este código QR al ingresar al evento.<br>
-                          Es tu pase de acceso único e intransferible.
-                      </p>
-                  </div>
-                  ` : ''}
+}
                   
                   <!-- Detalles destacados del evento -->
                   <div class="event-details">
@@ -382,7 +373,6 @@ export const enviarCorreoRegistro = async (usuario) => {
                       <h4 style="color: #856404; margin: 0 0 10px 0; font-size: 16px;">📋 Recomendaciones:</h4>
                       <ul style="color: #856404; margin: 0; padding-left: 20px; font-size: 14px;">
                           <li>Llega 15 minutos antes del inicio del evento</li>
-                          <li>Presenta tu código QR o documento de identidad</li>
                           <li>Mantén este correo para cualquier consulta</li>
                       </ul>
                   </div>
@@ -432,8 +422,6 @@ Su registro para la conferencia "Desarrollo Personal y Liderazgo" ha sido proces
 - Hora: 3:00 pm - 5:00 pm
 - Lugar: Auditorio 1, Sede Pance
 
-🎫 ACCESO:
-Presente su código QR (adjunto) o documento de identidad al ingresar al evento.
 
 📍 RECOMENDACIONES:
 • Llegue 15 minutos antes del inicio
