@@ -92,15 +92,69 @@ function validatePayload(body) {
   return { ok: errors.length === 0, errors };
 }
 
-// ✅ Endpoint principal para registro - ACTUALIZADO CON ID
+// ✅ Función para verificar duplicados en la base de datos
+async function checkDuplicates(db, payload) {
+  const col = db.collection('hackathon');
+  const duplicates = [];
+
+  // 1. Verificar cédula duplicada
+  const existingCedula = await col.findOne({ 
+    cedula: payload.cedula.trim() 
+  });
+  if (existingCedula) {
+    duplicates.push(`La cédula ${payload.cedula} ya está registrada`);
+  }
+
+  // 2. Verificar ID de estudiante duplicado (solo para estudiantes)
+  if (payload.rol === 'estudiante' && payload.id) {
+    const existingId = await col.findOne({ 
+      id: payload.id.trim() 
+    });
+    if (existingId) {
+      duplicates.push(`El ID de estudiante ${payload.id} ya está registrado`);
+    }
+  }
+
+  // 3. Verificar nombre de equipo duplicado (solo para participantes)
+  if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && payload.grupo.nombre) {
+    const existingTeam = await col.findOne({ 
+      'grupo.nombre': payload.grupo.nombre.trim() 
+    });
+    if (existingTeam) {
+      duplicates.push(`El nombre de equipo "${payload.grupo.nombre}" ya está registrado`);
+    }
+  }
+
+  // 4. Verificar nombre de proyecto duplicado (solo para participantes)
+  if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && payload.grupo.proyecto && payload.grupo.proyecto.nombre) {
+    const existingProject = await col.findOne({ 
+      'grupo.proyecto.nombre': payload.grupo.proyecto.nombre.trim() 
+    });
+    if (existingProject) {
+      duplicates.push(`El nombre de proyecto "${payload.grupo.proyecto.nombre}" ya está registrado`);
+    }
+  }
+
+  // 5. Verificar correo duplicado
+  const existingEmail = await col.findOne({ 
+    correo: payload.correo.trim() 
+  });
+  if (existingEmail) {
+    duplicates.push(`El correo ${payload.correo} ya está registrado`);
+  }
+
+  return duplicates;
+}
+
+// ✅ Endpoint principal para registro - CON VALIDACIÓN DE DUPLICADOS
 router.post('/registro', async (req, res) => {
   try {
     const payload = req.body || {};
     console.log('🎯 INICIANDO REGISTRO EN COLECCIÓN HACKATHON');
     console.log('📥 Payload recibido:', JSON.stringify(payload, null, 2));
     
+    // 🔹 Validación básica del payload
     const { ok, errors } = validatePayload(payload);
-
     if (!ok) {
       console.log('❌ Errores de validación:', errors);
       return res.status(400).json({ message: 'Validación fallida', errors });
@@ -112,6 +166,20 @@ router.post('/registro', async (req, res) => {
     // ✅ COLECCIÓN HACKATHON
     const col = db.collection('hackathon');
     console.log('✅ Conectado a colección: hackathon');
+
+    // 🔹 VERIFICAR DUPLICADOS ANTES DE INSERTAR
+    console.log('🔍 Verificando duplicados en la base de datos...');
+    const duplicateErrors = await checkDuplicates(db, payload);
+    
+    if (duplicateErrors.length > 0) {
+      console.log('❌ Se encontraron duplicados:', duplicateErrors);
+      return res.status(409).json({ 
+        message: 'Datos duplicados encontrados', 
+        errors: duplicateErrors 
+      });
+    }
+
+    console.log('✅ No se encontraron duplicados, procediendo con el registro...');
 
     const nowIso = new Date().toISOString();
 
@@ -246,6 +314,84 @@ router.post('/registro', async (req, res) => {
     return res.status(201).json(response);
   } catch (err) {
     console.error('❌ Error en /inscripciones/registro:', err);
+    return res.status(500).json({
+      message: 'Error interno del servidor',
+      error: err.message
+    });
+  }
+});
+
+// ✅ Endpoint para verificar disponibilidad de datos
+router.post('/verificar-disponibilidad', async (req, res) => {
+  try {
+    const { cedula, idEstudiante, nombreEquipo, nombreProyecto, correo } = req.body;
+    const { db } = await connectMongo();
+    const col = db.collection('hackathon');
+
+    console.log('🔍 Verificando disponibilidad de datos:', { cedula, idEstudiante, nombreEquipo, nombreProyecto, correo });
+
+    const disponibilidad = {
+      cedula: true,
+      idEstudiante: true,
+      nombreEquipo: true,
+      nombreProyecto: true,
+      correo: true,
+      mensajes: []
+    };
+
+    // Verificar cédula
+    if (cedula) {
+      const existingCedula = await col.findOne({ cedula: cedula.trim() });
+      if (existingCedula) {
+        disponibilidad.cedula = false;
+        disponibilidad.mensajes.push('La cédula ya está registrada');
+      }
+    }
+
+    // Verificar ID de estudiante
+    if (idEstudiante) {
+      const existingId = await col.findOne({ id: idEstudiante.trim() });
+      if (existingId) {
+        disponibilidad.idEstudiante = false;
+        disponibilidad.mensajes.push('El ID de estudiante ya está registrado');
+      }
+    }
+
+    // Verificar nombre de equipo
+    if (nombreEquipo) {
+      const existingTeam = await col.findOne({ 'grupo.nombre': nombreEquipo.trim() });
+      if (existingTeam) {
+        disponibilidad.nombreEquipo = false;
+        disponibilidad.mensajes.push('El nombre del equipo ya está registrado');
+      }
+    }
+
+    // Verificar nombre de proyecto
+    if (nombreProyecto) {
+      const existingProject = await col.findOne({ 'grupo.proyecto.nombre': nombreProyecto.trim() });
+      if (existingProject) {
+        disponibilidad.nombreProyecto = false;
+        disponibilidad.mensajes.push('El nombre del proyecto ya está registrado');
+      }
+    }
+
+    // Verificar correo
+    if (correo) {
+      const existingEmail = await col.findOne({ correo: correo.trim() });
+      if (existingEmail) {
+        disponibilidad.correo = false;
+        disponibilidad.mensajes.push('El correo electrónico ya está registrado');
+      }
+    }
+
+    console.log('✅ Resultado de disponibilidad:', disponibilidad);
+    return res.json({
+      message: 'Verificación de disponibilidad completada',
+      disponibilidad,
+      todosDisponibles: disponibilidad.cedula && disponibilidad.idEstudiante && disponibilidad.nombreEquipo && disponibilidad.nombreProyecto && disponibilidad.correo
+    });
+  } catch (err) {
+    console.error('❌ Error en /inscripciones/verificar-disponibilidad:', err);
     return res.status(500).json({
       message: 'Error interno del servidor',
       error: err.message
