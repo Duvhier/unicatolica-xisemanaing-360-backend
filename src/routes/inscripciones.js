@@ -4,7 +4,7 @@ import { connectMongo } from '../mongo.js';
 
 const router = Router();
 
-// ✅ Validación de campos ACTUALIZADA - Solo valida equipo para participantes
+// ✅ Validación de campos ACTUALIZADA - Incluye validación del ID
 function validatePayload(body) {
   const errors = [];
   
@@ -14,6 +14,13 @@ function validatePayload(body) {
   for (const key of basicRequired) {
     if (!body[key] || typeof body[key] !== 'string' || !body[key].trim()) {
       errors.push(`Campo requerido o inválido: ${key}`);
+    }
+  }
+
+  // ✅ NUEVO: Validar ID para estudiantes
+  if (body.rol === 'estudiante') {
+    if (!body.id || typeof body.id !== 'string' || !body.id.trim()) {
+      errors.push('ID/Número de estudiante es requerido');
     }
   }
 
@@ -85,7 +92,7 @@ function validatePayload(body) {
   return { ok: errors.length === 0, errors };
 }
 
-// ✅ Endpoint principal para registro - CORREGIDO
+// ✅ Endpoint principal para registro - ACTUALIZADO CON ID
 router.post('/registro', async (req, res) => {
   try {
     const payload = req.body || {};
@@ -108,7 +115,7 @@ router.post('/registro', async (req, res) => {
 
     const nowIso = new Date().toISOString();
 
-    // 🔹 Construcción del documento a guardar - CORREGIDO
+    // 🔹 Construcción del documento a guardar - ACTUALIZADO CON ID
     const doc = {
       // Datos personales básicos
       nombre: payload.nombre.trim(),
@@ -116,6 +123,11 @@ router.post('/registro', async (req, res) => {
       correo: payload.correo.trim(),
       telefono: payload.telefono.trim(),
       rol: payload.rol.trim(),
+      
+      // ✅ NUEVO: Incluir ID para estudiantes
+      ...(payload.rol === 'estudiante' && {
+        id: payload.id.trim() // ID del estudiante
+      }),
       
       // Campos específicos por rol
       ...(payload.rol === 'estudiante' && {
@@ -178,14 +190,17 @@ router.post('/registro', async (req, res) => {
 
     console.log('✅✅✅ DOCUMENTO GUARDADO EN COLECCIÓN HACKATHON CON ID:', insertedId);
 
-    // 🔹 Generar el código QR - CORREGIDO
+    // 🔹 Generar el código QR - ACTUALIZADO CON ID
     const qrPayload = {
       id: insertedId.toString(),
       participante: { 
         nombre: payload.nombre, 
         cedula: payload.cedula,
         rol: payload.rol,
-        ...(payload.rol === 'estudiante' && { tipoEstudiante: payload.tipoEstudiante })
+        ...(payload.rol === 'estudiante' && { 
+          tipoEstudiante: payload.tipoEstudiante,
+          idEstudiante: payload.id // ✅ INCLUIR ID EN EL QR
+        })
       },
       ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && {
         equipo: payload.grupo.nombre,
@@ -204,7 +219,7 @@ router.post('/registro', async (req, res) => {
       margin: 2
     });
 
-    // 🔹 Respuesta exitosa - CORREGIDA
+    // 🔹 Respuesta exitosa - ACTUALIZADA CON ID
     const response = {
       message: 'Inscripción al Hackathon Universidades registrada correctamente',
       id: insertedId,
@@ -215,6 +230,7 @@ router.post('/registro', async (req, res) => {
         rol: payload.rol,
         ...(payload.rol === 'estudiante' && { 
           tipoEstudiante: payload.tipoEstudiante,
+          idEstudiante: payload.id, // ✅ INCLUIR ID EN RESPUESTA
           programa: payload.programa,
           semestre: payload.semestre
         }),
@@ -237,10 +253,7 @@ router.post('/registro', async (req, res) => {
   }
 });
 
-// Los otros endpoints (listar, estadisticas, buscar, estado, limpiar-pruebas) 
-// se mantienen igual pero necesitan ajustes para manejar el nuevo esquema...
-
-// ✅ Endpoint para listar inscripciones - ACTUALIZADO
+// ✅ Endpoint para listar inscripciones - ACTUALIZADO CON ID
 router.get('/listar', async (req, res) => {
   try {
     const { db } = await connectMongo();
@@ -263,6 +276,7 @@ router.get('/listar', async (req, res) => {
         id: insc._id,
         nombre: insc.nombre,
         cedula: insc.cedula,
+        idEstudiante: insc.id, // ✅ INCLUIR ID EN LISTADO
         correo: insc.correo,
         telefono: insc.telefono,
         rol: insc.rol,
@@ -290,7 +304,7 @@ router.get('/listar', async (req, res) => {
   }
 });
 
-// ✅ Endpoint para buscar inscripción - ACTUALIZADO
+// ✅ Endpoint para buscar inscripción - ACTUALIZADO CON ID
 router.get('/buscar/:cedula', async (req, res) => {
   try {
     const { cedula } = req.params;
@@ -302,13 +316,14 @@ router.get('/buscar/:cedula', async (req, res) => {
     const inscripcion = await col.findOne({
       $or: [
         { cedula: cedula },
-        { correo: cedula }
+        { correo: cedula },
+        { id: cedula } // ✅ BUSCAR TAMBIÉN POR ID DE ESTUDIANTE
       ]
     });
 
     if (!inscripcion) {
       return res.status(404).json({ 
-        message: 'No se encontró inscripción con esa cédula o email'
+        message: 'No se encontró inscripción con esa cédula, email o ID de estudiante'
       });
     }
 
@@ -318,6 +333,7 @@ router.get('/buscar/:cedula', async (req, res) => {
         id: inscripcion._id,
         nombre: inscripcion.nombre,
         cedula: inscripcion.cedula,
+        idEstudiante: inscripcion.id, // ✅ INCLUIR ID EN BÚSQUEDA
         correo: inscripcion.correo,
         telefono: inscripcion.telefono,
         rol: inscripcion.rol,
