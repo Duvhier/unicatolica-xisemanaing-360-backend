@@ -3,38 +3,38 @@ import nodemailer from "nodemailer";
 
 // 🔹 Configuración común del transporter
 const createTransporter = () => {
-  console.log("📧 Configurando transporter...");
-  
-  if (!process.env.EMAIL_PASSWORD) {
-    throw new Error("EMAIL_PASSWORD no está configurada en las variables de entorno");
-  }
+    console.log("📧 Configurando transporter...");
 
-  return nodemailer.createTransport({
-    host: "mail.si.cidt.unicatolica.edu.co",
-    port: 465,
-    secure: true,
-    auth: {
-      user: "eventoxisemanaingenieria@si.cidt.unicatolica.edu.co",
-      pass: process.env.EMAIL_PASSWORD,
-    },
-    debug: true,
-    logger: true,
-    tls: {
-      rejectUnauthorized: false
+    if (!process.env.EMAIL_PASSWORD) {
+        throw new Error("EMAIL_PASSWORD no está configurada en las variables de entorno");
     }
-  });
+
+    return nodemailer.createTransport({
+        host: "mail.si.cidt.unicatolica.edu.co",
+        port: 465,
+        secure: true,
+        auth: {
+            user: "eventoxisemanaingenieria@si.cidt.unicatolica.edu.co",
+            pass: process.env.EMAIL_PASSWORD,
+        },
+        debug: true,
+        logger: true,
+        tls: {
+            rejectUnauthorized: false
+        }
+    });
 };
 
 // 🔹 Plantillas específicas para cada evento
 const plantillasEventos = {
-  // ✅ PLANTILLA PARA DESARROLLO PERSONAL Y LIDERAZGO
-  liderazgo: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenConferencia = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203705/CONFERENCIA_COACHING-8_wf68kj.png";
+    // ✅ PLANTILLA PARA DESARROLLO PERSONAL Y LIDERAZGO
+    liderazgo: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenConferencia = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203705/CONFERENCIA_COACHING-8_wf68kj.png";
 
-    return {
-      asunto: "✅ Confirmación de Registro - Conferencia Desarrollo Personal y Liderazgo",
-      html: `
+        return {
+            asunto: "✅ Confirmación de Registro - Conferencia Desarrollo Personal y Liderazgo",
+            html: `
         <!DOCTYPE html>
         <html lang="es">
         <head>
@@ -286,7 +286,7 @@ const plantillasEventos = {
         </body>
         </html>
       `,
-      texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - XI SEMANA DE LA INGENIERÍA
 "360°: Innovación, Liderazgo y Futuro"
 
@@ -322,17 +322,17 @@ SNIES 2731 • Cali, Colombia
 
 © 2025 XI Semana de la Ingeniería - Todos los derechos reservados.
       `
-    };
-  },
+        };
+    },
 
-  // ✅ PLANTILLA PARA HACKATHON UNIVERSIDADES
-  hackathon: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenHackathon = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761543310/HACKATON_copia-8_pphi6j.png";
+    // ✅ PLANTILLA PARA HACKATHON UNIVERSIDADES
+    hackathon: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenHackathon = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761543310/HACKATON_copia-8_pphi6j.png";
 
-    return {
-      asunto: "🚀 Confirmación de Registro - Hackathon Universidades",
-      html: `
+        return {
+            asunto: "🚀 Confirmación de Registro - Hackathon Universidades",
+            html: `
         <!DOCTYPE html>
         <html lang="es">
         <head>
@@ -598,7 +598,7 @@ SNIES 2731 • Cali, Colombia
         </body>
         </html>
       `,
-      texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - HACKATHON UNIVERSIDADES
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -644,17 +644,17 @@ ${usuario.institucion ? `- Institución: ${usuario.institucion}\n` : ''}
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Hackathon Universidades
       `
-    };
-  },
+        };
+    },
 
- // ✅ PLANTILLA PARA TECHNOLOGICAL TOUCH
-technologicaltouch: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenTech = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761543548/TECNOLOGICAL_TOUCH-8_qy1rks.png";
+    // ✅ PLANTILLA PARA TECHNOLOGICAL TOUCH
+    technologicaltouch: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenTech = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761543548/TECNOLOGICAL_TOUCH-8_qy1rks.png";
 
-    return {
-      asunto: "🔬 Confirmación de Registro - Technological Touch",
-      html: `
+        return {
+            asunto: "🔬 Confirmación de Registro - Technological Touch",
+            html: `
         <!DOCTYPE html>
         <html lang="es">
         <head>
@@ -919,7 +919,7 @@ technologicaltouch: (usuario) => {
         </body>
         </html>
       `,
-      texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - TECHNOLOGICAL TOUCH
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -963,86 +963,412 @@ conectar con avances tecnológicos desarrollados en la universidad.
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Technological Touch
       `
-    };
-  }
+        };
+    },
+    // ✅ PLANTILLA PARA VISITA ZONA AMÉRICA
+    visitazonaamerica: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenVisita = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761543548/TECNOLOGICAL_TOUCH-8_qy1rks.png"; // Puedes cambiar esta imagen
+
+        return {
+            asunto: "🏢 Confirmación de Registro - Visita Zona América",
+            html: `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Confirmación - Visita Zona América</title>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+                
+                body {
+                    font-family: 'Poppins', Arial, sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f8f9fa;
+                }
+                
+                .container {
+                    max-width: 650px;
+                    margin: 0 auto;
+                    background: white;
+                    border-radius: 15px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                }
+                
+                .header {
+                    background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+                    padding: 30px 40px;
+                    text-align: center;
+                }
+                
+                .logo {
+                    max-width: 250px;
+                    height: auto;
+                    margin-bottom: 15px;
+                }
+                
+                .header-title {
+                    color: white;
+                    font-family: 'Poppins', Arial, sans-serif;
+                    font-size: 24px;
+                    font-weight: 600;
+                    margin: 10px 0 5px 0;
+                }
+                
+                .header-subtitle {
+                    color: #b2f2e6;
+                    font-size: 16px;
+                    font-weight: 400;
+                }
+                
+                .conferencia-image {
+                    width: 100%;
+                    max-height: 300px;
+                    object-fit: cover;
+                }
+                
+                .content {
+                    padding: 40px;
+                }
+                
+                .welcome-section {
+                    text-align: center;
+                    margin-bottom: 30px;
+                }
+                
+                .welcome-title {
+                    color: #00a085;
+                    font-size: 28px;
+                    font-weight: 700;
+                    margin-bottom: 10px;
+                }
+                
+                .welcome-text {
+                    color: #666;
+                    font-size: 16px;
+                    line-height: 1.6;
+                }
+                
+                .info-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 30px;
+                    margin: 40px 0;
+                }
+                
+                .info-card {
+                    background: #f8f9fa;
+                    padding: 25px;
+                    border-radius: 12px;
+                    border-left: 4px solid #00b894;
+                }
+                
+                .card-title {
+                    color: #00a085;
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin-bottom: 15px;
+                }
+                
+                .info-list {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+                
+                .info-list li {
+                    padding: 8px 0;
+                    border-bottom: 1px solid #e9ecef;
+                    color: #555;
+                    font-size: 14px;
+                }
+                
+                .info-list li:last-child {
+                    border-bottom: none;
+                }
+                
+                .info-list li strong {
+                    color: #00a085;
+                    font-weight: 600;
+                }
+                
+                .qr-section {
+                    text-align: center;
+                    background: linear-gradient(135deg, #e8f8f5 0%, #d1f2eb 100%);
+                    padding: 30px;
+                    border-radius: 12px;
+                    margin: 30px 0;
+                    border: 2px dashed #00b894;
+                }
+                
+                .qr-image {
+                    width: 200px;
+                    height: 200px;
+                    border: 3px solid #00b894;
+                    border-radius: 12px;
+                    padding: 10px;
+                    background: white;
+                }
+                
+                .vehiculo-section {
+                    background: #ffeaa7;
+                    border: 1px solid #fdcb6e;
+                    border-radius: 12px;
+                    padding: 25px;
+                    margin: 25px 0;
+                }
+                
+                .footer {
+                    text-align: center;
+                    padding: 25px;
+                    background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+                    color: #e8f8f5;
+                    font-size: 12px;
+                }
+                
+                .footer-logo {
+                    max-width: 200px;
+                    height: auto;
+                    margin-bottom: 15px;
+                }
+                
+                @media screen and (max-width: 480px) {
+                    .header { padding: 20px 15px; }
+                    .logo { max-width: 200px; }
+                    .content { padding: 20px 15px; }
+                    .info-grid { grid-template-columns: 1fr; gap: 20px; }
+                    .qr-image { width: 160px; height: 160px; }
+                    .conferencia-image { max-height: 200px; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="logo">
+                    <div class="header-title">XI Semana de la Ingeniería</div>
+                    <div class="header-subtitle">"360°: Innovación, Liderazgo y Futuro"</div>
+                </div>
+                
+                <img src="${imagenVisita}" alt="Visita Zona América" class="conferencia-image">
+                
+                <div class="content">
+                    <div class="welcome-section">
+                        <h1 class="welcome-title">¡Registro a Visita Zona América Confirmado!</h1>
+                        <p class="welcome-text">
+                            Hola <strong>${usuario.nombre}</strong>,<br>
+                            Tu registro para la <strong>Visita Zona América</strong> ha sido procesado exitosamente.
+                        </p>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <h3 class="card-title">👤 Información Personal</h3>
+                            <ul class="info-list">
+                                <li><strong>Nombre:</strong> ${usuario.nombre}</li>
+                                <li><strong>Tipo Documento:</strong> ${usuario.tipoDocumento}</li>
+                                <li><strong>N° Documento:</strong> ${usuario.numeroDocumento}</li>
+                                <li><strong>Correo:</strong> ${usuario.correo}</li>
+                                <li><strong>Teléfono:</strong> ${usuario.telefono}</li>
+                                <li><strong>Perfil:</strong> ${usuario.perfil}</li>
+                                ${usuario.idEstudiante ? `<li><strong>ID Estudiante:</strong> ${usuario.idEstudiante}</li>` : ''}
+                                ${usuario.programa ? `<li><strong>Programa:</strong> ${usuario.programa}</li>` : ''}
+                                ${usuario.eps ? `<li><strong>EPS:</strong> ${usuario.eps}</li>` : ''}
+                            </ul>
+                        </div>
+                        
+                        <div class="info-card">
+                            <h3 class="card-title">🏢 Detalles de la Visita</h3>
+                            <ul class="info-list">
+                                <li><strong>Evento:</strong> Visita Zona América</li>
+                                <li><strong>Tipo:</strong> Visita Empresarial</li>
+                                <li><strong>Fecha:</strong> Por confirmar</li>
+                                <li><strong>Hora:</strong> Por confirmar</li>
+                                <li><strong>Lugar:</strong> Zona América</li>
+                                <li><strong>Cupo:</strong> 40 personas máximo</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    ${usuario.placasVehiculo ? `
+                    <div class="vehiculo-section">
+                        <h3 style="color: #e17055; margin: 0 0 15px 0; font-size: 18px;">🚗 Información de Vehículo</h3>
+                        <p style="color: #e17055; margin: 0; font-size: 14px;">
+                            <strong>Placas del vehículo:</strong> ${usuario.placasVehiculo}<br>
+                            Recuerda que el estacionamiento es sujeto a disponibilidad.
+                        </p>
+                    </div>
+                    ` : ''}
+
+                    ${usuario.qr_image ? `
+                    <div class="qr-section">
+                        <h3 class="card-title">🎫 Código QR de Acceso</h3>
+                        <img src="${usuario.qr_image}" alt="Código QR" class="qr-image">
+                        <p class="welcome-text">Presenta este código QR en el punto de encuentro</p>
+                    </div>
+                    ` : ''}
+
+                    <div style="background: #d1f2eb; border: 1px solid #00b894; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                        <h3 style="color: #00a085; margin: 0 0 15px 0; font-size: 18px;">📋 Información Importante</h3>
+                        <ul style="color: #00a085; margin: 0; padding-left: 20px; font-size: 14px;">
+                            <li>Lleva tu documento de identidad original</li>
+                            <li>Puntualidad en el punto de encuentro</li>
+                            <li>Vestimenta casual formal</li>
+                            <li>Sigue las indicaciones del personal</li>
+                            ${usuario.placasVehiculo ? `<li>Estacionamiento sujeto a disponibilidad</li>` : ''}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="footer-logo">
+                    <p>
+                        <strong>Fundación Universitaria Católica Lumen Gentium</strong><br>
+                        – Resolución No. 944 de 1996 MEN – SNIES 2731
+                    </p>
+                    <p style="margin-top: 15px; font-size: 11px; opacity: 0.8;">
+                        © 2025 XI Semana de la Ingeniería - Visita Zona América
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+      `,
+            texto: `
+CONFIRMACIÓN DE REGISTRO - VISITA ZONA AMÉRICA
+XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
+
+🏢 ¡REGISTRO A VISITA ZONA AMÉRICA CONFIRMADO!
+
+Hola ${usuario.nombre},
+
+Tu registro para la Visita Zona América ha sido procesado exitosamente.
+
+👤 INFORMACIÓN PERSONAL:
+- Nombre: ${usuario.nombre}
+- Tipo Documento: ${usuario.tipoDocumento}
+- N° Documento: ${usuario.numeroDocumento}
+- Correo: ${usuario.correo}
+- Teléfono: ${usuario.telefono}
+- Perfil: ${usuario.perfil}
+${usuario.idEstudiante ? `- ID Estudiante: ${usuario.idEstudiante}\n` : ''}
+${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
+${usuario.eps ? `- EPS: ${usuario.eps}\n` : ''}
+
+🏢 DETALLES DE LA VISITA:
+- Evento: Visita Zona América
+- Tipo: Visita Empresarial
+- Fecha: Por confirmar
+- Hora: Por confirmar
+- Lugar: Zona América
+- Cupo: 40 personas máximo
+
+${usuario.placasVehiculo ? `
+🚗 INFORMACIÓN DE VEHÍCULO:
+- Placas: ${usuario.placasVehiculo}
+- Estacionamiento sujeto a disponibilidad
+` : ''}
+
+📋 INFORMACIÓN IMPORTANTE:
+• Lleva tu documento de identidad original
+• Puntualidad en el punto de encuentro
+• Vestimenta casual formal
+• Sigue las indicaciones del personal
+${usuario.placasVehiculo ? `• Estacionamiento sujeto a disponibilidad\n` : ''}
+
+--
+Fundación Universitaria Católica Lumen Gentium
+© 2025 XI Semana de la Ingeniería - Visita Zona América
+      `
+        };
+    }
 };
 
 // 🔹 Función principal para enviar correos
 export const enviarCorreoRegistro = async (usuario, tipoEvento = 'liderazgo') => {
-  console.log(`🚀 INICIANDO ENVÍO DE CORREO PARA: ${usuario.correo} - Evento: ${tipoEvento}`);
+    console.log(`🚀 INICIANDO ENVÍO DE CORREO PARA: ${usuario.correo} - Evento: ${tipoEvento}`);
 
-  try {
-    // Validar datos esenciales
-    if (!usuario.correo || !usuario.nombre) {
-      throw new Error("Datos de usuario incompletos para enviar correo");
+    try {
+        // Validar datos esenciales
+        if (!usuario.correo || !usuario.nombre) {
+            throw new Error("Datos de usuario incompletos para enviar correo");
+        }
+
+        // Obtener la plantilla correspondiente al evento
+        const plantilla = plantillasEventos[tipoEvento];
+        if (!plantilla) {
+            throw new Error(`Tipo de evento no soportado: ${tipoEvento}`);
+        }
+
+        const { asunto, html, texto } = plantilla(usuario);
+
+        // Configurar transporter
+        const transporter = createTransporter();
+        console.log("🔍 Verificando conexión SMTP...");
+        await transporter.verify();
+        console.log("✅ Conexión SMTP verificada");
+
+        // Preparar adjuntos (QR)
+        let attachments = [];
+
+        // Verificar y procesar QR de manera más robusta
+        const qrData = usuario.qr || usuario.qr_image;
+        if (qrData && qrData.startsWith('data:image/png;base64,')) {
+            try {
+                const base64Data = qrData.replace(/^data:image\/png;base64,/, "");
+
+                attachments.push({
+                    filename: "codigo_qr_acceso.png",
+                    content: base64Data,
+                    encoding: 'base64',
+                    contentType: "image/png",
+                });
+                console.log("📎 QR preparado como adjunto");
+            } catch (qrError) {
+                console.warn("⚠️ Error procesando QR:", qrError.message);
+            }
+        } else if (qrData) {
+            console.warn("⚠️ Formato de QR no reconocido:", qrData.substring(0, 50) + "...");
+        }
+
+        // Configurar correo
+        const mailOptions = {
+            from: '"XI Semana Ingeniería UNICATÓLICA" <eventoxisemanaingenieria@si.cidt.unicatolica.edu.co>',
+            to: usuario.correo,
+            subject: asunto,
+            html: html,
+            text: texto,
+            attachments: attachments
+        };
+
+        console.log("📤 Enviando correo a:", usuario.correo);
+        const info = await transporter.sendMail(mailOptions);
+
+        console.log("✅ CORREO ENVIADO EXITOSAMENTE");
+        console.log("📨 Message ID:", info.messageId);
+        console.log("👤 Destinatario:", usuario.correo);
+        console.log("🎯 Evento:", tipoEvento);
+
+        return info;
+
+    } catch (error) {
+        console.error("❌ ERROR AL ENVIAR CORREO:");
+        console.error("🔴 Tipo de evento:", tipoEvento);
+        console.error("🔴 Mensaje:", error.message);
+        throw error;
     }
-
-    // Obtener la plantilla correspondiente al evento
-    const plantilla = plantillasEventos[tipoEvento];
-    if (!plantilla) {
-      throw new Error(`Tipo de evento no soportado: ${tipoEvento}`);
-    }
-
-    const { asunto, html, texto } = plantilla(usuario);
-
-    // Configurar transporter
-    const transporter = createTransporter();
-    console.log("🔍 Verificando conexión SMTP...");
-    await transporter.verify();
-    console.log("✅ Conexión SMTP verificada");
-
-    // Preparar adjuntos (QR)
-    let attachments = [];
-    if (usuario.qr && usuario.qr.startsWith('data:image/png;base64,')) {
-      try {
-        const base64Data = usuario.qr.replace(/^data:image\/png;base64,/, "");
-        attachments.push({
-          filename: "codigo_qr_acceso.png",
-          content: base64Data,
-          encoding: 'base64',
-          contentType: "image/png",
-        });
-        console.log("📎 QR preparado como adjunto");
-      } catch (qrError) {
-        console.warn("⚠️ Error procesando QR:", qrError.message);
-      }
-    }
-
-    // Configurar correo
-    const mailOptions = {
-      from: '"XI Semana Ingeniería UNICATÓLICA" <eventoxisemanaingenieria@si.cidt.unicatolica.edu.co>',
-      to: usuario.correo,
-      subject: asunto,
-      html: html,
-      text: texto,
-      attachments: attachments
-    };
-
-    console.log("📤 Enviando correo a:", usuario.correo);
-    const info = await transporter.sendMail(mailOptions);
-
-    console.log("✅ CORREO ENVIADO EXITOSAMENTE");
-    console.log("📨 Message ID:", info.messageId);
-    console.log("👤 Destinatario:", usuario.correo);
-    console.log("🎯 Evento:", tipoEvento);
-
-    return info;
-
-  } catch (error) {
-    console.error("❌ ERROR AL ENVIAR CORREO:");
-    console.error("🔴 Tipo de evento:", tipoEvento);
-    console.error("🔴 Mensaje:", error.message);
-    throw error;
-  }
 };
 
 // 🔹 Función para verificar el servicio de correo
 export const verificarServicioCorreo = async () => {
-  try {
-    const transporter = createTransporter();
-    await transporter.verify();
-    return { ok: true, message: "Servicio de correo funcionando correctamente" };
-  } catch (error) {
-    return { ok: false, message: error.message };
-  }
+    try {
+        const transporter = createTransporter();
+        await transporter.verify();
+        return { ok: true, message: "Servicio de correo funcionando correctamente" };
+    } catch (error) {
+        return { ok: false, message: error.message };
+    }
 };
