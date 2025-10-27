@@ -7,7 +7,7 @@ import liderazgoRoutes from "./src/routes/liderazgo.js";
 import technologicalRoutes from "./src/routes/technological.js";
 import visitazonaamericaRoutes from "./src/routes/visitazonaamerica.js";
 import actividadesRouter from "./api/actividades.js";
-
+import asistenciainauguralRoutes from "./src/routes/asistenciainaugural.js";
 import dns from "dns";
 
 dotenv.config();
@@ -86,6 +86,7 @@ app.use("/liderazgo", liderazgoRoutes);
 app.use("/technological", technologicalRoutes);
 app.use('/visitazonaamerica', visitazonaamericaRoutes);
 app.use('/api/actividades', actividadesRouter);
+app.use('/asistenciainaugural', asistenciainauguralRoutes);
 
 // =========================================================
 // 🚀 INICIALIZACIÓN
