@@ -328,7 +328,7 @@ SNIES 2731 • Cali, Colombia
   // ✅ PLANTILLA PARA HACKATHON UNIVERSIDADES
   hackathon: (usuario) => {
     const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenHackathon = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203705/HACKATHON-7_ebxq8n.png";
+    const imagenHackathon = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761543310/HACKATON_copia-8_pphi6j.png";
 
     return {
       asunto: "🚀 Confirmación de Registro - Hackathon Universidades",
@@ -650,7 +650,7 @@ Fundación Universitaria Católica Lumen Gentium
   // ✅ PLANTILLA PARA TECHNOLOGICAL TOUCH
   technologicaltouch: (usuario) => {
     const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenTech = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203705/TECHNOLOGICAL_TOUCH-6_ozvx8p.png";
+    const imagenTech = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761543548/TECNOLOGICAL_TOUCH-8_qy1rks.png";
 
     return {
       asunto: "🔬 Confirmación de Registro - Technological Touch",

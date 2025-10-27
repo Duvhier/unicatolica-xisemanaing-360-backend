@@ -327,17 +327,34 @@ router.post('/registro', async (req, res) => {
             emitido: nowIso
         };
 
+        // En la sección después de generar el QR, agregar esto:
+
+        // 🔹 Generar QR como base64
         const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrPayload), {
             errorCorrectionLevel: 'M',
             width: 300,
             margin: 2
         });
 
+        // 🔹 ACTUALIZAR EL DOCUMENTO CON EL QR - NUEVA SECCIÓN
+        await col.updateOne(
+            { _id: insertedId },
+            {
+                $set: {
+                    qr_data: qrPayload,
+                    qr_generated_at: nowIso,
+                    qr_image: qrDataUrl // Opcional: guardar también la imagen base64
+                }
+            }
+        );
+
+        console.log('✅ QR guardado en la base de datos');
+
         // 🔹 ENVÍO DE CORREO ELECTRÓNICO - NUEVA SECCIÓN
         let emailEnviado = false;
         try {
             console.log("📧 Preparando envío de correo de confirmación...");
-            
+
             // Preparar datos para el correo
             const datosCorreo = {
                 nombre: payload.nombre.trim(),
@@ -377,7 +394,7 @@ router.post('/registro', async (req, res) => {
             }
 
             console.log("📨 Datos para el correo:", JSON.stringify(datosCorreo, null, 2));
-            
+
             // Enviar correo
             await enviarCorreoRegistro(datosCorreo, 'technologicaltouch');
             emailEnviado = true;
@@ -386,7 +403,6 @@ router.post('/registro', async (req, res) => {
             console.error("❌ Error al enviar correo:", emailError);
             // No retornamos error aquí, solo logueamos para no afectar el registro
         }
-
         // 🔹 Respuesta exitosa - ACTUALIZADA CON ID Y ESTADO DE CORREO
         const response = {
             message: 'Inscripción al Technological Touch registrada correctamente',
