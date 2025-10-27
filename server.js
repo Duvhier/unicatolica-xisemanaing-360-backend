@@ -5,7 +5,7 @@ import inscripcionesRouter from "./src/routes/inscripciones.js";
 import organizadorRouter from "./src/routes/organizadorRoutes.js";
 import liderazgoRoutes from "./src/routes/liderazgo.js";
 import technologicalRoutes from "./src/routes/technological.js";
-import visitazonaamericaRoutes from ".src/routes/visitazonaamerica.js";
+import visitazonaamericaRoutes from "./src/routes/visitazonaamerica.js";
 import actividadesRouter from "./api/actividades.js";
 
 import dns from "dns";
