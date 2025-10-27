@@ -6,8 +6,8 @@ import { enviarCorreoRegistro } from '../controllers/emailController.js';
 
 const router = Router();
 
-// ✅ Función para verificar disponibilidad de cupos
-async function verificarCupos(db) {
+// ✅ Función para obtener información de registros
+async function obtenerInfoRegistros(db) {
   try {
     const actividadesCol = db.collection('actividades');
     const actividad = await actividadesCol.findOne({
@@ -15,11 +15,18 @@ async function verificarCupos(db) {
     });
 
     if (!actividad) {
-      return { disponible: true, mensaje: 'Actividad no configurada' };
+      return { 
+        disponible: true, 
+        mensaje: 'Actividad no configurada',
+        inscritos: 0,
+        cupoMaximo: 0
+      };
     }
 
     const inscritosCol = db.collection('hackathon');
     const totalInscritos = await inscritosCol.countDocuments({});
+    
+    // ✅ Cambio principal: siempre mostrar número de inscritos
     const cuposDisponibles = Math.max(0, actividad.cupoMaximo - totalInscritos);
 
     return {
@@ -27,13 +34,16 @@ async function verificarCupos(db) {
       cuposDisponibles: cuposDisponibles,
       cupoMaximo: actividad.cupoMaximo,
       inscritos: totalInscritos,
-      mensaje: cuposDisponibles > 0
-        ? `Cupos disponibles: ${cuposDisponibles}/${actividad.cupoMaximo}`
-        : 'Cupo agotado'
+      mensaje: `Usuarios registrados: ${totalInscritos}/${actividad.cupoMaximo}`
     };
   } catch (err) {
-    console.error('❌ Error verificando cupos:', err);
-    return { disponible: true, mensaje: 'Error verificando cupos' };
+    console.error('❌ Error obteniendo información de registros:', err);
+    return { 
+      disponible: true, 
+      mensaje: 'Error obteniendo información',
+      inscritos: 0,
+      cupoMaximo: 0
+    };
   }
 }
 
@@ -196,19 +206,19 @@ router.post('/registro', async (req, res) => {
     // 🔹 Conexión segura a MongoDB
     const { db } = await connectMongo();
 
-    // ✅ VERIFICAR CUPOS DISPONIBLES ANTES DE CONTINUAR
-    console.log('🔍 Verificando cupos disponibles...');
-    const estadoCupos = await verificarCupos(db);
+    // ✅ OBTENER INFORMACIÓN DE REGISTROS
+    console.log('🔍 Obteniendo información de registros...');
+    const infoRegistros = await obtenerInfoRegistros(db);
 
-    if (!estadoCupos.disponible) {
+    if (!infoRegistros.disponible) {
       console.log('❌ Cupo agotado para Hackathon Universidades');
       return res.status(409).json({
         message: 'Cupo agotado',
-        error: `Lo sentimos, no hay cupos disponibles para Hackathon Universidades. ${estadoCupos.inscritos}/${estadoCupos.cupoMaximo} inscritos.`
+        error: `Lo sentimos, no hay cupos disponibles para Hackathon Universidades. ${infoRegistros.inscritos}/${infoRegistros.cupoMaximo} usuarios registrados.`
       });
     }
 
-    console.log('✅ Cupos disponibles:', estadoCupos.cuposDisponibles);
+    console.log('✅ Información de registros:', infoRegistros.mensaje);
 
     // ✅ COLECCIÓN HACKATHON
     const col = db.collection('hackathon');
@@ -334,7 +344,21 @@ router.post('/registro', async (req, res) => {
       margin: 2
     });
 
-    // 🔹 ENVÍO DE CORREO ELECTRÓNICO - NUEVA SECCIÓN
+    // 🔹 ACTUALIZAR EL DOCUMENTO CON EL QR
+    await col.updateOne(
+      { _id: insertedId },
+      {
+        $set: {
+          qr_data: qrPayload,
+          qr_generated_at: nowIso,
+          qr_image: qrDataUrl
+        }
+      }
+    );
+
+    console.log('✅ QR guardado en la base de datos');
+
+    // 🔹 ENVÍO DE CORREO ELECTRÓNICO
     let emailEnviado = false;
     try {
       console.log("📧 Preparando envío de correo de confirmación...");
@@ -388,6 +412,9 @@ router.post('/registro', async (req, res) => {
       // No retornamos error aquí, solo logueamos para no afectar el registro
     }
 
+    // 🔹 Obtener información actualizada después del registro
+    const infoActualizada = await obtenerInfoRegistros(db);
+
     // 🔹 Respuesta exitosa - ACTUALIZADA CON ID Y ESTADO DE CORREO
     const response = {
       message: 'Inscripción al Hackathon Universidades registrada correctamente',
@@ -395,6 +422,11 @@ router.post('/registro', async (req, res) => {
       qr: qrDataUrl,
       qrData: qrPayload,
       emailEnviado: emailEnviado,
+      infoRegistros: {
+        inscritos: infoActualizada.inscritos,
+        cupoMaximo: infoActualizada.cupoMaximo,
+        mensaje: infoActualizada.mensaje
+      },
       participante: {
         nombre: payload.nombre,
         rol: payload.rol,
@@ -431,6 +463,9 @@ router.post('/verificar-disponibilidad', async (req, res) => {
     const col = db.collection('hackathon');
 
     console.log('🔍 Verificando disponibilidad de datos:', { cedula, idEstudiante, nombreEquipo, nombreProyecto, correo });
+
+    // 🔹 Obtener información actual de registros
+    const infoRegistros = await obtenerInfoRegistros(db);
 
     const disponibilidad = {
       cedula: true,
@@ -490,12 +525,44 @@ router.post('/verificar-disponibilidad', async (req, res) => {
     return res.json({
       message: 'Verificación de disponibilidad completada',
       disponibilidad,
-      todosDisponibles: disponibilidad.cedula && disponibilidad.idEstudiante && disponibilidad.nombreEquipo && disponibilidad.nombreProyecto && disponibilidad.correo
+      todosDisponibles: disponibilidad.cedula && disponibilidad.idEstudiante && disponibilidad.nombreEquipo && disponibilidad.nombreProyecto && disponibilidad.correo,
+      infoRegistros: {
+        inscritos: infoRegistros.inscritos,
+        cupoMaximo: infoRegistros.cupoMaximo,
+        mensaje: infoRegistros.mensaje,
+        disponible: infoRegistros.disponible
+      }
     });
   } catch (err) {
     console.error('❌ Error en /inscripciones/verificar-disponibilidad:', err);
     return res.status(500).json({
       message: 'Error interno del servidor',
+      error: err.message
+    });
+  }
+});
+
+// ✅ Endpoint para obtener información de registros (sin verificar disponibilidad)
+router.get("/estado-registros", async (req, res) => {
+  try {
+    const { db } = await connectMongo();
+    const infoRegistros = await obtenerInfoRegistros(db);
+
+    return res.json({
+      success: true,
+      data: {
+        inscritos: infoRegistros.inscritos,
+        cupoMaximo: infoRegistros.cupoMaximo,
+        mensaje: infoRegistros.mensaje,
+        disponible: infoRegistros.disponible
+      }
+    });
+
+  } catch (err) {
+    console.error("❌ Error en /hackathon/estado-registros:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Error obteniendo información de registros",
       error: err.message
     });
   }

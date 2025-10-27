@@ -6,8 +6,8 @@ import { enviarCorreoRegistro } from '../controllers/emailController.js';
 
 const router = Router();
 
-// ✅ Función para verificar disponibilidad de cupos
-async function verificarCupos(db) {
+// ✅ Función para obtener información de registros
+async function obtenerInfoRegistros(db) {
     try {
         const actividadesCol = db.collection('actividades');
         const actividad = await actividadesCol.findOne({
@@ -18,12 +18,15 @@ async function verificarCupos(db) {
             return { 
                 disponible: true, 
                 mensaje: 'Actividad no configurada',
+                inscritos: 0,
                 cupoMaximo: 40 // Cupo por defecto
             };
         }
 
         const inscritosCol = db.collection('visitazonaamerica');
         const totalInscritos = await inscritosCol.countDocuments({});
+        
+        // ✅ Cambio principal: siempre mostrar número de inscritos
         const cuposDisponibles = Math.max(0, actividad.cupoMaximo - totalInscritos);
 
         return {
@@ -31,15 +34,14 @@ async function verificarCupos(db) {
             cuposDisponibles: cuposDisponibles,
             cupoMaximo: actividad.cupoMaximo,
             inscritos: totalInscritos,
-            mensaje: cuposDisponibles > 0
-                ? `Cupos disponibles: ${cuposDisponibles}/${actividad.cupoMaximo}`
-                : 'Cupo agotado'
+            mensaje: `Usuarios registrados: ${totalInscritos}/${actividad.cupoMaximo}`
         };
     } catch (err) {
-        console.error('❌ Error verificando cupos:', err);
+        console.error('❌ Error obteniendo información de registros:', err);
         return { 
             disponible: true, 
-            mensaje: 'Error verificando cupos',
+            mensaje: 'Error obteniendo información',
+            inscritos: 0,
             cupoMaximo: 40
         };
     }
@@ -183,19 +185,19 @@ router.post('/registro', async (req, res) => {
         // 🔹 Conexión segura a MongoDB
         const { db } = await connectMongo();
 
-        // ✅ VERIFICAR CUPOS DISPONIBLES ANTES DE CONTINUAR
-        console.log('🔍 Verificando cupos disponibles...');
-        const estadoCupos = await verificarCupos(db);
+        // ✅ OBTENER INFORMACIÓN DE REGISTROS
+        console.log('🔍 Obteniendo información de registros...');
+        const infoRegistros = await obtenerInfoRegistros(db);
 
-        if (!estadoCupos.disponible) {
+        if (!infoRegistros.disponible) {
             console.log('❌ Cupo agotado para Visita Zona América');
             return res.status(409).json({
                 message: 'Cupo agotado',
-                error: `Lo sentimos, no hay cupos disponibles para Visita Zona América. ${estadoCupos.inscritos}/${estadoCupos.cupoMaximo} inscritos.`
+                error: `Lo sentimos, no hay cupos disponibles para Visita Zona América. ${infoRegistros.inscritos}/${infoRegistros.cupoMaximo} usuarios registrados.`
             });
         }
 
-        console.log('✅ Cupos disponibles:', estadoCupos.cuposDisponibles);
+        console.log('✅ Información de registros:', infoRegistros.mensaje);
 
         // ✅ COLECCIÓN VISITAZONAAMERICA
         const col = db.collection('visitazonaamerica');
@@ -328,6 +330,9 @@ router.post('/registro', async (req, res) => {
             // No retornamos error aquí, solo logueamos para no afectar el registro
         }
 
+        // 🔹 Obtener información actualizada después del registro
+        const infoActualizada = await obtenerInfoRegistros(db);
+
         // 🔹 Respuesta exitosa
         const response = {
             message: 'Inscripción a Visita Zona América registrada correctamente',
@@ -335,6 +340,11 @@ router.post('/registro', async (req, res) => {
             qr: qrDataUrl,
             qrData: qrPayload,
             emailEnviado: emailEnviado,
+            infoRegistros: {
+                inscritos: infoActualizada.inscritos,
+                cupoMaximo: infoActualizada.cupoMaximo,
+                mensaje: infoActualizada.mensaje
+            },
             participante: {
                 nombre: payload.nombre,
                 perfil: payload.perfil,
@@ -344,8 +354,8 @@ router.post('/registro', async (req, res) => {
                 })
             },
             cupo: {
-                disponibles: estadoCupos.cuposDisponibles - 1,
-                maximo: estadoCupos.cupoMaximo
+                disponibles: infoActualizada.cuposDisponibles,
+                maximo: infoActualizada.cupoMaximo
             },
             coleccion: 'visitazonaamerica',
             confirmacion: 'DATOS GUARDADOS EN COLECCIÓN VISITAZONAAMERICA'
@@ -370,6 +380,9 @@ router.post('/verificar-disponibilidad', async (req, res) => {
         const col = db.collection('visitazonaamerica');
 
         console.log('🔍 Verificando disponibilidad de datos:', { numeroDocumento, idEstudiante, correo, placasVehiculo });
+
+        // 🔹 Obtener información actual de registros
+        const infoRegistros = await obtenerInfoRegistros(db);
 
         const disponibilidad = {
             numeroDocumento: true,
@@ -419,7 +432,13 @@ router.post('/verificar-disponibilidad', async (req, res) => {
         return res.json({
             message: 'Verificación de disponibilidad completada',
             disponibilidad,
-            todosDisponibles: disponibilidad.numeroDocumento && disponibilidad.idEstudiante && disponibilidad.correo && disponibilidad.placasVehiculo
+            todosDisponibles: disponibilidad.numeroDocumento && disponibilidad.idEstudiante && disponibilidad.correo && disponibilidad.placasVehiculo,
+            infoRegistros: {
+                inscritos: infoRegistros.inscritos,
+                cupoMaximo: infoRegistros.cupoMaximo,
+                mensaje: infoRegistros.mensaje,
+                disponible: infoRegistros.disponible
+            }
         });
     } catch (err) {
         console.error('❌ Error en /visitazonaamerica/verificar-disponibilidad:', err);
@@ -430,20 +449,27 @@ router.post('/verificar-disponibilidad', async (req, res) => {
     }
 });
 
-// ✅ Endpoint para verificar cupos disponibles
-router.get('/cupos', async (req, res) => {
+// ✅ Endpoint para obtener información de registros (sin verificar disponibilidad)
+router.get("/estado-registros", async (req, res) => {
     try {
         const { db } = await connectMongo();
-        const estadoCupos = await verificarCupos(db);
+        const infoRegistros = await obtenerInfoRegistros(db);
 
         return res.json({
-            message: 'Estado de cupos obtenido correctamente',
-            cupos: estadoCupos
+            success: true,
+            data: {
+                inscritos: infoRegistros.inscritos,
+                cupoMaximo: infoRegistros.cupoMaximo,
+                mensaje: infoRegistros.mensaje,
+                disponible: infoRegistros.disponible
+            }
         });
+
     } catch (err) {
-        console.error('❌ Error en /visitazonaamerica/cupos:', err);
+        console.error("❌ Error en /visitazonaamerica/estado-registros:", err);
         return res.status(500).json({
-            message: 'Error interno del servidor',
+            success: false,
+            message: "Error obteniendo información de registros",
             error: err.message
         });
     }
