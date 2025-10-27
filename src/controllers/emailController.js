@@ -647,8 +647,8 @@ Fundación Universitaria Católica Lumen Gentium
     };
   },
 
-  // ✅ PLANTILLA PARA TECHNOLOGICAL TOUCH
-  technologicaltouch: (usuario) => {
+ // ✅ PLANTILLA PARA TECHNOLOGICAL TOUCH
+technologicaltouch: (usuario) => {
     const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
     const imagenTech = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761543548/TECNOLOGICAL_TOUCH-8_qy1rks.png";
 
