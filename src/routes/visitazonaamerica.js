@@ -240,7 +240,7 @@ router.post('/registro', async (req, res) => {
             // Metadatos del evento
             evento: 'Visita Zona América',
             actividad: 'visita-zona-america',
-            horario: 'Por confirmar',
+            horario: '10:00 am a 11:30 am',
             lugar: 'Zona América',
             
             // Metadatos del sistema
@@ -272,7 +272,7 @@ router.post('/registro', async (req, res) => {
             },
             actividad: 'Visita Zona América',
             evento: 'Visita Zona América',
-            horario: 'Por confirmar',
+            horario: '10:00 am a 11:30 am',
             lugar: 'Zona América',
             emitido: nowIso
         };

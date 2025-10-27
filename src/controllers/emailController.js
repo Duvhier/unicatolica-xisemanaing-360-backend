@@ -942,7 +942,7 @@ ${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
 🔬 DETALLES DEL EVENTO:
 - Evento: Technological Touch
 - Tipo: Ponencia de Investigación
-- Fecha: 10 de Noviembre de 2025
+- Fecha: 13 de Noviembre de 2025
 - Hora: 6:30 pm - 9:30 pm
 - Lugar: Auditorio Lumen - Sede Meléndez
 - Ponentes: Estudiantes Semilleros de Investigación
@@ -1261,8 +1261,8 @@ ${usuario.eps ? `- EPS: ${usuario.eps}\n` : ''}
 🏢 DETALLES DE LA VISITA:
 - Evento: Visita Zona América
 - Tipo: Visita Empresarial
-- Fecha: Por confirmar
-- Hora: Por confirmar
+- Fecha: 13 de Noviembre de 2025
+- Hora: 10:00 am a 11:30 am
 - Lugar: Zona América
 - Cupo: 40 personas máximo
 
