@@ -4,13 +4,44 @@ import { connectMongo } from '../mongo.js';
 
 const router = Router();
 
+// ✅ Función para verificar disponibilidad de cupos
+async function verificarCupos(db) {
+  try {
+    const actividadesCol = db.collection('actividades');
+    const actividad = await actividadesCol.findOne({
+      coleccion: 'hackathon'
+    });
+
+    if (!actividad) {
+      return { disponible: true, mensaje: 'Actividad no configurada' };
+    }
+
+    const inscritosCol = db.collection('hackathon');
+    const totalInscritos = await inscritosCol.countDocuments({});
+    const cuposDisponibles = Math.max(0, actividad.cupoMaximo - totalInscritos);
+
+    return {
+      disponible: cuposDisponibles > 0,
+      cuposDisponibles: cuposDisponibles,
+      cupoMaximo: actividad.cupoMaximo,
+      inscritos: totalInscritos,
+      mensaje: cuposDisponibles > 0
+        ? `Cupos disponibles: ${cuposDisponibles}/${actividad.cupoMaximo}`
+        : 'Cupo agotado'
+    };
+  } catch (err) {
+    console.error('❌ Error verificando cupos:', err);
+    return { disponible: true, mensaje: 'Error verificando cupos' };
+  }
+}
+
 // ✅ Validación de campos ACTUALIZADA - Incluye validación del ID
 function validatePayload(body) {
   const errors = [];
-  
+
   // Campos básicos requeridos para todos
   const basicRequired = ['nombre', 'cedula', 'correo', 'telefono', 'rol'];
-  
+
   for (const key of basicRequired) {
     if (!body[key] || typeof body[key] !== 'string' || !body[key].trim()) {
       errors.push(`Campo requerido o inválido: ${key}`);
@@ -38,7 +69,7 @@ function validatePayload(body) {
     if (!body.semestre || !body.semestre.trim()) {
       errors.push('Semestre es requerido para estudiantes');
     }
-    
+
     // Solo validar campos de equipo si es PARTICIPANTE
     if (body.tipoEstudiante === 'participante') {
       if (!body.grupo || !body.grupo.nombre || !body.grupo.nombre.trim()) {
@@ -60,7 +91,7 @@ function validatePayload(body) {
         errors.push('Correo electrónico del equipo es requerido para participantes');
       }
     }
-  } 
+  }
   else if (body.rol === 'egresado') {
     if (!body.programa || !body.programa.trim()) {
       errors.push('Programa de egreso es requerido para egresados');
@@ -98,8 +129,8 @@ async function checkDuplicates(db, payload) {
   const duplicates = [];
 
   // 1. Verificar cédula duplicada
-  const existingCedula = await col.findOne({ 
-    cedula: payload.cedula.trim() 
+  const existingCedula = await col.findOne({
+    cedula: payload.cedula.trim()
   });
   if (existingCedula) {
     duplicates.push(`La cédula ${payload.cedula} ya está registrada`);
@@ -107,8 +138,8 @@ async function checkDuplicates(db, payload) {
 
   // 2. Verificar ID de estudiante duplicado (solo para estudiantes)
   if (payload.rol === 'estudiante' && payload.id) {
-    const existingId = await col.findOne({ 
-      id: payload.id.trim() 
+    const existingId = await col.findOne({
+      id: payload.id.trim()
     });
     if (existingId) {
       duplicates.push(`El ID de estudiante ${payload.id} ya está registrado`);
@@ -117,8 +148,8 @@ async function checkDuplicates(db, payload) {
 
   // 3. Verificar nombre de equipo duplicado (solo para participantes)
   if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && payload.grupo.nombre) {
-    const existingTeam = await col.findOne({ 
-      'grupo.nombre': payload.grupo.nombre.trim() 
+    const existingTeam = await col.findOne({
+      'grupo.nombre': payload.grupo.nombre.trim()
     });
     if (existingTeam) {
       duplicates.push(`El nombre de equipo "${payload.grupo.nombre}" ya está registrado`);
@@ -127,8 +158,8 @@ async function checkDuplicates(db, payload) {
 
   // 4. Verificar nombre de proyecto duplicado (solo para participantes)
   if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && payload.grupo.proyecto && payload.grupo.proyecto.nombre) {
-    const existingProject = await col.findOne({ 
-      'grupo.proyecto.nombre': payload.grupo.proyecto.nombre.trim() 
+    const existingProject = await col.findOne({
+      'grupo.proyecto.nombre': payload.grupo.proyecto.nombre.trim()
     });
     if (existingProject) {
       duplicates.push(`El nombre de proyecto "${payload.grupo.proyecto.nombre}" ya está registrado`);
@@ -136,8 +167,8 @@ async function checkDuplicates(db, payload) {
   }
 
   // 5. Verificar correo duplicado
-  const existingEmail = await col.findOne({ 
-    correo: payload.correo.trim() 
+  const existingEmail = await col.findOne({
+    correo: payload.correo.trim()
   });
   if (existingEmail) {
     duplicates.push(`El correo ${payload.correo} ya está registrado`);
@@ -146,13 +177,13 @@ async function checkDuplicates(db, payload) {
   return duplicates;
 }
 
-// ✅ Endpoint principal para registro - CON VALIDACIÓN DE DUPLICADOS
+// ✅ Endpoint principal para registro - CON VALIDACIÓN DE DUPLICADOS Y CUPOS
 router.post('/registro', async (req, res) => {
   try {
     const payload = req.body || {};
     console.log('🎯 INICIANDO REGISTRO EN COLECCIÓN HACKATHON');
     console.log('📥 Payload recibido:', JSON.stringify(payload, null, 2));
-    
+
     // 🔹 Validación básica del payload
     const { ok, errors } = validatePayload(payload);
     if (!ok) {
@@ -162,7 +193,21 @@ router.post('/registro', async (req, res) => {
 
     // 🔹 Conexión segura a MongoDB
     const { db } = await connectMongo();
-    
+
+    // ✅ VERIFICAR CUPOS DISPONIBLES ANTES DE CONTINUAR
+    console.log('🔍 Verificando cupos disponibles...');
+    const estadoCupos = await verificarCupos(db);
+
+    if (!estadoCupos.disponible) {
+      console.log('❌ Cupo agotado para Hackathon Universidades');
+      return res.status(409).json({
+        message: 'Cupo agotado',
+        error: `Lo sentimos, no hay cupos disponibles para Hackathon Universidades. ${estadoCupos.inscritos}/${estadoCupos.cupoMaximo} inscritos.`
+      });
+    }
+
+    console.log('✅ Cupos disponibles:', estadoCupos.cuposDisponibles);
+
     // ✅ COLECCIÓN HACKATHON
     const col = db.collection('hackathon');
     console.log('✅ Conectado a colección: hackathon');
@@ -170,12 +215,12 @@ router.post('/registro', async (req, res) => {
     // 🔹 VERIFICAR DUPLICADOS ANTES DE INSERTAR
     console.log('🔍 Verificando duplicados en la base de datos...');
     const duplicateErrors = await checkDuplicates(db, payload);
-    
+
     if (duplicateErrors.length > 0) {
       console.log('❌ Se encontraron duplicados:', duplicateErrors);
-      return res.status(409).json({ 
-        message: 'Datos duplicados encontrados', 
-        errors: duplicateErrors 
+      return res.status(409).json({
+        message: 'Datos duplicados encontrados',
+        errors: duplicateErrors
       });
     }
 
@@ -191,12 +236,12 @@ router.post('/registro', async (req, res) => {
       correo: payload.correo.trim(),
       telefono: payload.telefono.trim(),
       rol: payload.rol.trim(),
-      
+
       // ✅ NUEVO: Incluir ID para estudiantes
       ...(payload.rol === 'estudiante' && {
         id: payload.id.trim() // ID del estudiante
       }),
-      
+
       // Campos específicos por rol
       ...(payload.rol === 'estudiante' && {
         tipoEstudiante: payload.tipoEstudiante.trim(),
@@ -204,26 +249,26 @@ router.post('/registro', async (req, res) => {
         programa: payload.programa.trim(),
         semestre: payload.semestre.trim()
       }),
-      
+
       ...(payload.rol === 'egresado' && {
         programa: payload.programa.trim(),
         ...(payload.empresa && { empresa: payload.empresa.trim() })
       }),
-      
+
       ...((payload.rol === 'docente' || payload.rol === 'administrativo' || payload.rol === 'directivo') && {
         area: payload.area.trim(),
         cargo: payload.cargo.trim()
       }),
-      
+
       ...(payload.rol === 'externo' && {
         empresa: payload.empresa.trim(),
         cargo: payload.cargo.trim()
       }),
-      
+
       // Información de actividades
       actividades: payload.actividades || ['hackathon-universidades'],
       actividad: 'hackathon-universidades',
-      
+
       // Información del equipo SOLO para estudiantes participantes
       ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && {
         grupo: {
@@ -239,7 +284,7 @@ router.post('/registro', async (req, res) => {
           ...(payload.grupo.telefono && { telefono: payload.grupo.telefono.trim() })
         }
       }),
-      
+
       // Metadatos del evento
       evento: 'Hackathon Universidades',
       tipo_evento: 'universidades',
@@ -261,11 +306,11 @@ router.post('/registro', async (req, res) => {
     // 🔹 Generar el código QR - ACTUALIZADO CON ID
     const qrPayload = {
       id: insertedId.toString(),
-      participante: { 
-        nombre: payload.nombre, 
+      participante: {
+        nombre: payload.nombre,
         cedula: payload.cedula,
         rol: payload.rol,
-        ...(payload.rol === 'estudiante' && { 
+        ...(payload.rol === 'estudiante' && {
           tipoEstudiante: payload.tipoEstudiante,
           idEstudiante: payload.id // ✅ INCLUIR ID EN EL QR
         })
@@ -281,7 +326,7 @@ router.post('/registro', async (req, res) => {
       emitido: nowIso
     };
 
-    const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrPayload), { 
+    const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrPayload), {
       errorCorrectionLevel: 'M',
       width: 300,
       margin: 2
@@ -296,7 +341,7 @@ router.post('/registro', async (req, res) => {
       participante: {
         nombre: payload.nombre,
         rol: payload.rol,
-        ...(payload.rol === 'estudiante' && { 
+        ...(payload.rol === 'estudiante' && {
           tipoEstudiante: payload.tipoEstudiante,
           idEstudiante: payload.id, // ✅ INCLUIR ID EN RESPUESTA
           programa: payload.programa,
@@ -404,9 +449,9 @@ router.get('/listar', async (req, res) => {
   try {
     const { db } = await connectMongo();
     const col = db.collection('hackathon');
-    
+
     console.log('📋 Listando inscripciones de la colección: hackathon');
-    
+
     const inscripciones = await col.find({})
       .sort({ created_at: -1 })
       .limit(50)
@@ -443,9 +488,9 @@ router.get('/listar', async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Error en /inscripciones/listar:', err);
-    return res.status(500).json({ 
-      message: 'Error interno del servidor', 
-      error: err.message 
+    return res.status(500).json({
+      message: 'Error interno del servidor',
+      error: err.message
     });
   }
 });
@@ -468,7 +513,7 @@ router.get('/buscar/:cedula', async (req, res) => {
     });
 
     if (!inscripcion) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         message: 'No se encontró inscripción con esa cédula, email o ID de estudiante'
       });
     }
@@ -501,9 +546,9 @@ router.get('/buscar/:cedula', async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Error en /inscripciones/buscar:', err);
-    return res.status(500).json({ 
-      message: 'Error interno del servidor', 
-      error: err.message 
+    return res.status(500).json({
+      message: 'Error interno del servidor',
+      error: err.message
     });
   }
 });

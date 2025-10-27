@@ -6,6 +6,37 @@ import { enviarCorreoRegistro } from "../controllers/emailController.js";
 
 const router = Router();
 
+// ✅ Función para verificar disponibilidad de cupos
+async function verificarCupos(db) {
+    try {
+        const actividadesCol = db.collection('actividades');
+        const actividad = await actividadesCol.findOne({
+            coleccion: 'liderazgo'
+        });
+
+        if (!actividad) {
+            return { disponible: true, mensaje: 'Actividad no configurada' };
+        }
+
+        const inscritosCol = db.collection('liderazgo');
+        const totalInscritos = await inscritosCol.countDocuments({});
+        const cuposDisponibles = Math.max(0, actividad.cupoMaximo - totalInscritos);
+
+        return {
+            disponible: cuposDisponibles > 0,
+            cuposDisponibles: cuposDisponibles,
+            cupoMaximo: actividad.cupoMaximo,
+            inscritos: totalInscritos,
+            mensaje: cuposDisponibles > 0
+                ? `Cupos disponibles: ${cuposDisponibles}/${actividad.cupoMaximo}`
+                : 'Cupo agotado'
+        };
+    } catch (err) {
+        console.error('❌ Error verificando cupos:', err);
+        return { disponible: true, mensaje: 'Error verificando cupos' };
+    }
+}
+
 // ✅ Validación mejorada de los campos
 function validateLiderazgo(body) {
     const errors = [];
@@ -45,7 +76,7 @@ function validarCorreoInstitucional(correo) {
 // 🔹 Función para verificar duplicados
 async function verificarDuplicados(db, cedula, correo) {
     const col = db.collection("liderazgo");
-    
+
     const existente = await col.findOne({
         $or: [{ cedula }, { correo }],
     });
@@ -59,7 +90,7 @@ async function verificarDuplicados(db, cedula, correo) {
             return { duplicado: true, mensaje: "Ya existe un registro con este correo electrónico." };
         }
     }
-    
+
     return { duplicado: false };
 }
 
@@ -69,14 +100,31 @@ router.post("/registro", async (req, res) => {
         const { ok, errors } = validateLiderazgo(payload);
 
         if (!ok) {
-            return res.status(400).json({ 
-                message: "Validación fallida", 
-                errors 
+            return res.status(400).json({
+                message: "Validación fallida",
+                errors
             });
         }
 
         const { db } = await connectMongo();
+
+        // ✅ VERIFICAR CUPOS DISPONIBLES ANTES DE CONTINUAR
+        console.log('🔍 Verificando cupos disponibles...');
+        const estadoCupos = await verificarCupos(db);
+
+        if (!estadoCupos.disponible) {
+            console.log('❌ Cupo agotado para Desarrollo Personal y Liderazgo');
+            return res.status(409).json({
+                message: 'Cupo agotado',
+                error: `Lo sentimos, no hay cupos disponibles para Desarrollo Personal y Liderazgo. ${estadoCupos.inscritos}/${estadoCupos.cupoMaximo} inscritos.`
+            });
+        }
+
+        console.log('✅ Cupos disponibles:', estadoCupos.cuposDisponibles);
+
         const col = db.collection("liderazgo");
+
+        // ... (el resto del código permanece igual)
 
         const correo = payload.correo.trim().toLowerCase();
         const cedula = payload.cedula.trim();
@@ -92,7 +140,7 @@ router.post("/registro", async (req, res) => {
 
         // 🔹 Verificar duplicados con mensajes específicos
         const { duplicado, mensaje } = await verificarDuplicados(db, cedula, correo);
-        
+
         if (duplicado) {
             return res.status(400).json({
                 message: mensaje,
@@ -139,11 +187,11 @@ router.post("/registro", async (req, res) => {
         // 🔹 Actualizar el documento con el QR
         await col.updateOne(
             { _id: insertedId },
-            { 
-                $set: { 
+            {
+                $set: {
                     qr_data: qrPayload,
                     qr_generated_at: nowIso
-                } 
+                }
             }
         );
 
@@ -187,7 +235,7 @@ router.post("/registro", async (req, res) => {
 router.post("/verificar", async (req, res) => {
     try {
         const { cedula, correo } = req.body;
-        
+
         if (!cedula && !correo) {
             return res.status(400).json({
                 message: "Se requiere cédula o correo para verificar"
@@ -195,7 +243,7 @@ router.post("/verificar", async (req, res) => {
         }
 
         const { db } = await connectMongo();
-        
+
         if (correo && !validarCorreoInstitucional(correo.trim().toLowerCase())) {
             return res.status(400).json({
                 message: "El correo debe ser institucional",
@@ -204,8 +252,8 @@ router.post("/verificar", async (req, res) => {
         }
 
         const { duplicado, mensaje } = await verificarDuplicados(
-            db, 
-            cedula ? cedula.trim() : null, 
+            db,
+            cedula ? cedula.trim() : null,
             correo ? correo.trim().toLowerCase() : null
         );
 
@@ -237,9 +285,9 @@ router.get("/listar", async (req, res) => {
         });
     } catch (err) {
         console.error("❌ Error en /liderazgo/listar:", err);
-        res.status(500).json({ 
-            message: "Error interno del servidor", 
-            error: err.message 
+        res.status(500).json({
+            message: "Error interno del servidor",
+            error: err.message
         });
     }
 });
