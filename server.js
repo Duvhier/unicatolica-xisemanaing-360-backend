@@ -5,7 +5,9 @@ import inscripcionesRouter from "./src/routes/inscripciones.js";
 import organizadorRouter from "./src/routes/organizadorRoutes.js";
 import liderazgoRoutes from "./src/routes/liderazgo.js";
 import technologicalRoutes from "./src/routes/technological.js";
+import visitazonaamericaRoutes from ".src/routes/visitazonaamerica.js";
 import actividadesRouter from "./api/actividades.js";
+
 import dns from "dns";
 
 dotenv.config();
@@ -82,6 +84,7 @@ app.use("/inscripciones", inscripcionesRouter);
 app.use("/organizador", organizadorRouter);
 app.use("/liderazgo", liderazgoRoutes);
 app.use("/technological", technologicalRoutes);
+app.use('/visitazonaamerica', visitazonaamericaRoutes);
 app.use('/api/actividades', actividadesRouter);
 
 // =========================================================
