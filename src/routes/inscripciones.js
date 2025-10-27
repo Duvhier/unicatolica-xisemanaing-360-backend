@@ -1,6 +1,8 @@
+// Hackathon
 import { Router } from 'express';
 import QRCode from 'qrcode';
 import { connectMongo } from '../mongo.js';
+import { enviarCorreoRegistro } from '../controllers/emailController.js';
 
 const router = Router();
 
@@ -332,12 +334,67 @@ router.post('/registro', async (req, res) => {
       margin: 2
     });
 
-    // 🔹 Respuesta exitosa - ACTUALIZADA CON ID
+    // 🔹 ENVÍO DE CORREO ELECTRÓNICO - NUEVA SECCIÓN
+    let emailEnviado = false;
+    try {
+      console.log("📧 Preparando envío de correo de confirmación...");
+      
+      // Preparar datos para el correo
+      const datosCorreo = {
+        nombre: payload.nombre.trim(),
+        cedula: payload.cedula.trim(),
+        correo: payload.correo.trim(),
+        telefono: payload.telefono.trim(),
+        rol: payload.rol.trim(),
+        idEstudiante: payload.id?.trim(),
+        tipoEstudiante: payload.tipoEstudiante?.trim(),
+        programa: payload.programa?.trim(),
+        facultad: payload.facultad?.trim(),
+        semestre: payload.semestre?.trim(),
+        qr: qrDataUrl
+      };
+
+      // Agregar información del equipo si es participante
+      if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo) {
+        datosCorreo.equipo = payload.grupo.nombre?.trim();
+        datosCorreo.proyecto = payload.grupo.proyecto?.nombre?.trim();
+        datosCorreo.categoria = payload.grupo.proyecto?.categoria?.trim();
+        datosCorreo.institucion = payload.grupo.institucion?.trim();
+      }
+
+      // Agregar información adicional según el rol
+      if (payload.rol === 'egresado' && payload.empresa) {
+        datosCorreo.empresa = payload.empresa.trim();
+      }
+
+      if ((payload.rol === 'docente' || payload.rol === 'administrativo' || payload.rol === 'directivo') && payload.area) {
+        datosCorreo.area = payload.area.trim();
+        datosCorreo.cargo = payload.cargo.trim();
+      }
+
+      if (payload.rol === 'externo' && payload.empresa) {
+        datosCorreo.empresa = payload.empresa.trim();
+        datosCorreo.cargo = payload.cargo.trim();
+      }
+
+      console.log("📨 Datos para el correo:", JSON.stringify(datosCorreo, null, 2));
+      
+      // Enviar correo
+      await enviarCorreoRegistro(datosCorreo, 'hackathon');
+      emailEnviado = true;
+      console.log("✅ Correo de hackathon enviado exitosamente a:", payload.correo);
+    } catch (emailError) {
+      console.error("❌ Error al enviar correo:", emailError);
+      // No retornamos error aquí, solo logueamos para no afectar el registro
+    }
+
+    // 🔹 Respuesta exitosa - ACTUALIZADA CON ID Y ESTADO DE CORREO
     const response = {
       message: 'Inscripción al Hackathon Universidades registrada correctamente',
       id: insertedId,
       qr: qrDataUrl,
       qrData: qrPayload,
+      emailEnviado: emailEnviado,
       participante: {
         nombre: payload.nombre,
         rol: payload.rol,

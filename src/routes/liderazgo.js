@@ -124,8 +124,6 @@ router.post("/registro", async (req, res) => {
 
         const col = db.collection("liderazgo");
 
-        // ... (el resto del código permanece igual)
-
         const correo = payload.correo.trim().toLowerCase();
         const cedula = payload.cedula.trim();
 
@@ -195,7 +193,8 @@ router.post("/registro", async (req, res) => {
             }
         );
 
-        // 🔹 Enviar el correo de confirmación
+        // 🔹 ENVÍO DE CORREO ELECTRÓNICO - MODIFICADO
+        let emailEnviado = false;
         try {
             console.log("📧 Preparando envío de correo a:", correo);
             await enviarCorreoRegistro({
@@ -206,7 +205,8 @@ router.post("/registro", async (req, res) => {
                 area: payload.area.trim(),
                 rol: payload.rol.trim(),
                 qr: qrDataUrl,
-            });
+            }, 'liderazgo'); // ← AGREGAR ESTE PARÁMETRO
+            emailEnviado = true;
             console.log("✅ Correo enviado exitosamente a:", correo);
         } catch (emailError) {
             console.error("❌ Error al enviar correo:", emailError);
@@ -219,7 +219,7 @@ router.post("/registro", async (req, res) => {
             id: insertedId,
             qr: qrDataUrl,
             qrData: qrPayload,
-            emailEnviado: true
+            emailEnviado: emailEnviado // ← ACTUALIZAR CON LA VARIABLE
         });
 
     } catch (err) {
