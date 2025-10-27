@@ -251,10 +251,10 @@ const plantillasEventos = {
                         </div>
                     </div>
 
-                    ${usuario.qr ? `
+                    ${usuario.qr_image ? `
                     <div class="qr-section">
                         <h3 class="card-title">🎫 Código QR de Acceso</h3>
-                        <img src="${usuario.qr}" alt="Código QR" class="qr-image">
+                        <img src="${usuario.qr_image}" alt="Código QR" class="qr-image">
                         <p class="welcome-text">Presenta este código QR en la entrada del evento</p>
                     </div>
                     ` : ''}
@@ -564,10 +564,10 @@ SNIES 2731 • Cali, Colombia
                     </div>
                     ` : ''}
 
-                    ${usuario.qr ? `
+                    ${usuario.qr_image ? `
                     <div class="qr-section">
                         <h3 class="card-title">🎫 Código QR de Acceso</h3>
-                        <img src="${usuario.qr}" alt="Código QR" class="qr-image">
+                        <img src="${usuario.qr_image}" alt="Código QR" class="qr-image">
                         <p class="welcome-text">Presenta este código QR en el registro del hackathon</p>
                     </div>
                     ` : ''}
@@ -887,10 +887,10 @@ Fundación Universitaria Católica Lumen Gentium
                     </div>
                     ` : ''}
 
-                    ${usuario.qr ? `
+                    ${usuario.qr_image ? `
                     <div class="qr-section">
                         <h3 class="card-title">🎫 Código QR de Acceso</h3>
-                        <img src="${usuario.qr}" alt="Código QR" class="qr-image">
+                        <img src="${usuario.qr_image}" alt="Código QR" class="qr-image">
                         <p class="welcome-text">Presenta este código QR en la entrada del auditorio</p>
                     </div>
                     ` : ''}
