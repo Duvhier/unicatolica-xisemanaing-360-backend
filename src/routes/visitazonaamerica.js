@@ -459,7 +459,7 @@ router.get('/listar', async (req, res) => {
 
         const inscripciones = await col.find({})
             .sort({ created_at: -1 })
-            .limit(50)
+            .limit(40)
             .toArray();
 
         console.log(`✅ Encontradas ${inscripciones.length} inscripciones`);
