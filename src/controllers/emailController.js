@@ -968,7 +968,7 @@ Fundación Universitaria Católica Lumen Gentium
     // ✅ PLANTILLA PARA VISITA ZONA AMÉRICA
     visitazonaamerica: (usuario) => {
         const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-        const imagenVisita = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761543548/TECNOLOGICAL_TOUCH-8_qy1rks.png"; // Puedes cambiar esta imagen
+        const imagenVisita = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761553231/VISITA_-_EMPRESARIAL_-8_ZONAAMERICA_hqedva.png"; 
 
         return {
             asunto: "🏢 Confirmación de Registro - Visita Zona América",
