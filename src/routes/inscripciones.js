@@ -7,46 +7,82 @@ import { enviarCorreoRegistro } from '../controllers/emailController.js';
 const router = Router();
 
 // ✅ Función para obtener información de registros
+// ✅ Función para obtener información de registros - VERSIÓN CORREGIDA
 async function obtenerInfoRegistros(db) {
   try {
+    console.log('🔍 Buscando configuración de hackathon en colección actividades...');
+
     const actividadesCol = db.collection('actividades');
+
+    // 🔹 BUSCAR DE MÚLTIPLES FORMAS PARA ENCONTRAR LA CONFIGURACIÓN
     const actividad = await actividadesCol.findOne({
-      coleccion: 'hackathon'
+      $or: [
+        { coleccion: 'hackathon' },
+        { nombre: 'hackathon' },
+        { evento: 'hackathon' },
+        { 'actividad': 'hackathon-universidades' },
+        { 'actividad': 'hackathon' }
+      ]
     });
 
+    console.log('📋 Resultado de búsqueda de actividad:', actividad);
+
     if (!actividad) {
+      console.log('⚠️ No se encontró configuración de hackathon, usando valores por defecto');
+      // Obtener el conteo actual de inscritos
+      const inscritosCol = db.collection('hackathon');
+      const totalInscritos = await inscritosCol.countDocuments({});
+
       return {
         disponible: true,
-        mensaje: 'Actividad no configurada',
-        inscritos: 0,
-        cupoMaximo: 0
+        mensaje: `Actividad no configurada - Usuarios registrados: ${totalInscritos}`,
+        inscritos: totalInscritos,
+        cupoMaximo: 0 // Cupo ilimitado si no hay configuración
       };
     }
 
     const inscritosCol = db.collection('hackathon');
     const totalInscritos = await inscritosCol.countDocuments({});
 
-    // ✅ Cambio principal: siempre mostrar número de inscritos
-    const cuposDisponibles = Math.max(0, actividad.cupoMaximo - totalInscritos);
+    // 🔹 OBTENER CUPO MÁXIMO DE DIFERENTES POSIBLES CAMPOS
+    const cupoMaximo = actividad.cupoMaximo || actividad.cupo || actividad.capacidad || 0;
+
+    console.log(`📊 Estadísticas: Inscritos=${totalInscritos}, CupoMaximo=${cupoMaximo}`);
+
+    const cuposDisponibles = Math.max(0, cupoMaximo - totalInscritos);
+    const disponible = cupoMaximo === 0 ? true : cuposDisponibles > 0;
 
     return {
-      disponible: cuposDisponibles > 0,
+      disponible: disponible,
       cuposDisponibles: cuposDisponibles,
-      cupoMaximo: actividad.cupoMaximo,
+      cupoMaximo: cupoMaximo,
       inscritos: totalInscritos,
-      mensaje: `Usuarios registrados: ${totalInscritos}/${actividad.cupoMaximo}`
+      mensaje: `Usuarios registrados: ${totalInscritos}${cupoMaximo > 0 ? `/${cupoMaximo}` : ''}`
     };
   } catch (err) {
     console.error('❌ Error obteniendo información de registros:', err);
-    return {
-      disponible: true,
-      mensaje: 'Error obteniendo información',
-      inscritos: 0,
-      cupoMaximo: 0
-    };
+
+    // En caso de error, intentar al menos obtener el conteo de inscritos
+    try {
+      const inscritosCol = db.collection('hackathon');
+      const totalInscritos = await inscritosCol.countDocuments({});
+
+      return {
+        disponible: true,
+        mensaje: `Error en configuración - Usuarios registrados: ${totalInscritos}`,
+        inscritos: totalInscritos,
+        cupoMaximo: 0
+      };
+    } catch (countError) {
+      return {
+        disponible: true,
+        mensaje: 'Error obteniendo información',
+        inscritos: 0,
+        cupoMaximo: 0
+      };
+    }
   }
 }
-
 // ✅ Validación de campos ACTUALIZADA - Incluye validación del ID
 function validatePayload(body) {
   const errors = [];
@@ -559,18 +595,22 @@ router.post('/verificar-disponibilidad', async (req, res) => {
 });
 
 // ✅ Endpoint para obtener información de registros (sin verificar disponibilidad)
+// ✅ Endpoint para obtener información de registros (MEJORADO)
 router.get("/estado-registros", async (req, res) => {
   try {
     const { db } = await connectMongo();
     const infoRegistros = await obtenerInfoRegistros(db);
+
+    console.log('📊 Estado de registros obtenido:', infoRegistros);
 
     return res.json({
       success: true,
       data: {
         inscritos: infoRegistros.inscritos,
         cupoMaximo: infoRegistros.cupoMaximo,
-        mensaje: infoRegistros.mensaje,
-        disponible: infoRegistros.disponible
+        cuposDisponibles: infoRegistros.cuposDisponibles,
+        disponible: infoRegistros.disponible,
+        mensaje: infoRegistros.mensaje
       }
     });
 
@@ -583,7 +623,6 @@ router.get("/estado-registros", async (req, res) => {
     });
   }
 });
-
 // ✅ Endpoint para listar inscripciones - ACTUALIZADO CON ID
 router.get('/listar', async (req, res) => {
   try {
