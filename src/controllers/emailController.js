@@ -1618,8 +1618,55 @@ Fundación Universitaria Católica Lumen Gentium
     },
 };
 
-// 🔹 Función principal para enviar correos
-// 🔹 Función principal para enviar correos
+// 🔹 Función para procesar QR específicamente
+const procesarQRParaCorreo = (usuario, htmlOriginal) => {
+    const qrData = usuario.qr_image || usuario.qr || usuario.qrDataUrl;
+
+    console.log("🔍 Buscando QR en propiedades:", {
+        qr_image: !!usuario.qr_image,
+        qr: !!usuario.qr,
+        qrDataUrl: !!usuario.qrDataUrl,
+        tieneQR: !!qrData
+    });
+
+    if (!qrData || !qrData.startsWith('data:image/png;base64,')) {
+        console.warn("⚠️ QR no disponible o formato incorrecto");
+        return {
+            html: htmlOriginal.replace(/<div class="qr-section[\s\S]*?<\/div>/, ''),
+            attachments: []
+        };
+    }
+
+    try {
+        console.log("📸 Procesando QR como adjunto...");
+        const base64Data = qrData.split(',')[1];
+
+        const attachments = [{
+            filename: "codigo_qr.png",
+            content: base64Data,
+            encoding: 'base64',
+            contentType: "image/png",
+            cid: "codigoQR"
+        }];
+
+        // ✅ Reemplazar SOLO la imagen que tiene la clase "qr-image"
+        const htmlConQR = htmlOriginal.replace(
+            /<img[^>]*class="[^"]*qr-image[^"]*"[^>]*>/g,
+            '<img src="cid:codigoQR" alt="Código QR" class="qr-image">'
+        );
+
+        console.log("✅ QR procesado correctamente");
+        return { html: htmlConQR, attachments };
+
+    } catch (error) {
+        console.error("❌ Error procesando QR:", error);
+        return {
+            html: htmlOriginal.replace(/<div class="qr-section[\s\S]*?<\/div>/, ''),
+            attachments: []
+        };
+    }
+};
+
 // 🔹 Función principal para enviar correos
 export const enviarCorreoRegistro = async (usuario, tipoEvento = 'liderazgo') => {
     console.log(`🚀 INICIANDO ENVÍO DE CORREO PARA: ${usuario.correo} - Evento: ${tipoEvento}`);
@@ -1644,63 +1691,15 @@ export const enviarCorreoRegistro = async (usuario, tipoEvento = 'liderazgo') =>
         await transporter.verify();
         console.log("✅ Conexión SMTP verificada");
 
-        // ✅ CORRECCIÓN: Procesar QR correctamente SIN afectar otras imágenes
-        let attachments = [];
-        let htmlConQR = html;
-
-        // Buscar el QR en diferentes propiedades posibles
-        const qrData = usuario.qr_image || usuario.qr || usuario.qrDataUrl;
-        console.log("🔍 Buscando QR en propiedades:", {
-            qr_image: !!usuario.qr_image,
-            qr: !!usuario.qr,
-            qrDataUrl: !!usuario.qrDataUrl,
-            tieneQR: !!qrData
-        });
-
-        if (qrData && qrData.startsWith('data:image/png;base64,')) {
-            try {
-                console.log("📸 Procesando QR como adjunto...");
-
-                // Extraer solo la parte base64
-                const base64Data = qrData.replace(/^data:image\/png;base64,/, "");
-
-                // Crear adjunto
-                attachments.push({
-                    filename: "codigo_qr_acceso.png",
-                    content: base64Data,
-                    encoding: 'base64',
-                    contentType: "image/png",
-                    cid: "codigoQR" // Content ID para referenciar en el HTML
-                });
-
-                console.log("✅ QR preparado como adjunto");
-
-                // ✅ CORRECCIÓN: Reemplazar SOLO la imagen del QR, no todas las imágenes
-                // Buscar específicamente la imagen dentro de la sección qr-section
-                htmlConQR = html.replace(
-                    /(<div class="qr-section"[^>]*>[\s\S]*?<img[^>]*class="qr-image"[^>]*)src="[^"]*"([^>]*>)/g,
-                    '$1src="cid:codigoQR"$2'
-                );
-
-                console.log("✅ HTML actualizado con referencia CID solo para el QR");
-
-            } catch (qrError) {
-                console.error("❌ Error procesando QR:", qrError);
-                // Continuar sin QR - remover solo la sección QR
-                htmlConQR = html.replace(/<div class="qr-section[\s\S]*?<\/div>/, '');
-            }
-        } else {
-            console.warn("⚠️ No se encontró QR válido, enviando correo sin QR");
-            // Remover sección QR del HTML
-            htmlConQR = html.replace(/<div class="qr-section[\s\S]*?<\/div>/, '');
-        }
+        // ✅ CORRECCIÓN: Usar la función especializada para procesar QR
+        const { html: htmlFinal, attachments } = procesarQRParaCorreo(usuario, html);
 
         // Configurar correo
         const mailOptions = {
             from: '"XI Semana Ingeniería UNICATÓLICA" <eventoxisemanaingenieria@si.cidt.unicatolica.edu.co>',
             to: usuario.correo,
             subject: asunto,
-            html: htmlConQR,
+            html: htmlFinal,
             text: texto,
             attachments: attachments
         };
