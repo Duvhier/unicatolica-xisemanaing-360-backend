@@ -374,7 +374,8 @@ router.post('/registro', async (req, res) => {
         programa: payload.programa?.trim(),
         facultad: payload.facultad?.trim(),
         semestre: payload.semestre?.trim(),
-        qr: qrDataUrl
+        qr: qrDataUrl,
+        qr_image: qrDataUrl 
       };
 
       // Agregar información del equipo si es participante

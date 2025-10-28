@@ -968,7 +968,7 @@ Fundación Universitaria Católica Lumen Gentium
     // ✅ PLANTILLA PARA VISITA ZONA AMÉRICA
     visitazonaamerica: (usuario) => {
         const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-        const imagenVisita = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761553231/VISITA_-_EMPRESARIAL_-8_ZONAAMERICA_hqedva.png"; 
+        const imagenVisita = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761553231/VISITA_-_EMPRESARIAL_-8_ZONAAMERICA_hqedva.png";
 
         return {
             asunto: "🏢 Confirmación de Registro - Visita Zona América",
@@ -1286,13 +1286,13 @@ Fundación Universitaria Católica Lumen Gentium
         };
     },
     // ✅ PLANTILLA PARA ASISTENCIA INAUGURAL
-asistenciainaugural: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenInaugural = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761602295/ACTO_INAUGURAL-8_yu6nbj.png";
+    asistenciainaugural: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenInaugural = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761602295/ACTO_INAUGURAL-8_yu6nbj.png";
 
-    return {
-        asunto: "🎉 Confirmación de Registro - Acto Inaugural XI Semana de la Ingeniería",
-        html: `
+        return {
+            asunto: "🎉 Confirmación de Registro - Acto Inaugural XI Semana de la Ingeniería",
+            html: `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -1570,7 +1570,7 @@ asistenciainaugural: (usuario) => {
 </body>
 </html>
         `,
-        texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - ACTO INAUGURAL
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -1614,8 +1614,8 @@ los invitados especiales y las actividades preparadas.
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Acto Inaugural
         `
-    };
-},
+        };
+    },
 };
 
 // 🔹 Función principal para enviar correos
@@ -1646,25 +1646,37 @@ export const enviarCorreoRegistro = async (usuario, tipoEvento = 'liderazgo') =>
         let attachments = [];
 
         // Verificar y procesar QR de manera más robusta
-        const qrData = usuario.qr || usuario.qr_image;
-        if (qrData && qrData.startsWith('data:image/png;base64,')) {
-            try {
-                const base64Data = qrData.replace(/^data:image\/png;base64,/, "");
+        // Verificar y procesar QR de manera más robusta - VERSIÓN MEJORADA
+        const qrData = usuario.qr || usuario.qr_image || usuario.qrDataUrl;
+        console.log("🔍 Buscando QR en propiedades:", {
+            tieneQr: !!usuario.qr,
+            tieneQrImage: !!usuario.qr_image,
+            tieneQrDataUrl: !!usuario.qrDataUrl
+        });
 
-                attachments.push({
-                    filename: "codigo_qr_acceso.png",
-                    content: base64Data,
-                    encoding: 'base64',
-                    contentType: "image/png",
-                });
-                console.log("📎 QR preparado como adjunto");
-            } catch (qrError) {
-                console.warn("⚠️ Error procesando QR:", qrError.message);
+        if (qrData) {
+            console.log("✅ QR encontrado, tipo:", typeof qrData);
+
+            if (qrData.startsWith('data:image/png;base64,')) {
+                try {
+                    const base64Data = qrData.replace(/^data:image\/png;base64,/, "");
+
+                    attachments.push({
+                        filename: "codigo_qr_acceso.png",
+                        content: base64Data,
+                        encoding: 'base64',
+                        contentType: "image/png",
+                    });
+                    console.log("📎 QR preparado como adjunto correctamente");
+                } catch (qrError) {
+                    console.warn("⚠️ Error procesando QR:", qrError.message);
+                }
+            } else {
+                console.warn("⚠️ Formato de QR no reconocido o no es base64");
             }
-        } else if (qrData) {
-            console.warn("⚠️ Formato de QR no reconocido:", qrData.substring(0, 50) + "...");
+        } else {
+            console.warn("⚠️ No se encontró datos de QR en el usuario");
         }
-
         // Configurar correo
         const mailOptions = {
             from: '"XI Semana Ingeniería UNICATÓLICA" <eventoxisemanaingenieria@si.cidt.unicatolica.edu.co>',
