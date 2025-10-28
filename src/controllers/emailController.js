@@ -1620,6 +1620,7 @@ Fundación Universitaria Católica Lumen Gentium
 
 // 🔹 Función principal para enviar correos
 // 🔹 Función principal para enviar correos
+// 🔹 Función principal para enviar correos
 export const enviarCorreoRegistro = async (usuario, tipoEvento = 'liderazgo') => {
     console.log(`🚀 INICIANDO ENVÍO DE CORREO PARA: ${usuario.correo} - Evento: ${tipoEvento}`);
 
@@ -1643,7 +1644,7 @@ export const enviarCorreoRegistro = async (usuario, tipoEvento = 'liderazgo') =>
         await transporter.verify();
         console.log("✅ Conexión SMTP verificada");
 
-        // 🔴 CORRECCIÓN: Procesar QR correctamente
+        // ✅ CORRECCIÓN: Procesar QR correctamente SIN afectar otras imágenes
         let attachments = [];
         let htmlConQR = html;
 
@@ -1669,22 +1670,23 @@ export const enviarCorreoRegistro = async (usuario, tipoEvento = 'liderazgo') =>
                     content: base64Data,
                     encoding: 'base64',
                     contentType: "image/png",
-                    cid: "codigoQR" // 🔑 IMPORTANTE: Content ID para referenciar en el HTML
+                    cid: "codigoQR" // Content ID para referenciar en el HTML
                 });
 
                 console.log("✅ QR preparado como adjunto");
 
-                // 🔴 CORRECCIÓN: Reemplazar el src del QR en el HTML
+                // ✅ CORRECCIÓN: Reemplazar SOLO la imagen del QR, no todas las imágenes
+                // Buscar específicamente la imagen dentro de la sección qr-section
                 htmlConQR = html.replace(
-                    /src="[^"]*"/g,
-                    'src="cid:codigoQR"'
+                    /(<div class="qr-section"[^>]*>[\s\S]*?<img[^>]*class="qr-image"[^>]*)src="[^"]*"([^>]*>)/g,
+                    '$1src="cid:codigoQR"$2'
                 );
 
-                console.log("✅ HTML actualizado con referencia CID");
+                console.log("✅ HTML actualizado con referencia CID solo para el QR");
 
             } catch (qrError) {
                 console.error("❌ Error procesando QR:", qrError);
-                // Continuar sin QR
+                // Continuar sin QR - remover solo la sección QR
                 htmlConQR = html.replace(/<div class="qr-section[\s\S]*?<\/div>/, '');
             }
         } else {
