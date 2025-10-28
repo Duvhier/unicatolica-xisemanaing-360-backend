@@ -15,8 +15,8 @@ async function obtenerInfoRegistros(db) {
         });
 
         if (!actividad) {
-            return { 
-                disponible: true, 
+            return {
+                disponible: true,
                 mensaje: 'Actividad no configurada',
                 inscritos: 0,
                 cupoMaximo: 40 // Cupo por defecto
@@ -25,7 +25,7 @@ async function obtenerInfoRegistros(db) {
 
         const inscritosCol = db.collection('visitazonaamerica');
         const totalInscritos = await inscritosCol.countDocuments({});
-        
+
         // ✅ Cambio principal: siempre mostrar número de inscritos
         const cuposDisponibles = Math.max(0, actividad.cupoMaximo - totalInscritos);
 
@@ -38,8 +38,8 @@ async function obtenerInfoRegistros(db) {
         };
     } catch (err) {
         console.error('❌ Error obteniendo información de registros:', err);
-        return { 
-            disponible: true, 
+        return {
+            disponible: true,
             mensaje: 'Error obteniendo información',
             inscritos: 0,
             cupoMaximo: 40
@@ -53,11 +53,11 @@ function validatePayload(body) {
 
     // Campos básicos requeridos para todos
     const requiredFields = [
-        'nombre', 
-        'tipoDocumento', 
-        'numeroDocumento', 
-        'correo', 
-        'telefono', 
+        'nombre',
+        'tipoDocumento',
+        'numeroDocumento',
+        'correo',
+        'telefono',
         'perfil'
     ];
 
@@ -70,12 +70,12 @@ function validatePayload(body) {
     // ✅ Validar tipo de documento
     const tiposDocumentoValidos = [
         'Cédula de Ciudadanía',
-        'Tarjeta de Identidad', 
+        'Tarjeta de Identidad',
         'Cédula Digital',
         'Cédula de Extranjería',
         'Pasaporte'
     ];
-    
+
     if (body.tipoDocumento && !tiposDocumentoValidos.includes(body.tipoDocumento)) {
         errors.push('Tipo de documento no válido');
     }
@@ -94,7 +94,7 @@ function validatePayload(body) {
         if (!body.programa || !body.programa.trim()) {
             errors.push('Programa académico es requerido para estudiantes');
         }
-        
+
         // Validar programa académico
         const programasValidos = [
             'Ingeniería de Sistemas',
@@ -244,7 +244,7 @@ router.post('/registro', async (req, res) => {
             actividad: 'visita-zona-america',
             horario: '10:00 am a 11:30 am',
             lugar: 'Zona América',
-            
+
             // Metadatos del sistema
             created_at: nowIso,
             updated_at: nowIso,
@@ -300,11 +300,12 @@ router.post('/registro', async (req, res) => {
         console.log('✅ QR guardado en la base de datos');
 
         // 🔹 ENVÍO DE CORREO ELECTRÓNICO
+        // 🔹 ENVÍO DE CORREO ELECTRÓNICO - VERSIÓN CORREGIDA
         let emailEnviado = false;
         try {
             console.log("📧 Preparando envío de correo de confirmación...");
-            
-            // Preparar datos para el correo
+
+            // Preparar datos para el correo - VERSIÓN CORREGIDA CON MÚLTIPLES PROPIEDADES QR
             const datosCorreo = {
                 nombre: payload.nombre.trim(),
                 tipoDocumento: payload.tipoDocumento.trim(),
@@ -316,11 +317,27 @@ router.post('/registro', async (req, res) => {
                 programa: payload.programa?.trim(),
                 eps: payload.eps?.trim(),
                 placasVehiculo: payload.placasVehiculo?.trim(),
-                qr_image: qrDataUrl
+                // QR con múltiples nombres para compatibilidad
+                qr: qrDataUrl,
+                qr_image: qrDataUrl,
+                qrDataUrl: qrDataUrl
             };
 
-            console.log("📨 Datos para el correo:", JSON.stringify(datosCorreo, null, 2));
-            
+            // 🔍 VERIFICACIÓN DE DATOS ANTES DE ENVIAR
+            console.log("🔍 VERIFICACIÓN QR ANTES DE ENVIAR CORREO:");
+            console.log("QR Data URL length:", qrDataUrl.length);
+            console.log("QR starts with data:image:", qrDataUrl.startsWith('data:image'));
+            console.log("Datos correo QR property:", !!datosCorreo.qr);
+            console.log("Datos correo QR_IMAGE property:", !!datosCorreo.qr_image);
+            console.log("Datos correo QRDataUrl property:", !!datosCorreo.qrDataUrl);
+
+            console.log("📨 Datos para el correo:", JSON.stringify({
+                ...datosCorreo,
+                qr: datosCorreo.qr ? `[QR_DATA_LENGTH: ${datosCorreo.qr.length}]` : 'NO_QR',
+                qr_image: datosCorreo.qr_image ? `[QR_IMAGE_LENGTH: ${datosCorreo.qr_image.length}]` : 'NO_QR_IMAGE',
+                qrDataUrl: datosCorreo.qrDataUrl ? `[QR_DATA_URL_LENGTH: ${datosCorreo.qrDataUrl.length}]` : 'NO_QR_DATA_URL'
+            }, null, 2));
+
             // Enviar correo
             await enviarCorreoRegistro(datosCorreo, 'visitazonaamerica');
             emailEnviado = true;
@@ -329,7 +346,6 @@ router.post('/registro', async (req, res) => {
             console.error("❌ Error al enviar correo:", emailError);
             // No retornamos error aquí, solo logueamos para no afectar el registro
         }
-
         // 🔹 Obtener información actualizada después del registro
         const infoActualizada = await obtenerInfoRegistros(db);
 

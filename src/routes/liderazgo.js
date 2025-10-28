@@ -15,8 +15,8 @@ async function obtenerInfoRegistros(db) {
         });
 
         if (!actividad) {
-            return { 
-                disponible: true, 
+            return {
+                disponible: true,
                 mensaje: 'Actividad no configurada',
                 inscritos: 0,
                 cupoMaximo: 0
@@ -25,7 +25,7 @@ async function obtenerInfoRegistros(db) {
 
         const inscritosCol = db.collection('liderazgo');
         const totalInscritos = await inscritosCol.countDocuments({});
-        
+
         // ✅ Cambio principal: siempre mostrar número de inscritos
         const cuposDisponibles = Math.max(0, actividad.cupoMaximo - totalInscritos);
 
@@ -38,8 +38,8 @@ async function obtenerInfoRegistros(db) {
         };
     } catch (err) {
         console.error('❌ Error obteniendo información de registros:', err);
-        return { 
-            disponible: true, 
+        return {
+            disponible: true,
             mensaje: 'Error obteniendo información',
             inscritos: 0,
             cupoMaximo: 0
@@ -203,26 +203,48 @@ router.post("/registro", async (req, res) => {
             }
         );
 
-        // 🔹 ENVÍO DE CORREO ELECTRÓNICO - MODIFICADO
+        // 🔹 ENVÍO DE CORREO ELECTRÓNICO - VERSIÓN CORREGIDA
         let emailEnviado = false;
         try {
-            console.log("📧 Preparando envío de correo a:", correo);
-            await enviarCorreoRegistro({
+            console.log("📧 Preparando envío de correo de confirmación...");
+
+            // Preparar datos para el correo - VERSIÓN CORREGIDA CON MÚLTIPLES PROPIEDADES QR
+            const datosCorreo = {
                 nombre: payload.nombre.trim(),
-                cedula,
-                correo,
+                cedula: cedula,
+                correo: correo,
                 telefono: payload.telefono.trim(),
                 area: payload.area.trim(),
                 rol: payload.rol.trim(),
+                // QR con múltiples nombres para compatibilidad
                 qr: qrDataUrl,
-            }, 'liderazgo'); // ← AGREGAR ESTE PARÁMETRO
+                qr_image: qrDataUrl,
+                qrDataUrl: qrDataUrl
+            };
+
+            // 🔍 VERIFICACIÓN DE DATOS ANTES DE ENVIAR
+            console.log("🔍 VERIFICACIÓN QR ANTES DE ENVIAR CORREO:");
+            console.log("QR Data URL length:", qrDataUrl.length);
+            console.log("QR starts with data:image:", qrDataUrl.startsWith('data:image'));
+            console.log("Datos correo QR property:", !!datosCorreo.qr);
+            console.log("Datos correo QR_IMAGE property:", !!datosCorreo.qr_image);
+            console.log("Datos correo QRDataUrl property:", !!datosCorreo.qrDataUrl);
+
+            console.log("📨 Datos para el correo:", JSON.stringify({
+                ...datosCorreo,
+                qr: datosCorreo.qr ? `[QR_DATA_LENGTH: ${datosCorreo.qr.length}]` : 'NO_QR',
+                qr_image: datosCorreo.qr_image ? `[QR_IMAGE_LENGTH: ${datosCorreo.qr_image.length}]` : 'NO_QR_IMAGE',
+                qrDataUrl: datosCorreo.qrDataUrl ? `[QR_DATA_URL_LENGTH: ${datosCorreo.qrDataUrl.length}]` : 'NO_QR_DATA_URL'
+            }, null, 2));
+
+            // Enviar correo
+            await enviarCorreoRegistro(datosCorreo, 'liderazgo');
             emailEnviado = true;
-            console.log("✅ Correo enviado exitosamente a:", correo);
+            console.log("✅ Correo de Desarrollo Personal y Liderazgo enviado exitosamente a:", correo);
         } catch (emailError) {
             console.error("❌ Error al enviar correo:", emailError);
-            // No retornamos error aquí, solo logueamos
+            // No retornamos error aquí, solo logueamos para no afectar el registro
         }
-
         // 🔹 Obtener información actualizada después del registro
         const infoActualizada = await obtenerInfoRegistros(db);
 

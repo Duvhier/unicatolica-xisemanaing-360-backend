@@ -14,8 +14,8 @@ async function obtenerInfoRegistros(db) {
         });
 
         if (!actividad) {
-            return { 
-                disponible: true, 
+            return {
+                disponible: true,
                 mensaje: 'Actividad no configurada',
                 inscritos: 0,
                 cupoMaximo: 0
@@ -24,7 +24,7 @@ async function obtenerInfoRegistros(db) {
 
         const inscritosCol = db.collection('technologicaltouch');
         const totalInscritos = await inscritosCol.countDocuments({});
-        
+
         // ✅ Cambio principal: siempre mostrar número de inscritos
         const cuposDisponibles = Math.max(0, actividad.cupoMaximo - totalInscritos);
 
@@ -37,8 +37,8 @@ async function obtenerInfoRegistros(db) {
         };
     } catch (err) {
         console.error('❌ Error obteniendo información de registros:', err);
-        return { 
-            disponible: true, 
+        return {
+            disponible: true,
             mensaje: 'Error obteniendo información',
             inscritos: 0,
             cupoMaximo: 0
@@ -359,11 +359,12 @@ router.post('/registro', async (req, res) => {
         console.log('✅ QR guardado en la base de datos');
 
         // 🔹 ENVÍO DE CORREO ELECTRÓNICO
+        // 🔹 ENVÍO DE CORREO ELECTRÓNICO
         let emailEnviado = false;
         try {
             console.log("📧 Preparando envío de correo de confirmación...");
 
-            // Preparar datos para el correo
+            // Preparar datos para el correo - VERSIÓN CORREGIDA CON MÚLTIPLES PROPIEDADES QR
             const datosCorreo = {
                 nombre: payload.nombre.trim(),
                 cedula: payload.cedula.trim(),
@@ -375,7 +376,10 @@ router.post('/registro', async (req, res) => {
                 programa: payload.programa?.trim(),
                 facultad: payload.facultad?.trim(),
                 semestre: payload.semestre?.trim(),
-                qr: qrDataUrl
+                // QR con múltiples nombres para compatibilidad
+                qr: qrDataUrl,
+                qr_image: qrDataUrl,
+                qrDataUrl: qrDataUrl
             };
 
             // Agregar información del equipo si es participante
@@ -401,7 +405,20 @@ router.post('/registro', async (req, res) => {
                 datosCorreo.cargo = payload.cargo.trim();
             }
 
-            console.log("📨 Datos para el correo:", JSON.stringify(datosCorreo, null, 2));
+            // 🔍 VERIFICACIÓN DE DATOS ANTES DE ENVIAR
+            console.log("🔍 VERIFICACIÓN QR ANTES DE ENVIAR CORREO:");
+            console.log("QR Data URL length:", qrDataUrl.length);
+            console.log("QR starts with data:image:", qrDataUrl.startsWith('data:image'));
+            console.log("Datos correo QR property:", !!datosCorreo.qr);
+            console.log("Datos correo QR_IMAGE property:", !!datosCorreo.qr_image);
+            console.log("Datos correo QRDataUrl property:", !!datosCorreo.qrDataUrl);
+
+            console.log("📨 Datos para el correo:", JSON.stringify({
+                ...datosCorreo,
+                qr: datosCorreo.qr ? `[QR_DATA_LENGTH: ${datosCorreo.qr.length}]` : 'NO_QR',
+                qr_image: datosCorreo.qr_image ? `[QR_IMAGE_LENGTH: ${datosCorreo.qr_image.length}]` : 'NO_QR_IMAGE',
+                qrDataUrl: datosCorreo.qrDataUrl ? `[QR_DATA_URL_LENGTH: ${datosCorreo.qrDataUrl.length}]` : 'NO_QR_DATA_URL'
+            }, null, 2));
 
             // Enviar correo
             await enviarCorreoRegistro(datosCorreo, 'technologicaltouch');
@@ -411,7 +428,6 @@ router.post('/registro', async (req, res) => {
             console.error("❌ Error al enviar correo:", emailError);
             // No retornamos error aquí, solo logueamos para no afectar el registro
         }
-
         // 🔹 Obtener información actualizada después del registro
         const infoActualizada = await obtenerInfoRegistros(db);
 
