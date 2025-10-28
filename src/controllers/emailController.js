@@ -1619,6 +1619,7 @@ Fundación Universitaria Católica Lumen Gentium
 };
 
 // 🔹 Función principal para enviar correos
+// 🔹 Función principal para enviar correos
 export const enviarCorreoRegistro = async (usuario, tipoEvento = 'liderazgo') => {
     console.log(`🚀 INICIANDO ENVÍO DE CORREO PARA: ${usuario.correo} - Evento: ${tipoEvento}`);
 
@@ -1642,52 +1643,69 @@ export const enviarCorreoRegistro = async (usuario, tipoEvento = 'liderazgo') =>
         await transporter.verify();
         console.log("✅ Conexión SMTP verificada");
 
-        // Preparar adjuntos (QR)
+        // 🔴 CORRECCIÓN: Procesar QR correctamente
         let attachments = [];
+        let htmlConQR = html;
 
-        // Verificar y procesar QR de manera más robusta
-        // Verificar y procesar QR de manera más robusta - VERSIÓN MEJORADA
-        const qrData = usuario.qr || usuario.qr_image || usuario.qrDataUrl;
+        // Buscar el QR en diferentes propiedades posibles
+        const qrData = usuario.qr_image || usuario.qr || usuario.qrDataUrl;
         console.log("🔍 Buscando QR en propiedades:", {
-            tieneQr: !!usuario.qr,
-            tieneQrImage: !!usuario.qr_image,
-            tieneQrDataUrl: !!usuario.qrDataUrl
+            qr_image: !!usuario.qr_image,
+            qr: !!usuario.qr,
+            qrDataUrl: !!usuario.qrDataUrl,
+            tieneQR: !!qrData
         });
 
-        if (qrData) {
-            console.log("✅ QR encontrado, tipo:", typeof qrData);
+        if (qrData && qrData.startsWith('data:image/png;base64,')) {
+            try {
+                console.log("📸 Procesando QR como adjunto...");
 
-            if (qrData.startsWith('data:image/png;base64,')) {
-                try {
-                    const base64Data = qrData.replace(/^data:image\/png;base64,/, "");
+                // Extraer solo la parte base64
+                const base64Data = qrData.replace(/^data:image\/png;base64,/, "");
 
-                    attachments.push({
-                        filename: "codigo_qr_acceso.png",
-                        content: base64Data,
-                        encoding: 'base64',
-                        contentType: "image/png",
-                    });
-                    console.log("📎 QR preparado como adjunto correctamente");
-                } catch (qrError) {
-                    console.warn("⚠️ Error procesando QR:", qrError.message);
-                }
-            } else {
-                console.warn("⚠️ Formato de QR no reconocido o no es base64");
+                // Crear adjunto
+                attachments.push({
+                    filename: "codigo_qr_acceso.png",
+                    content: base64Data,
+                    encoding: 'base64',
+                    contentType: "image/png",
+                    cid: "codigoQR" // 🔑 IMPORTANTE: Content ID para referenciar en el HTML
+                });
+
+                console.log("✅ QR preparado como adjunto");
+
+                // 🔴 CORRECCIÓN: Reemplazar el src del QR en el HTML
+                htmlConQR = html.replace(
+                    /src="[^"]*"/g,
+                    'src="cid:codigoQR"'
+                );
+
+                console.log("✅ HTML actualizado con referencia CID");
+
+            } catch (qrError) {
+                console.error("❌ Error procesando QR:", qrError);
+                // Continuar sin QR
+                htmlConQR = html.replace(/<div class="qr-section[\s\S]*?<\/div>/, '');
             }
         } else {
-            console.warn("⚠️ No se encontró datos de QR en el usuario");
+            console.warn("⚠️ No se encontró QR válido, enviando correo sin QR");
+            // Remover sección QR del HTML
+            htmlConQR = html.replace(/<div class="qr-section[\s\S]*?<\/div>/, '');
         }
+
         // Configurar correo
         const mailOptions = {
             from: '"XI Semana Ingeniería UNICATÓLICA" <eventoxisemanaingenieria@si.cidt.unicatolica.edu.co>',
             to: usuario.correo,
             subject: asunto,
-            html: html,
+            html: htmlConQR,
             text: texto,
             attachments: attachments
         };
 
         console.log("📤 Enviando correo a:", usuario.correo);
+        console.log("📎 Adjuntos:", attachments.length);
+
         const info = await transporter.sendMail(mailOptions);
 
         console.log("✅ CORREO ENVIADO EXITOSAMENTE");
@@ -1704,7 +1722,6 @@ export const enviarCorreoRegistro = async (usuario, tipoEvento = 'liderazgo') =>
         throw error;
     }
 };
-
 // 🔹 Función para verificar el servicio de correo
 export const verificarServicioCorreo = async () => {
     try {
