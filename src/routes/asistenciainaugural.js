@@ -300,8 +300,8 @@ router.post('/registro', async (req, res) => {
       // Metadatos del evento - ACTUALIZADO PARA ASISTENCIA INAUGURAL
       evento: 'Asistencia Inaugural',
       tipo_evento: 'inaugural',
-      horario: 'Por definir',
-      lugar: 'Por definir',
+      horario: 'Martes 13 de Noviembre de 2025, 6:30 pm a 7:15 am',
+      lugar: 'Sede Melendez Auditorio Lumen',
       created_at: nowIso,
       updated_at: nowIso
     };
@@ -332,8 +332,8 @@ router.post('/registro', async (req, res) => {
       }),
       actividad: 'Asistencia Inaugural',
       evento: 'Asistencia Inaugural',
-      horario: 'Por definir',
-      lugar: 'Por definir',
+      horario: 'Martes 13 de Noviembre de 2025, 6:30 pm a 7:15 am',
+      lugar: 'Sede Melendez Auditorio Lumen',
       emitido: nowIso
     };
 
