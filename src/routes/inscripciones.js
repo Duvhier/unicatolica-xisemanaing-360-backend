@@ -594,10 +594,9 @@ router.post('/verificar-disponibilidad', async (req, res) => {
   }
 });
 
-// ✅ Endpoint para obtener información de registros (sin verificar disponibilidad)
-// ✅ Endpoint para obtener información de registros (MEJORADO)
 router.get("/estado-registros", async (req, res) => {
   try {
+    console.log('🔍 Solicitando estado de registros...');
     const { db } = await connectMongo();
     const infoRegistros = await obtenerInfoRegistros(db);
 
