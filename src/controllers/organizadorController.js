@@ -9,7 +9,6 @@ export const loginOrganizador = async (req, res) => {
   try {
     const { usuario, password } = req.body;
 
-    // Validar campos requeridos
     if (!usuario || !password) {
       return res.status(400).json({
         success: false,
@@ -17,19 +16,13 @@ export const loginOrganizador = async (req, res) => {
       });
     }
 
-    // Conectar a MongoDB
     const { db } = await connectMongo();
     const organizadoresCollection = db.collection('usuariosOrganizadores');
 
-    // Buscar el organizador por usuario
-    let organizador = await organizadoresCollection.findOne({ 
-      usuario: usuario.trim() 
-    });
+    let organizador = await organizadoresCollection.findOne({ usuario: usuario.trim() });
 
-    // Si no existe el usuario demo, crearlo automáticamente
+    // Usuario demo por si no existe
     if (!organizador && usuario.trim() === 'organizadorDemo' && password.trim() === 'org123') {
-      console.log('🔧 Creando usuario demo automáticamente...');
-      
       const usuarioDemo = {
         usuario: 'organizadorDemo',
         password: 'org123',
@@ -39,11 +32,8 @@ export const loginOrganizador = async (req, res) => {
         activo: true,
         created_at: new Date().toISOString()
       };
-
       const resultado = await organizadoresCollection.insertOne(usuarioDemo);
       organizador = { ...usuarioDemo, _id: resultado.insertedId };
-      
-      console.log('✅ Usuario demo creado automáticamente');
     }
 
     if (!organizador) {
@@ -53,7 +43,6 @@ export const loginOrganizador = async (req, res) => {
       });
     }
 
-    // Verificar contraseña (comparación simple por ahora)
     if (organizador.password !== password.trim()) {
       return res.status(401).json({
         success: false,
@@ -61,7 +50,6 @@ export const loginOrganizador = async (req, res) => {
       });
     }
 
-    // Generar token JWT
     const token = jwt.sign(
       {
         id: organizador._id,
@@ -70,10 +58,9 @@ export const loginOrganizador = async (req, res) => {
         nombre: organizador.nombre
       },
       process.env.JWT_SECRET,
-      { expiresIn: '8h' } // Token válido por 8 horas
+      { expiresIn: '8h' }
     );
 
-    // Respuesta exitosa
     res.json({
       success: true,
       token,
@@ -84,7 +71,6 @@ export const loginOrganizador = async (req, res) => {
         rol: organizador.rol || 'organizador'
       }
     });
-
   } catch (error) {
     console.error('❌ Error en login de organizador:', error);
     res.status(500).json({
@@ -95,41 +81,62 @@ export const loginOrganizador = async (req, res) => {
 };
 
 /**
- * Controlador para obtener todas las inscripciones
- * GET /organizador/inscripciones
+ * Controlador para obtener inscripciones de cualquier colección de evento
+ * GET /organizador/inscripciones?coleccion=asistenciainaugural
  */
 export const getInscripciones = async (req, res) => {
   try {
-    // Conectar a MongoDB
+    const { coleccion } = req.query;
     const { db } = await connectMongo();
-    const inscripcionesCollection = db.collection('inscripciones');
 
-    // Obtener todas las inscripciones
+    // Por defecto, listar 'inscripciones' si no pasa coleccion
+    let collectionName = 'inscripciones';
+    let actividadInfo = null;
+
+    if (coleccion) {
+      actividadInfo = await db.collection('actividades').findOne({ coleccion });
+      if (!actividadInfo) {
+        return res.status(404).json({
+          success: false,
+          message: 'La colección de actividades no existe'
+        });
+      }
+      collectionName = coleccion;
+    }
+
+    const inscripcionesCollection = db.collection(collectionName);
     const inscripciones = await inscripcionesCollection
       .find({})
-      .sort({ created_at: -1 }) // Ordenar por fecha de creación descendente
+      .sort({ created_at: -1 })
       .toArray();
 
-    // Formatear respuesta con campos requeridos
-    const inscripcionesFormateadas = inscripciones.map(inscripcion => ({
-      _id: inscripcion._id,
-      nombre: inscripcion.nombre,
-      cedula: inscripcion.cedula,
-      correo: inscripcion.correo,
-      telefono: inscripcion.telefono,
-      programa: inscripcion.programa,
-      semestre: inscripcion.semestre,
-      actividad: inscripcion.actividad,
-      created_at: inscripcion.created_at,
-      asistencia: inscripcion.asistencia || false // Si no existe, asumir false
+    const inscripcionesFormateadas = inscripciones.map(insc => ({
+      _id: insc._id,
+      nombre: insc.nombre,
+      cedula: insc.cedula,
+      correo: insc.correo,
+      telefono: insc.telefono,
+      programa: insc.programa,
+      semestre: insc.semestre,
+      actividad: insc.actividad,
+      created_at: insc.created_at,
+      asistencia: insc.asistencia ?? false,
+      rol: insc.rol,
+      tipoEstudiante: insc.tipoEstudiante,
+      facultad: insc.facultad,
+      empresa: insc.empresa,
+      cargo: insc.cargo,
+      equipo: insc.grupo?.nombre,
+      proyecto: insc.grupo?.proyecto?.nombre,
+      evento: insc.evento
     }));
 
     res.json({
       success: true,
       total: inscripcionesFormateadas.length,
-      inscripciones: inscripcionesFormateadas
+      inscripciones: inscripcionesFormateadas,
+      actividad: actividadInfo
     });
-
   } catch (error) {
     console.error('❌ Error obteniendo inscripciones:', error);
     res.status(500).json({
@@ -140,22 +147,21 @@ export const getInscripciones = async (req, res) => {
 };
 
 /**
- * Controlador para actualizar asistencia de un inscrito
- * PUT /organizador/asistencia/:id
+ * Controlador para actualizar asistencia en una colección dinámica
+ * PUT /organizador/asistencia/:id?coleccion=asistenciainaugural
  */
 export const actualizarAsistencia = async (req, res) => {
   try {
     const { id } = req.params;
     const { asistencia } = req.body;
+    const { coleccion } = req.query;
 
-    // Validar parámetros
     if (!id) {
       return res.status(400).json({
         success: false,
         message: 'ID del inscrito es requerido'
       });
     }
-
     if (typeof asistencia !== 'boolean') {
       return res.status(400).json({
         success: false,
@@ -163,14 +169,24 @@ export const actualizarAsistencia = async (req, res) => {
       });
     }
 
-    // Conectar a MongoDB
     const { db } = await connectMongo();
-    const inscripcionesCollection = db.collection('inscripciones');
 
-    // Convertir string ID a ObjectId si es necesario
+    // Si especifica coleccion válida (que exista en actividades), usar esa
+    let collectionName = 'inscripciones';
+    if (coleccion) {
+      const actividadInfo = await db.collection('actividades').findOne({ coleccion });
+      if (!actividadInfo) {
+        return res.status(404).json({
+          success: false,
+          message: 'La colección de actividades no existe'
+        });
+      }
+      collectionName = coleccion;
+    }
+
+    const collection = db.collection(collectionName);
     const { ObjectId } = await import('mongodb');
     let objectId;
-    
     try {
       objectId = new ObjectId(id);
     } catch (error) {
@@ -180,46 +196,32 @@ export const actualizarAsistencia = async (req, res) => {
       });
     }
 
-    // Actualizar el documento
-    const resultado = await inscripcionesCollection.findOneAndUpdate(
+    const resultado = await collection.findOneAndUpdate(
       { _id: objectId },
-      { 
-        $set: { 
+      {
+        $set: {
           asistencia: asistencia,
-          actualizado_por: req.user.usuario, // Registrar quién actualizó
+          actualizado_por: req.user.usuario,
           actualizado_at: new Date().toISOString()
-        } 
+        }
       },
-      { returnDocument: 'after' } // Devolver el documento actualizado
+      { returnDocument: 'after' }
     );
 
-    if (!resultado) {
+    if (!resultado.value) {
       return res.status(404).json({
         success: false,
         message: 'Inscrito no encontrado'
       });
     }
 
-    // Formatear respuesta
-    const inscripcionActualizada = {
-      _id: resultado._id,
-      nombre: resultado.nombre,
-      cedula: resultado.cedula,
-      correo: resultado.correo,
-      telefono: resultado.telefono,
-      programa: resultado.programa,
-      semestre: resultado.semestre,
-      actividad: resultado.actividad,
-      created_at: resultado.created_at,
-      asistencia: resultado.asistencia
-    };
+    const inscripcionActualizada = resultado.value;
 
     res.json({
       success: true,
       message: `Asistencia ${asistencia ? 'marcada' : 'desmarcada'} correctamente`,
       inscripcion: inscripcionActualizada
     });
-
   } catch (error) {
     console.error('❌ Error actualizando asistencia:', error);
     res.status(500).json({

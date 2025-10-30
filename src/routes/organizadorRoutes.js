@@ -11,28 +11,27 @@ const router = Router();
 /**
  * POST /organizador/login
  * Endpoint público para autenticación de organizadores
- * No requiere middleware de autenticación
  */
 router.post('/login', loginOrganizador);
 
 /**
  * GET /organizador/inscripciones
- * Endpoint protegido para obtener todas las inscripciones
- * Requiere token JWT válido
+ * Endpoint protegido para obtener inscripciones de un evento/colección específica
+ * Requiere: ?coleccion=nombreColeccion (por ejemplo: ?coleccion=asistenciainaugural)
  */
 router.get('/inscripciones', authMiddleware, getInscripciones);
 
 /**
  * PUT /organizador/asistencia/:id
- * Endpoint protegido para actualizar asistencia de un inscrito
- * Requiere token JWT válido
+ * Endpoint protegido para actualizar asistencia de un inscrito en la colección indicada
+ * Requiere: ?coleccion=nombreColeccion (por ejemplo: ?coleccion=asistenciainaugural)
+ * Body: { asistencia: true|false }
  */
 router.put('/asistencia/:id', authMiddleware, actualizarAsistencia);
 
 /**
  * GET /organizador/profile
  * Endpoint protegido para obtener información del organizador autenticado
- * Requiere token JWT válido
  */
 router.get('/profile', authMiddleware, (req, res) => {
   res.json({
@@ -43,16 +42,29 @@ router.get('/profile', authMiddleware, (req, res) => {
 
 /**
  * GET /organizador/stats
- * Endpoint protegido para obtener estadísticas básicas
- * Requiere token JWT válido
+ * Estadísticas básicas de la colección indicada (o de inscripciones por defecto)
+ * Requiere: ?coleccion=nombreColeccion (opcional)
  */
 router.get('/stats', authMiddleware, async (req, res) => {
   try {
     const { connectMongo } = await import('../mongo.js');
     const { db } = await connectMongo();
-    const inscripcionesCollection = db.collection('inscripciones');
+    const { coleccion } = req.query;
+    let collectionName = 'inscripciones';
+    if (coleccion) {
+      // Valida que la colección exista
+      const actividad = await db.collection('actividades').findOne({ coleccion });
+      if (!actividad) {
+        return res.status(404).json({
+          success: false,
+          message: 'La colección de actividades no existe'
+        });
+      }
+      collectionName = coleccion;
+    }
+    const inscripcionesCollection = db.collection(collectionName);
 
-    // Obtener estadísticas básicas
+    // Estadísticas
     const totalInscripciones = await inscripcionesCollection.countDocuments();
     const totalAsistencia = await inscripcionesCollection.countDocuments({ asistencia: true });
     const totalSinAsistencia = await inscripcionesCollection.countDocuments({ asistencia: false });
@@ -73,55 +85,6 @@ router.get('/stats', authMiddleware, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor'
-    });
-  }
-});
-
-/**
- * POST /organizador/setup-demo
- * Endpoint temporal para crear usuario de prueba en producción
- * Solo para uso de desarrollo/setup inicial
- */
-router.post('/setup-demo', async (req, res) => {
-  try {
-    const { connectMongo } = await import('../mongo.js');
-    const { db } = await connectMongo();
-    const organizadoresCollection = db.collection('usuariosOrganizadores');
-
-    const usuarioDemo = {
-      usuario: 'organizadorDemo',
-      password: 'org123',
-      nombre: 'Organizador Demo',
-      rol: 'organizador',
-      email: 'organizador.demo@unicatolica.edu.co',
-      activo: true,
-      updated_at: new Date().toISOString(),
-    };
-
-    const resultado = await organizadoresCollection.updateOne(
-      { usuario: 'organizadorDemo' },
-      { 
-        $set: usuarioDemo, 
-        $setOnInsert: { created_at: new Date().toISOString() } 
-      },
-      { upsert: true }
-    );
-
-    res.json({
-      success: true,
-      message: 'Usuario demo creado/actualizado correctamente',
-      usuario: 'organizadorDemo',
-      password: 'org123',
-      inserted: resultado.upsertedCount === 1,
-      updated: resultado.matchedCount === 1
-    });
-
-  } catch (error) {
-    console.error('❌ Error creando usuario demo:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error interno del servidor',
-      error: error.message
     });
   }
 });
