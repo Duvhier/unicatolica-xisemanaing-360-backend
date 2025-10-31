@@ -1,38 +1,24 @@
+// organizadorRoutes.js - VERSIÓN CORREGIDA
 import { Router } from 'express';
-import { authMiddleware } from '../middleware/authMiddleware.js';
+import { authMiddleware } from '../middleware/authMiddleware.js'; // ← Ruta correcta
 import { 
   loginOrganizador, 
   getInscripciones, 
-  actualizarAsistencia 
+  actualizarAsistencia,
+  buscarInscripcionPorId 
 } from '../controllers/organizadorController.js';
 
 const router = Router();
 
-/**
- * POST /organizador/login
- * Endpoint público para autenticación de organizadores
- */
+// Ruta pública
 router.post('/login', loginOrganizador);
 
-/**
- * GET /organizador/inscripciones
- * Endpoint protegido para obtener inscripciones de un evento/colección específica
- * Requiere: ?coleccion=nombreColeccion (por ejemplo: ?coleccion=asistenciainaugural)
- */
+// Rutas protegidas
 router.get('/inscripciones', authMiddleware, getInscripciones);
-
-/**
- * PUT /organizador/asistencia/:id
- * Endpoint protegido para actualizar asistencia de un inscrito en la colección indicada
- * Requiere: ?coleccion=nombreColeccion (por ejemplo: ?coleccion=asistenciainaugural)
- * Body: { asistencia: true|false }
- */
 router.put('/asistencia/:id', authMiddleware, actualizarAsistencia);
+router.get('/buscar-inscripcion/:id', authMiddleware, buscarInscripcionPorId);
 
-/**
- * GET /organizador/profile
- * Endpoint protegido para obtener información del organizador autenticado
- */
+// Perfil y stats
 router.get('/profile', authMiddleware, (req, res) => {
   res.json({
     success: true,
@@ -40,11 +26,6 @@ router.get('/profile', authMiddleware, (req, res) => {
   });
 });
 
-/**
- * GET /organizador/stats
- * Estadísticas básicas de la colección indicada (o de inscripciones por defecto)
- * Requiere: ?coleccion=nombreColeccion (opcional)
- */
 router.get('/stats', authMiddleware, async (req, res) => {
   try {
     const { connectMongo } = await import('../mongo.js');

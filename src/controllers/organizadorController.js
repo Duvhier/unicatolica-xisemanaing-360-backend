@@ -1,10 +1,10 @@
+// organizadorController.js - VERSIÓN CORREGIDA
 import jwt from 'jsonwebtoken';
 import { connectMongo } from '../mongo.js';
 
-/**
- * Controlador para el login de organizadores
- * POST /organizador/login
- */
+// ELIMINAR el middleware duplicado que habías agregado
+// Mantener solo las funciones del controlador
+
 export const loginOrganizador = async (req, res) => {
   try {
     const { usuario, password } = req.body;
@@ -80,10 +80,6 @@ export const loginOrganizador = async (req, res) => {
   }
 };
 
-/**
- * Controlador para obtener inscripciones de cualquier colección de evento
- * GET /organizador/inscripciones?coleccion=asistenciainaugural
- */
 export const getInscripciones = async (req, res) => {
   try {
     const { coleccion } = req.query;
@@ -146,10 +142,6 @@ export const getInscripciones = async (req, res) => {
   }
 };
 
-/**
- * Controlador para actualizar asistencia en una colección dinámica
- * PUT /organizador/asistencia/:id?coleccion=asistenciainaugural
- */
 export const actualizarAsistencia = async (req, res) => {
   try {
     const { id } = req.params;
@@ -196,12 +188,13 @@ export const actualizarAsistencia = async (req, res) => {
       });
     }
 
+    // CORREGIDO: Usar req.user del middleware
     const resultado = await collection.findOneAndUpdate(
       { _id: objectId },
       {
         $set: {
           asistencia: asistencia,
-          actualizado_por: req.user.usuario,
+          actualizado_por: req.user?.usuario || 'sistema', // ← Ahora req.user existe
           actualizado_at: new Date().toISOString()
         }
       },
@@ -224,6 +217,113 @@ export const actualizarAsistencia = async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Error actualizando asistencia:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+};
+
+/**
+ * NUEVO: Buscar inscripción por ID para el scanner QR
+ * GET /organizador/buscar-inscripcion/:id
+ */
+export const buscarInscripcionPorId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { coleccion } = req.query;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID de inscripción requerido'
+      });
+    }
+
+    const { db } = await connectMongo();
+
+    // Buscar en todas las colecciones posibles
+    const colecciones = coleccion ? [coleccion] : [
+      'inscripciones', 
+      'asistenciainaugural', 
+      'liderazgo', 
+      'hackathon', 
+      'technologicaltouch',
+      'visitazonaamerica'
+    ];
+
+    let inscripcionEncontrada = null;
+    let coleccionEncontrada = null;
+
+    for (const colName of colecciones) {
+      try {
+        const collection = db.collection(colName);
+        const { ObjectId } = await import('mongodb');
+        
+        let objectId;
+        try {
+          objectId = new ObjectId(id);
+        } catch {
+          // Si no es ObjectId válido, buscar por otros campos
+          const resultado = await collection.findOne({
+            $or: [
+              { _id: id },
+              { cedula: id },
+              { correo: id }
+            ]
+          });
+          
+          if (resultado) {
+            inscripcionEncontrada = resultado;
+            coleccionEncontrada = colName;
+            break;
+          }
+          continue;
+        }
+
+        const resultado = await collection.findOne({ _id: objectId });
+        if (resultado) {
+          inscripcionEncontrada = resultado;
+          coleccionEncontrada = colName;
+          break;
+        }
+      } catch (error) {
+        console.log(`Búsqueda en ${colName} falló:`, error.message);
+        continue;
+      }
+    }
+
+    if (!inscripcionEncontrada) {
+      return res.status(404).json({
+        success: false,
+        message: 'Inscripción no encontrada'
+      });
+    }
+
+    // Formatear respuesta
+    const inscripcionFormateada = {
+      _id: inscripcionEncontrada._id,
+      nombre: inscripcionEncontrada.nombre,
+      cedula: inscripcionEncontrada.cedula,
+      correo: inscripcionEncontrada.correo,
+      telefono: inscripcionEncontrada.telefono,
+      programa: inscripcionEncontrada.programa,
+      semestre: inscripcionEncontrada.semestre,
+      actividad: inscripcionEncontrada.actividad,
+      asistencia: inscripcionEncontrada.asistencia ?? false,
+      rol: inscripcionEncontrada.rol,
+      tipoEstudiante: inscripcionEncontrada.tipoEstudiante,
+      facultad: inscripcionEncontrada.facultad,
+      coleccion: coleccionEncontrada
+    };
+
+    res.json({
+      success: true,
+      inscripcion: inscripcionFormateada
+    });
+
+  } catch (error) {
+    console.error('❌ Error buscando inscripción:', error);
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor'
