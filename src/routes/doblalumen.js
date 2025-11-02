@@ -342,28 +342,33 @@ router.post('/registro', async (req, res) => {
             console.log("📧 Preparando envío de correo de confirmación...");
 
             // Preparar datos para el correo
+            // En la función donde preparas los datos para el correo, agrega:
             const datosCorreo = {
                 nombre: payload.nombre.trim(),
                 cedula: payload.cedula.trim(),
                 correo: payload.correo.trim(),
                 telefono: payload.telefono.trim(),
                 rol: payload.rol.trim(),
-                idEstudiante: payload.id?.trim(),
                 tipoEstudiante: payload.tipoEstudiante?.trim(),
+                idEstudiante: payload.id?.trim(),
                 programa: payload.programa?.trim(),
                 facultad: payload.facultad?.trim(),
                 semestre: payload.semestre?.trim(),
                 qr: qrDataUrl,
                 qr_image: qrDataUrl,
-                qrDataUrl: qrDataUrl
-            };
+                qrDataUrl: qrDataUrl,
 
-            // Agregar información de competencia de inglés si es participante
-            if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.competencia_ingles) {
-                datosCorreo.nivel_ingles = payload.competencia_ingles.nivel;
-                datosCorreo.modalidad_participacion = payload.competencia_ingles.modalidad;
-                datosCorreo.tema_presentacion = payload.competencia_ingles.tema;
-            }
+                // Agregar información de competencia de inglés si es participante
+                ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.competencia_ingles && {
+                    nivel_ingles: payload.competencia_ingles.nivel,
+                    experiencia_ingles: payload.competencia_ingles.experiencia,
+                    modalidad_participacion: payload.competencia_ingles.modalidad,
+                    tema_presentacion: payload.competencia_ingles.tema,
+                    duracion_participacion: payload.competencia_ingles.duracion,
+                    recursos_adicionales: payload.competencia_ingles.recursos,
+                    competencia_ingles: payload.competencia_ingles // Objeto completo por si acaso
+                })
+            };
 
             // Agregar información adicional según el rol
             if (payload.rol === 'egresado' && payload.empresa) {
@@ -379,7 +384,6 @@ router.post('/registro', async (req, res) => {
                 datosCorreo.empresa = payload.empresa.trim();
                 datosCorreo.cargo = payload.cargo.trim();
             }
-
             console.log("📨 Enviando correo para Doble Lumen...");
             await enviarCorreoRegistro(datosCorreo, 'doblalumen');
             emailEnviado = true;

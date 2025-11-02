@@ -1286,19 +1286,19 @@ Fundación Universitaria Católica Lumen Gentium
         };
     },
     // ✅ PLANTILLA PARA DOBLE LUMEN - COMPETENCIA DE INGLÉS
-doblalumen: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenDobleLumen = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762091474/DOBLALUMEN-8_toblne.png"; 
+    doblalumen: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenDobleLumen = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762091474/DOBLALUMEN-8_toblne.png";
 
-    return {
-        asunto: "🏆 Confirmación de Registro - Competencia de Inglés Doble Lumen",
-        html: `
+        return {
+            asunto: "🏆 Confirmación de Registro - Competencia Doble Lumen",
+            html: `
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirmación - Competencia de Inglés Doble Lumen</title>
+    <title>Confirmación - Competencia Doble Lumen</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         
@@ -1473,14 +1473,14 @@ doblalumen: (usuario) => {
             <div class="header-subtitle">"360°: Innovación, Liderazgo y Futuro"</div>
         </div>
         
-        <img src="${imagenDobleLumen}" alt="Competencia de Inglés Doble Lumen" class="conferencia-image">
+        <img src="${imagenDobleLumen}" alt="Competencia Doble Lumen" class="conferencia-image">
         
         <div class="content">
             <div class="welcome-section">
-                <h1 class="welcome-title">¡Registro a Competencia de Inglés Confirmado!</h1>
+                <h1 class="welcome-title">¡Registro a Doble Lumen Confirmado!</h1>
                 <p class="welcome-text">
                     Hola <strong>${usuario.nombre}</strong>,<br>
-                    Te has registrado exitosamente a la <strong>Competencia de Inglés Doble Lumen</strong>.
+                    Te has registrado exitosamente a la <strong>Competencia Doble Lumen</strong>.
                 </p>
             </div>
             
@@ -1494,10 +1494,13 @@ doblalumen: (usuario) => {
                         <li><strong>Teléfono:</strong> ${usuario.telefono}</li>
                         <li><strong>Rol:</strong> ${usuario.rol}</li>
                         ${usuario.idEstudiante ? `<li><strong>ID Estudiante:</strong> ${usuario.idEstudiante}</li>` : ''}
-                        ${usuario.tipoEstudiante ? `<li><strong>Tipo:</strong> ${usuario.tipoEstudiante}</li>` : ''}
+                        ${usuario.tipoEstudiante ? `<li><strong>Tipo de Participación:</strong> ${usuario.tipoEstudiante === 'participante' ? 'Participante Activo' : 'Asistente'}</li>` : ''}
                         ${usuario.programa ? `<li><strong>Programa:</strong> ${usuario.programa}</li>` : ''}
                         ${usuario.facultad ? `<li><strong>Facultad:</strong> ${usuario.facultad}</li>` : ''}
                         ${usuario.semestre ? `<li><strong>Semestre:</strong> ${usuario.semestre}</li>` : ''}
+                        ${usuario.area ? `<li><strong>Área:</strong> ${usuario.area}</li>` : ''}
+                        ${usuario.cargo ? `<li><strong>Cargo:</strong> ${usuario.cargo}</li>` : ''}
+                        ${usuario.empresa ? `<li><strong>Empresa:</strong> ${usuario.empresa}</li>` : ''}
                     </ul>
                 </div>
                 
@@ -1516,14 +1519,26 @@ doblalumen: (usuario) => {
                 </div>
             </div>
 
-            ${usuario.equipo ? `
+            ${(usuario.rol === 'estudiante' && usuario.tipoEstudiante === 'participante' && (usuario.competencia_ingles || usuario.nivel_ingles)) ? `
             <div class="info-card">
-                <h3 class="card-title">👥 Información del Equipo</h3>
+                <h3 class="card-title">🗣️ Información de la Competencia de Inglés</h3>
                 <ul class="info-list">
-                    <li><strong>Nombre del equipo:</strong> ${usuario.equipo}</li>
-                    <li><strong>Proyecto/Discurso:</strong> ${usuario.proyecto}</li>
-                    <li><strong>Categoría:</strong> ${usuario.categoria}</li>
-                    ${usuario.institucion ? `<li><strong>Institución:</strong> ${usuario.institucion}</li>` : ''}
+                    <li><strong>Nivel de inglés:</strong> ${usuario.nivel_ingles || usuario.competencia_ingles?.nivel || 'No especificado'}</li>
+                    <li><strong>Experiencia:</strong> ${usuario.experiencia_ingles || usuario.competencia_ingles?.experiencia || 'No especificada'}</li>
+                    <li><strong>Modalidad:</strong> ${usuario.modalidad_participacion || usuario.competencia_ingles?.modalidad || 'No especificada'}</li>
+                    <li><strong>Tema de presentación:</strong> ${usuario.tema_presentacion || usuario.competencia_ingles?.tema || 'No especificado'}</li>
+                    <li><strong>Duración:</strong> ${usuario.duracion_participacion || usuario.competencia_ingles?.duracion || 'No especificada'}</li>
+                    ${(usuario.recursos_adicionales || usuario.competencia_ingles?.recursos) ? `<li><strong>Recursos adicionales:</strong> ${usuario.recursos_adicionales || usuario.competencia_ingles?.recursos}</li>` : ''}
+                </ul>
+            </div>
+            ` : ''}
+
+            ${(usuario.rol === 'estudiante' && usuario.tipoEstudiante === 'asistente') ? `
+            <div class="info-card">
+                <h3 class="card-title">👀 Modalidad de Participación</h3>
+                <ul class="info-list">
+                    <li><strong>Tipo:</strong> Asistente (Observación)</li>
+                    <li><strong>Descripción:</strong> Podrás observar la competencia sin participar activamente</li>
                 </ul>
             </div>
             ` : ''}
@@ -1540,7 +1555,7 @@ doblalumen: (usuario) => {
                 <h3 style="color: #e84118; margin: 0 0 15px 0; font-size: 18px;">🗣️ Sobre la Competencia de Inglés</h3>
                 <p style="color: #e84118; margin: 0; font-size: 14px; line-height: 1.5;">
                     <strong>Doble Lumen</strong> es una competencia diseñada para poner a prueba tus habilidades en el idioma inglés. 
-                    Los participantes demostrarán sus competencias en speaking, listening, y comunicación efectiva 
+                    Los participantes demostrarán sus competencias en speaking, presentation, debate y storytelling
                     en un ambiente de sana competencia y aprendizaje intercultural.
                 </p>
             </div>
@@ -1583,7 +1598,7 @@ doblalumen: (usuario) => {
 </body>
 </html>
         `,
-        texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - COMPETENCIA DE INGLÉS DOBLE LUMEN
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -1600,10 +1615,13 @@ Te has registrado exitosamente a la Competencia de Inglés Doble Lumen.
 - Teléfono: ${usuario.telefono}
 - Rol: ${usuario.rol}
 ${usuario.idEstudiante ? `- ID Estudiante: ${usuario.idEstudiante}\n` : ''}
-${usuario.tipoEstudiante ? `- Tipo: ${usuario.tipoEstudiante}\n` : ''}
+${usuario.tipoEstudiante ? `- Tipo de Participación: ${usuario.tipoEstudiante === 'participante' ? 'Participante Activo' : 'Asistente'}\n` : ''}
 ${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
 ${usuario.facultad ? `- Facultad: ${usuario.facultad}\n` : ''}
 ${usuario.semestre ? `- Semestre: ${usuario.semestre}\n` : ''}
+${usuario.area ? `- Área: ${usuario.area}\n` : ''}
+${usuario.cargo ? `- Cargo: ${usuario.cargo}\n` : ''}
+${usuario.empresa ? `- Empresa: ${usuario.empresa}\n` : ''}
 
 🏆 DETALLES DE LA COMPETENCIA:
 - Evento: Competencia de Inglés
@@ -1614,17 +1632,25 @@ ${usuario.semestre ? `- Semestre: ${usuario.semestre}\n` : ''}
 - Modalidad: Presencial
 - Tipo: Competencia Lingüística
 
-${usuario.equipo ? `
-👥 INFORMACIÓN DEL EQUIPO:
-- Equipo: ${usuario.equipo}
-- Proyecto/Discurso: ${usuario.proyecto}
-- Categoría: ${usuario.categoria}
-${usuario.institucion ? `- Institución: ${usuario.institucion}\n` : ''}
+${(usuario.rol === 'estudiante' && usuario.tipoEstudiante === 'participante' && (usuario.competencia_ingles || usuario.nivel_ingles)) ? `
+🗣️ INFORMACIÓN DE LA COMPETENCIA DE INGLÉS:
+- Nivel de inglés: ${usuario.nivel_ingles || usuario.competencia_ingles?.nivel || 'No especificado'}
+- Experiencia: ${usuario.experiencia_ingles || usuario.competencia_ingles?.experiencia || 'No especificada'}
+- Modalidad: ${usuario.modalidad_participacion || usuario.competencia_ingles?.modalidad || 'No especificada'}
+- Tema de presentación: ${usuario.tema_presentacion || usuario.competencia_ingles?.tema || 'No especificado'}
+- Duración: ${usuario.duracion_participacion || usuario.competencia_ingles?.duracion || 'No especificada'}
+${(usuario.recursos_adicionales || usuario.competencia_ingles?.recursos) ? `- Recursos adicionales: ${usuario.recursos_adicionales || usuario.competencia_ingles?.recursos}\n` : ''}
+` : ''}
+
+${(usuario.rol === 'estudiante' && usuario.tipoEstudiante === 'asistente') ? `
+👀 MODALIDAD DE PARTICIPACIÓN:
+- Tipo: Asistente (Observación)
+- Descripción: Podrás observar la competencia sin participar activamente
 ` : ''}
 
 🗣️ SOBRE LA COMPETENCIA DE INGLÉS:
 Doble Lumen es una competencia diseñada para poner a prueba tus habilidades en el idioma inglés. 
-Los participantes demostrarán sus competencias en speaking, listening, y comunicación efectiva 
+Los participantes demostrarán sus competencias en speaking, presentation, debate y storytelling
 en un ambiente de sana competencia y aprendizaje intercultural.
 
 📝 PREPARACIÓN PARA LA COMPETENCIA:
@@ -1646,8 +1672,8 @@ en un ambiente de sana competencia y aprendizaje intercultural.
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Competencia de Inglés Doble Lumen
         `
-    };
-},
+        };
+    },
     // ✅ PLANTILLA PARA ASISTENCIA INAUGURAL
     asistenciainaugural: (usuario) => {
         const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
