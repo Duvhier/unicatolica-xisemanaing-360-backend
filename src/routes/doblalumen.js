@@ -47,6 +47,7 @@ async function obtenerInfoRegistros(db) {
 }
 
 // ✅ Validación de campos ACTUALIZADA - Incluye validación del ID
+// ✅ Validación de campos ACTUALIZADA - Para competencia de inglés
 function validatePayload(body) {
     const errors = [];
 
@@ -81,25 +82,22 @@ function validatePayload(body) {
             errors.push('Semestre es requerido para estudiantes');
         }
 
-        // Solo validar campos de equipo si es PARTICIPANTE
+        // ✅ MODIFICADO: Validar campos de competencia de inglés si es PARTICIPANTE
         if (body.tipoEstudiante === 'participante') {
-            if (!body.grupo || !body.grupo.nombre || !body.grupo.nombre.trim()) {
-                errors.push('Nombre del equipo es requerido para participantes');
+            if (!body.competencia_ingles || !body.competencia_ingles.nivel || !body.competencia_ingles.nivel.trim()) {
+                errors.push('Nivel de inglés es requerido para participantes');
             }
-            if (!body.grupo || !body.grupo.proyecto || !body.grupo.proyecto.nombre || !body.grupo.proyecto.nombre.trim()) {
-                errors.push('Nombre del proyecto es requerido para participantes');
+            if (!body.competencia_ingles || !body.competencia_ingles.experiencia || !body.competencia_ingles.experiencia.trim()) {
+                errors.push('Experiencia en inglés es requerida para participantes');
             }
-            if (!body.grupo || !body.grupo.proyecto || !body.grupo.proyecto.descripcion || !body.grupo.proyecto.descripcion.trim()) {
-                errors.push('Descripción del proyecto es requerida para participantes');
+            if (!body.competencia_ingles || !body.competencia_ingles.modalidad || !body.competencia_ingles.modalidad.trim()) {
+                errors.push('Modalidad de participación es requerida para participantes');
             }
-            if (!body.grupo || !body.grupo.proyecto || !body.grupo.proyecto.categoria || !body.grupo.proyecto.categoria.trim()) {
-                errors.push('Categoría de participación es requerida para participantes');
+            if (!body.competencia_ingles || !body.competencia_ingles.tema || !body.competencia_ingles.tema.trim()) {
+                errors.push('Tema de presentación es requerido para participantes');
             }
-            if (!body.grupo || !body.grupo.institucion || !body.grupo.institucion.trim()) {
-                errors.push('Institución o empresa es requerida para participantes');
-            }
-            if (!body.grupo || !body.grupo.correo || !body.grupo.correo.trim()) {
-                errors.push('Correo electrónico del equipo es requerido para participantes');
+            if (!body.competencia_ingles || !body.competencia_ingles.duracion || !body.competencia_ingles.duracion.trim()) {
+                errors.push('Duración de presentación es requerida para participantes');
             }
         }
     }
@@ -133,8 +131,8 @@ function validatePayload(body) {
 
     return { ok: errors.length === 0, errors };
 }
-
 // ✅ Función para verificar duplicados en la base de datos
+// ✅ Función para verificar duplicados en la base de datos - ACTUALIZADA
 async function checkDuplicates(db, payload) {
     const col = db.collection('doblalumen');
     const duplicates = [];
@@ -157,27 +155,9 @@ async function checkDuplicates(db, payload) {
         }
     }
 
-    // 3. Verificar nombre de equipo duplicado (solo para participantes)
-    if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && payload.grupo.nombre) {
-        const existingTeam = await col.findOne({
-            'grupo.nombre': payload.grupo.nombre.trim()
-        });
-        if (existingTeam) {
-            duplicates.push(`El nombre de equipo "${payload.grupo.nombre}" ya está registrado`);
-        }
-    }
+    // 3. ✅ ELIMINADO: No hay nombres de equipo para verificar en competencia de inglés
 
-    // 4. Verificar nombre de proyecto duplicado (solo para participantes)
-    if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && payload.grupo.proyecto && payload.grupo.proyecto.nombre) {
-        const existingProject = await col.findOne({
-            'grupo.proyecto.nombre': payload.grupo.proyecto.nombre.trim()
-        });
-        if (existingProject) {
-            duplicates.push(`El nombre de proyecto "${payload.grupo.proyecto.nombre}" ya está registrado`);
-        }
-    }
-
-    // 5. Verificar correo duplicado
+    // 4. Verificar correo duplicado
     const existingEmail = await col.findOne({
         correo: payload.correo.trim()
     });
@@ -187,12 +167,11 @@ async function checkDuplicates(db, payload) {
 
     return duplicates;
 }
-
-// ✅ Endpoint principal para registro - CON VALIDACIÓN DE DUPLICADOS Y CUPOS
+// ✅ Endpoint principal para registro - ACTUALIZADO PARA COMPETENCIA DE INGLÉS
 router.post('/registro', async (req, res) => {
     try {
         const payload = req.body || {};
-        console.log('🎯 INICIANDO REGISTRO EN COLECCIÓN DOBLALUMEN');
+        console.log('🎯 INICIANDO REGISTRO EN COLECCIÓN DOBLALUMEN - COMPETENCIA DE INGLÉS');
         console.log('📥 Payload recibido:', JSON.stringify(payload, null, 2));
 
         // 🔹 Validación básica del payload
@@ -239,7 +218,7 @@ router.post('/registro', async (req, res) => {
 
         const nowIso = new Date().toISOString();
 
-        // 🔹 Construcción del documento a guardar - ACTUALIZADO CON ID
+        // 🔹 Construcción del documento a guardar - ACTUALIZADO PARA COMPETENCIA DE INGLÉS
         const doc = {
             // Datos personales básicos
             nombre: payload.nombre.trim(),
@@ -280,28 +259,24 @@ router.post('/registro', async (req, res) => {
             actividades: payload.actividades || ['doble-lumen'],
             actividad: 'doble-lumen',
 
-            // Información del equipo SOLO para estudiantes participantes
-            ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && {
-                grupo: {
-                    nombre: payload.grupo.nombre.trim(),
-                    integrantes: payload.grupo.integrantes || [payload.nombre.trim()],
-                    proyecto: {
-                        nombre: payload.grupo.proyecto.nombre.trim(),
-                        descripcion: payload.grupo.proyecto.descripcion.trim(),
-                        categoria: payload.grupo.proyecto.categoria.trim()
-                    },
-                    institucion: payload.grupo.institucion.trim(),
-                    correo: payload.grupo.correo.trim(),
-                    ...(payload.grupo.telefono && { telefono: payload.grupo.telefono.trim() })
+            // ✅ NUEVO: Información de competencia de inglés SOLO para estudiantes participantes
+            ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.competencia_ingles && {
+                competencia_ingles: {
+                    nivel: payload.competencia_ingles.nivel.trim(),
+                    experiencia: payload.competencia_ingles.experiencia.trim(),
+                    modalidad: payload.competencia_ingles.modalidad.trim(),
+                    tema: payload.competencia_ingles.tema.trim(),
+                    duracion: payload.competencia_ingles.duracion.trim(),
+                    ...(payload.competencia_ingles.recursos && { recursos: payload.competencia_ingles.recursos.trim() })
                 }
             }),
 
-            // Metadatos del evento - ACTUALIZADO PARA DOBLE LUMEN
+            // Metadatos del evento - ACTUALIZADO PARA COMPETENCIA DE INGLÉS
             evento: 'Doble Lumen',
-            tipo_evento: 'conferencia-innovacion',
+            tipo_evento: 'competencia-idiomas',
             horario: '6:30 pm - 9:30 pm',
-            lugar: 'Sede Melendez Auditorio Principal',
-            ponentes: ['Conferencistas Internacionales', 'Expertos en Innovación'],
+            lugar: 'Auditorio 1 - Sede Pance',
+            modalidades: ['Speaking', 'Presentation', 'Debate', 'Storytelling'],
             created_at: nowIso,
             updated_at: nowIso
         };
@@ -314,7 +289,7 @@ router.post('/registro', async (req, res) => {
 
         console.log('✅✅✅ DOCUMENTO GUARDADO EN COLECCIÓN DOBLALUMEN CON ID:', insertedId);
 
-        // 🔹 Generar el código QR - ACTUALIZADO CON ID
+        // 🔹 Generar el código QR - ACTUALIZADO PARA COMPETENCIA DE INGLÉS
         const qrPayload = {
             id: insertedId.toString(),
             participante: {
@@ -323,17 +298,20 @@ router.post('/registro', async (req, res) => {
                 rol: payload.rol,
                 ...(payload.rol === 'estudiante' && {
                     tipoEstudiante: payload.tipoEstudiante,
-                    idEstudiante: payload.id // ✅ INCLUIR ID EN EL QR
+                    idEstudiante: payload.id
                 })
             },
-            ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && {
-                equipo: payload.grupo.nombre,
-                proyecto: payload.grupo.proyecto.nombre
+            ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.competencia_ingles && {
+                competencia: {
+                    nivel: payload.competencia_ingles.nivel,
+                    modalidad: payload.competencia_ingles.modalidad,
+                    tema: payload.competencia_ingles.tema
+                }
             }),
             actividad: 'Doble Lumen',
-            evento: 'Doble Lumen - Conferencia de Innovación',
+            evento: 'Doble Lumen - Competencia de Inglés',
             horario: '6:30 pm - 9:30 pm',
-            lugar: 'Sede Melendez Auditorio Principal',
+            lugar: 'Auditorio 1 - Sede Pance',
             emitido: nowIso
         };
 
@@ -351,7 +329,7 @@ router.post('/registro', async (req, res) => {
                 $set: {
                     qr_data: qrPayload,
                     qr_generated_at: nowIso,
-                    qr_image: qrDataUrl // Opcional: guardar también la imagen base64
+                    qr_image: qrDataUrl
                 }
             }
         );
@@ -363,7 +341,7 @@ router.post('/registro', async (req, res) => {
         try {
             console.log("📧 Preparando envío de correo de confirmación...");
 
-            // Preparar datos para el correo - VERSIÓN CORREGIDA CON MÚLTIPLES PROPIEDADES QR
+            // Preparar datos para el correo
             const datosCorreo = {
                 nombre: payload.nombre.trim(),
                 cedula: payload.cedula.trim(),
@@ -375,18 +353,16 @@ router.post('/registro', async (req, res) => {
                 programa: payload.programa?.trim(),
                 facultad: payload.facultad?.trim(),
                 semestre: payload.semestre?.trim(),
-                // QR con múltiples nombres para compatibilidad
                 qr: qrDataUrl,
                 qr_image: qrDataUrl,
                 qrDataUrl: qrDataUrl
             };
 
-            // Agregar información del equipo si es participante
-            if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo) {
-                datosCorreo.equipo = payload.grupo.nombre?.trim();
-                datosCorreo.proyecto = payload.grupo.proyecto?.nombre?.trim();
-                datosCorreo.categoria = payload.grupo.proyecto?.categoria?.trim();
-                datosCorreo.institucion = payload.grupo.institucion?.trim();
+            // Agregar información de competencia de inglés si es participante
+            if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.competencia_ingles) {
+                datosCorreo.nivel_ingles = payload.competencia_ingles.nivel;
+                datosCorreo.modalidad_participacion = payload.competencia_ingles.modalidad;
+                datosCorreo.tema_presentacion = payload.competencia_ingles.tema;
             }
 
             // Agregar información adicional según el rol
@@ -404,35 +380,20 @@ router.post('/registro', async (req, res) => {
                 datosCorreo.cargo = payload.cargo.trim();
             }
 
-            // 🔍 VERIFICACIÓN DE DATOS ANTES DE ENVIAR
-            console.log("🔍 VERIFICACIÓN QR ANTES DE ENVIAR CORREO:");
-            console.log("QR Data URL length:", qrDataUrl.length);
-            console.log("QR starts with data:image:", qrDataUrl.startsWith('data:image'));
-            console.log("Datos correo QR property:", !!datosCorreo.qr);
-            console.log("Datos correo QR_IMAGE property:", !!datosCorreo.qr_image);
-            console.log("Datos correo QRDataUrl property:", !!datosCorreo.qrDataUrl);
-
-            console.log("📨 Datos para el correo:", JSON.stringify({
-                ...datosCorreo,
-                qr: datosCorreo.qr ? `[QR_DATA_LENGTH: ${datosCorreo.qr.length}]` : 'NO_QR',
-                qr_image: datosCorreo.qr_image ? `[QR_IMAGE_LENGTH: ${datosCorreo.qr_image.length}]` : 'NO_QR_IMAGE',
-                qrDataUrl: datosCorreo.qrDataUrl ? `[QR_DATA_URL_LENGTH: ${datosCorreo.qrDataUrl.length}]` : 'NO_QR_DATA_URL'
-            }, null, 2));
-
-            // Enviar correo
+            console.log("📨 Enviando correo para Doble Lumen...");
             await enviarCorreoRegistro(datosCorreo, 'doblalumen');
             emailEnviado = true;
             console.log("✅ Correo de Doble Lumen enviado exitosamente a:", payload.correo);
         } catch (emailError) {
             console.error("❌ Error al enviar correo:", emailError);
-            // No retornamos error aquí, solo logueamos para no afectar el registro
         }
+
         // 🔹 Obtener información actualizada después del registro
         const infoActualizada = await obtenerInfoRegistros(db);
 
-        // 🔹 Respuesta exitosa - ACTUALIZADA CON ID Y ESTADO DE CORREO
+        // 🔹 Respuesta exitosa - ACTUALIZADA
         const response = {
-            message: 'Inscripción al Doble Lumen registrada correctamente',
+            message: 'Inscripción a la Competencia de Inglés Doble Lumen registrada correctamente',
             id: insertedId,
             qr: qrDataUrl,
             qrData: qrPayload,
@@ -447,12 +408,13 @@ router.post('/registro', async (req, res) => {
                 rol: payload.rol,
                 ...(payload.rol === 'estudiante' && {
                     tipoEstudiante: payload.tipoEstudiante,
-                    idEstudiante: payload.id, // ✅ INCLUIR ID EN RESPUESTA
+                    idEstudiante: payload.id,
                     programa: payload.programa,
                     semestre: payload.semestre
                 }),
-                ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && {
-                    equipo: payload.grupo.nombre
+                ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.competencia_ingles && {
+                    nivel_ingles: payload.competencia_ingles.nivel,
+                    modalidad: payload.competencia_ingles.modalidad
                 })
             },
             coleccion: 'doblalumen',
@@ -462,22 +424,22 @@ router.post('/registro', async (req, res) => {
         console.log('✅ Respuesta exitosa:', JSON.stringify(response, null, 2));
         return res.status(201).json(response);
     } catch (err) {
-        console.error('❌ Error en /inscripciones/registro:', err);
+        console.error('❌ Error en /doblalumen/registro:', err);
         return res.status(500).json({
             message: 'Error interno del servidor',
             error: err.message
         });
     }
 });
-
 // ✅ Endpoint para verificar disponibilidad de datos
+// ✅ Endpoint para verificar disponibilidad de datos - SIMPLIFICADO
 router.post('/verificar-disponibilidad', async (req, res) => {
     try {
-        const { cedula, idEstudiante, nombreEquipo, nombreProyecto, correo } = req.body;
+        const { cedula, idEstudiante, correo } = req.body;
         const { db } = await connectMongo();
         const col = db.collection('doblalumen');
 
-        console.log('🔍 Verificando disponibilidad de datos:', { cedula, idEstudiante, nombreEquipo, nombreProyecto, correo });
+        console.log('🔍 Verificando disponibilidad de datos para Doble Lumen:', { cedula, idEstudiante, correo });
 
         // 🔹 Obtener información actual de registros
         const infoRegistros = await obtenerInfoRegistros(db);
@@ -485,8 +447,6 @@ router.post('/verificar-disponibilidad', async (req, res) => {
         const disponibilidad = {
             cedula: true,
             idEstudiante: true,
-            nombreEquipo: true,
-            nombreProyecto: true,
             correo: true,
             mensajes: []
         };
@@ -509,24 +469,6 @@ router.post('/verificar-disponibilidad', async (req, res) => {
             }
         }
 
-        // Verificar nombre de equipo
-        if (nombreEquipo) {
-            const existingTeam = await col.findOne({ 'grupo.nombre': nombreEquipo.trim() });
-            if (existingTeam) {
-                disponibilidad.nombreEquipo = false;
-                disponibilidad.mensajes.push('El nombre del equipo ya está registrado');
-            }
-        }
-
-        // Verificar nombre de proyecto
-        if (nombreProyecto) {
-            const existingProject = await col.findOne({ 'grupo.proyecto.nombre': nombreProyecto.trim() });
-            if (existingProject) {
-                disponibilidad.nombreProyecto = false;
-                disponibilidad.mensajes.push('El nombre del proyecto ya está registrado');
-            }
-        }
-
         // Verificar correo
         if (correo) {
             const existingEmail = await col.findOne({ correo: correo.trim() });
@@ -540,7 +482,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
         return res.json({
             message: 'Verificación de disponibilidad completada',
             disponibilidad,
-            todosDisponibles: disponibilidad.cedula && disponibilidad.idEstudiante && disponibilidad.nombreEquipo && disponibilidad.nombreProyecto && disponibilidad.correo,
+            todosDisponibles: disponibilidad.cedula && disponibilidad.idEstudiante && disponibilidad.correo,
             infoRegistros: {
                 inscritos: infoRegistros.inscritos,
                 cupoMaximo: infoRegistros.cupoMaximo,
@@ -549,14 +491,13 @@ router.post('/verificar-disponibilidad', async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('❌ Error en /inscripciones/verificar-disponibilidad:', err);
+        console.error('❌ Error en /doblalumen/verificar-disponibilidad:', err);
         return res.status(500).json({
             message: 'Error interno del servidor',
             error: err.message
         });
     }
 });
-
 // ✅ Endpoint para obtener información de registros (sin verificar disponibilidad)
 router.get("/estado-registros", async (req, res) => {
     try {
