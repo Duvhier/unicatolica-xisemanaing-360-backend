@@ -1674,6 +1674,510 @@ Fundación Universitaria Católica Lumen Gentium
         `
         };
     },
+    // ✅ PLANTILLA PARA CERTIFICACIÓN FULL STACK - MODALIDAD VIRTUAL
+desarrollofullstack: (usuario) => {
+    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+    const imagenFullStack = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762105982/devseniologo_vhjhlv.png";
+
+    return {
+        asunto: "🚀 Confirmación de Inscripción - Certificación Full Stack Virtual",
+        html: `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación - Certificación Full Stack Virtual</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        .header-title {
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 10px 0 5px 0;
+        }
+        
+        .header-subtitle {
+            color: #e0e7ff;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .conferencia-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-title {
+            color: #667eea;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .card-title {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .info-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .info-list li strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .virtual-badge {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        
+        .qr-section {
+            text-align: center;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px dashed #667eea;
+        }
+        
+        .qr-image {
+            width: 200px;
+            height: 200px;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .certificacion-section {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .sesiones-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .sesion-card {
+            background: white;
+            border: 1px solid #d6e4ff;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .plataforma-info {
+            background: #fff7e6;
+            border: 1px solid #ffd591;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #e0e7ff;
+            font-size: 12px;
+        }
+        
+        .footer-logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        @media screen and (max-width: 480px) {
+            .header { padding: 20px 15px; }
+            .logo { max-width: 200px; }
+            .content { padding: 20px 15px; }
+            .info-grid { grid-template-columns: 1fr; gap: 20px; }
+            .qr-image { width: 160px; height: 160px; }
+            .conferencia-image { max-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="logo">
+            <div class="header-title">XI Semana de la Ingeniería</div>
+            <div class="header-subtitle">"360°: Innovación, Liderazgo y Futuro"</div>
+        </div>
+        
+        <img src="${imagenFullStack}" alt="Certificación Full Stack Virtual" class="conferencia-image">
+        
+        <div class="content">
+            <div class="welcome-section">
+                <div class="virtual-badge">🎯 MODALIDAD 100% VIRTUAL</div>
+                <h1 class="welcome-title">¡Inscripción a Certificación Virtual Confirmada!</h1>
+                <p class="welcome-text">
+                    Hola <strong>${usuario.nombre}</strong>,<br>
+                    Te has inscrito exitosamente a la <strong>Certificación Full Stack Virtual: Spring Boot, Angular & AI</strong>.
+                </p>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="card-title">👤 Información del Participante</h3>
+                    <ul class="info-list">
+                        <li><strong>Nombre:</strong> ${usuario.nombre}</li>
+                        <li><strong>Cédula:</strong> ${usuario.cedula}</li>
+                        <li><strong>Correo:</strong> ${usuario.correo}</li>
+                        <li><strong>Teléfono:</strong> ${usuario.telefono}</li>
+                        <li><strong>Rol:</strong> ${usuario.rol === 'estudiante' ? 'Estudiante' : 'Egresado'}</li>
+                        ${usuario.idEstudiante ? `<li><strong>ID Estudiante:</strong> ${usuario.idEstudiante}</li>` : ''}
+                        ${usuario.facultad ? `<li><strong>Facultad:</strong> ${usuario.facultad}</li>` : ''}
+                        ${usuario.programa ? `<li><strong>Programa:</strong> ${usuario.programa}</li>` : ''}
+                        ${usuario.semestre ? `<li><strong>Semestre:</strong> ${usuario.semestre}</li>` : ''}
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="card-title">💻 Información Técnica</h3>
+                    <ul class="info-list">
+                        <li><strong>Nivel de inglés:</strong> ${usuario.nivelIngles}</li>
+                        <li><strong>Experiencia programación:</strong> ${usuario.experienciaProgramacion}</li>
+                        ${usuario.conocimientoSpring ? `<li><strong>Spring Boot:</strong> ${usuario.conocimientoSpring}</li>` : ''}
+                        ${usuario.conocimientoAngular ? `<li><strong>Angular:</strong> ${usuario.conocimientoAngular}</li>` : ''}
+                        ${usuario.conocimientoAI ? `<li><strong>AI/ML:</strong> ${usuario.conocimientoAI}</li>` : ''}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <h3 class="card-title">🎯 Detalles de la Certificación Virtual</h3>
+                <ul class="info-list">
+                    <li><strong>Evento:</strong> Certificación Full Stack Virtual</li>
+                    <li><strong>Nombre:</strong> Spring Boot, Angular & AI</li>
+                    <li><strong>Fechas:</strong> 10, 12, 14 Noviembre 2025</li>
+                    <li><strong>Horario:</strong> 8:00 pm - 10:00 pm</li>
+                    <li><strong>Modalidad:</strong> 100% Virtual - En Vivo</li>
+                    <li><strong>Plataforma:</strong> Microsoft Teams</li>
+                    <li><strong>Certificado:</strong> Internacional DevSeniorCode</li>
+                    <li><strong>Duración:</strong> 3 sesiones (6 horas total)</li>
+                    <li><strong>Acceso:</strong> Desde cualquier dispositivo</li>
+                </ul>
+            </div>
+
+            <div class="plataforma-info">
+                <h3 style="color: #fa8c16; margin: 0 0 15px 0; font-size: 18px;">💻 Información de la Plataforma Virtual</h3>
+                <p style="color: #fa8c16; margin: 0 0 10px 0; font-size: 14px;">
+                    <strong>Plataforma:</strong> Microsoft Teams<br>
+                    <strong>Enlace de acceso:</strong> Se enviará 1 hora antes de cada sesión<br>
+                    <strong>Requisitos técnicos:</strong> Conexión a internet estable, audio y micrófono<br>
+                    <strong>Compatibilidad:</strong> Windows, Mac, Linux, iOS, Android
+                </p>
+            </div>
+
+            <div class="sesiones-grid">
+                <div class="sesion-card">
+                    <h4 style="color: #667eea; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">📚 Sesión 1 - 10 Nov (Virtual)</h4>
+                    <p style="color: #555; margin: 0; font-size: 14px;">
+                        <strong>Backend Empresarial con Spring Boot + AI</strong><br>
+                        APIs RESTful, PostgreSQL, Arquitectura empresarial, Conexión con APIs de AI
+                    </p>
+                </div>
+                
+                <div class="sesion-card">
+                    <h4 style="color: #667eea; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">🎨 Sesión 2 - 12 Nov (Virtual)</h4>
+                    <p style="color: #555; margin: 0; font-size: 14px;">
+                        <strong>Frontend Empresarial con Angular + AI</strong><br>
+                        Fundamentos de Angular, Componentes, Consumo de APIs, Integración con AI
+                    </p>
+                </div>
+                
+                <div class="sesion-card">
+                    <h4 style="color: #667eea; margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">🔗 Sesión 3 - 14 Nov (Virtual)</h4>
+                    <p style="color: #555; margin: 0; font-size: 14px;">
+                        <strong>Integración Full Stack con AI</strong><br>
+                        Integración backend-frontend, Flujo de datos, Casos reales con AI
+                    </p>
+                </div>
+            </div>
+
+            ${usuario.qr_image ? `
+            <div class="qr-section">
+                <h3 class="card-title">🎫 Código QR de Acceso Virtual</h3>
+                <img src="${usuario.qr_image}" alt="Código QR" class="qr-image">
+                <p class="welcome-text">Este código contiene tu información de acceso a la plataforma virtual</p>
+            </div>
+            ` : ''}
+
+            <div class="certificacion-section">
+                <h3 style="color: #1890ff; margin: 0 0 15px 0; font-size: 18px;">🚀 Certificación Full Stack Virtual</h3>
+                <p style="color: #1890ff; margin: 0; font-size: 14px; line-height: 1.5;">
+                    <strong>DevSeniorCode Academy</strong> te ofrece esta certificación intensiva <strong>100% virtual</strong> donde aprenderás 
+                    a construir aplicaciones inteligentes con las tecnologías más demandadas del mercado. Desde la comodidad 
+                    de tu hogar, desarrollarás habilidades en backend empresarial con Spring Boot, frontend moderno con Angular 
+                    e integración con Inteligencia Artificial.
+                </p>
+            </div>
+
+            <div style="background: #f6ffed; border: 1px solid #b7eb8f; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #52c41a; margin: 0 0 15px 0; font-size: 18px;">📝 Preparación para la Certificación Virtual</h3>
+                <ul style="color: #52c41a; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li><strong>Conéctate 10 minutos antes</strong> para verificar tu acceso</li>
+                    <li><strong>Prepara tu portátil</strong> con Node.js y Java instalados</li>
+                    <li><strong>Verifica tu conexión a internet</strong> y equipo de audio</li>
+                    <li><strong>Configura tu entorno</strong> de desarrollo (VS Code recomendado)</li>
+                    <li><strong>Espacio tranquilo</strong> sin interrupciones</li>
+                    <li><strong>Participación activa</strong> con micrófono y cámara opcional</li>
+                    <li><strong>Descarga Microsoft Teams</strong> o usa la versión web</li>
+                </ul>
+            </div>
+
+            <div style="background: #fff7e6; border: 1px solid #ffd591; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #fa8c16; margin: 0 0 15px 0; font-size: 18px;">🎯 Lo que Aprenderás</h3>
+                <ul style="color: #fa8c16; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li><strong>Desarrollo backend</strong> con Spring Boot y PostgreSQL</li>
+                    <li><strong>Desarrollo frontend</strong> con Angular y TypeScript</li>
+                    <li><strong>Integración de APIs</strong> de Inteligencia Artificial</li>
+                    <li><strong>Arquitectura empresarial</strong> escalable y mantenible</li>
+                    <li><strong>Despliegue de aplicaciones</strong> full stack</li>
+                    <li><strong>Mejores prácticas</strong> de desarrollo moderno</li>
+                    <li><strong>Trabajo remoto</strong> eficiente en equipos de desarrollo</li>
+                </ul>
+            </div>
+
+            <div style="background: #f0f8ff; border: 1px solid #87ceeb; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #1890ff; margin: 0 0 15px 0; font-size: 18px;">💡 Beneficios de la Modalidad Virtual</h3>
+                <ul style="color: #1890ff; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li><strong>Flexibilidad horaria</strong> desde cualquier ubicación</li>
+                    <li><strong>Acceso desde cualquier dispositivo</strong> con internet</li>
+                    <li><strong>Grabación de sesiones</strong> disponible por 30 días</li>
+                    <li><strong>Material digital</strong> descargable</li>
+                    <li><strong>Interacción directa</strong> con instructores especializados</li>
+                    <li><strong>Networking virtual</strong> con otros participantes</li>
+                    <li><strong>Sin desplazamientos</strong> - Ahorro de tiempo y costos</li>
+                </ul>
+            </div>
+
+            ${usuario.motivacion ? `
+            <div style="background: #f9f0ff; border: 1px solid #d3adf7; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #722ed1; margin: 0 0 15px 0; font-size: 18px;">💫 Tu Motivación</h3>
+                <p style="color: #722ed1; margin: 0; font-size: 14px; line-height: 1.5; font-style: italic;">
+                    "${usuario.motivacion}"
+                </p>
+            </div>
+            ` : ''}
+        </div>
+        
+        <div class="footer">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="footer-logo">
+            <p>
+                <strong>Fundación Universitaria Católica Lumen Gentium</strong><br>
+                – Resolución No. 944 de 1996 MEN – SNIES 2731
+            </p>
+            <p style="margin-top: 15px; font-size: 11px; opacity: 0.8;">
+                © 2025 XI Semana de la Ingeniería - Certificación Full Stack Virtual: Spring Boot, Angular & AI
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `,
+        texto: `
+CONFIRMACIÓN DE INSCRIPCIÓN - CERTIFICACIÓN FULL STACK VIRTUAL
+XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
+
+🚀 ¡INSCRIPCIÓN A CERTIFICACIÓN FULL STACK VIRTUAL CONFIRMADA!
+
+Hola ${usuario.nombre},
+
+Te has inscrito exitosamente a la Certificación Full Stack Virtual: Spring Boot, Angular & AI.
+
+👤 INFORMACIÓN DEL PARTICIPANTE:
+- Nombre: ${usuario.nombre}
+- Cédula: ${usuario.cedula}
+- Correo: ${usuario.correo}
+- Teléfono: ${usuario.telefono}
+- Rol: ${usuario.rol === 'estudiante' ? 'Estudiante' : 'Egresado'}
+${usuario.idEstudiante ? `- ID Estudiante: ${usuario.idEstudiante}\n` : ''}
+${usuario.facultad ? `- Facultad: ${usuario.facultad}\n` : ''}
+${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
+${usuario.semestre ? `- Semestre: ${usuario.semestre}\n` : ''}
+
+💻 INFORMACIÓN TÉCNICA:
+- Nivel de inglés: ${usuario.nivelIngles}
+- Experiencia en programación: ${usuario.experienciaProgramacion}
+${usuario.conocimientoSpring ? `- Conocimiento Spring Boot: ${usuario.conocimientoSpring}\n` : ''}
+${usuario.conocimientoAngular ? `- Conocimiento Angular: ${usuario.conocimientoAngular}\n` : ''}
+${usuario.conocimientoAI ? `- Conocimiento AI/ML: ${usuario.conocimientoAI}\n` : ''}
+
+🎯 DETALLES DE LA CERTIFICACIÓN VIRTUAL:
+- Evento: Certificación Full Stack Virtual
+- Nombre: Spring Boot, Angular & AI
+- Fechas: 10, 12, 14 Noviembre 2025
+- Horario: 8:00 pm - 10:00 pm
+- Modalidad: 100% Virtual - En Vivo
+- Plataforma: Microsoft Teams
+- Certificado: Internacional DevSeniorCode
+- Duración: 3 sesiones (6 horas total)
+- Acceso: Desde cualquier dispositivo con internet
+
+💻 INFORMACIÓN DE LA PLATAFORMA VIRTUAL:
+- Plataforma: Microsoft Teams
+- Enlace de acceso: Se enviará 1 hora antes de cada sesión
+- Requisitos técnicos: Conexión a internet estable, audio y micrófono
+- Compatibilidad: Windows, Mac, Linux, iOS, Android
+
+📚 SESIONES VIRTUALES:
+
+Sesión 1 - 10 Nov (8:00 pm - 10:00 pm) - VIRTUAL
+Backend Empresarial con Spring Boot + AI
+- APIs RESTful con PostgreSQL
+- Arquitectura empresarial
+- Conexión con APIs de AI
+
+Sesión 2 - 12 Nov (8:00 pm - 10:00 pm) - VIRTUAL
+Frontend Empresarial con Angular + AI
+- Fundamentos de Angular
+- Componentes y consumo de APIs
+- Integración con AI
+
+Sesión 3 - 14 Nov (8:00 pm - 10:00 pm) - VIRTUAL
+Integración Full Stack con AI
+- Integración backend-frontend
+- Flujo de datos y lógica empresarial
+- Casos reales con AI
+
+🚀 CERTIFICACIÓN FULL STACK VIRTUAL:
+DevSeniorCode Academy te ofrece esta certificación intensiva 100% virtual donde aprenderás 
+a construir aplicaciones inteligentes con las tecnologías más demandadas del mercado. Desde 
+la comodidad de tu hogar, desarrollarás habilidades en backend empresarial con Spring Boot, 
+frontend moderno con Angular e integración con Inteligencia Artificial.
+
+📝 PREPARACIÓN PARA LA CERTIFICACIÓN VIRTUAL:
+• Conéctate 10 minutos antes para verificar tu acceso
+• Prepara tu portátil con Node.js y Java instalados
+• Verifica tu conexión a internet y equipo de audio
+• Configura tu entorno de desarrollo (VS Code recomendado)
+• Espacio tranquilo sin interrupciones
+• Participación activa con micrófono y cámara opcional
+• Descarga Microsoft Teams o usa la versión web
+
+🎯 LO QUE APRENDERÁS:
+• Desarrollo backend con Spring Boot y PostgreSQL
+• Desarrollo frontend con Angular y TypeScript
+• Integración de APIs de Inteligencia Artificial
+• Arquitectura empresarial escalable y mantenible
+• Despliegue de aplicaciones full stack
+• Mejores prácticas de desarrollo moderno
+• Trabajo remoto eficiente en equipos de desarrollo
+
+💡 BENEFICIOS DE LA MODALIDAD VIRTUAL:
+• Flexibilidad horaria desde cualquier ubicación
+• Acceso desde cualquier dispositivo con internet
+• Grabación de sesiones disponible por 30 días
+• Material digital descargable
+• Interacción directa con instructores especializados
+• Networking virtual con otros participantes
+• Sin desplazamientos - Ahorro de tiempo y costos
+
+${usuario.motivacion ? `
+💫 TU MOTIVACIÓN:
+"${usuario.motivacion}"
+` : ''}
+
+IMPORTANTE: El enlace de acceso a Microsoft Teams se enviará a este correo 1 hora antes de cada sesión.
+
+--
+Fundación Universitaria Católica Lumen Gentium
+© 2025 XI Semana de la Ingeniería - Certificación Full Stack Virtual: Spring Boot, Angular & AI
+        `
+    };
+},
     // ✅ PLANTILLA PARA ASISTENCIA INAUGURAL
     asistenciainaugural: (usuario) => {
         const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
