@@ -8,7 +8,7 @@ const actividadesIniciales = [
   {
     id: 1,
     nombre: "Desarrollo Personal y Liderazgo",
-    cupoMaximo: 100,
+    cupoMaximo: 80,
     tipo: "Conferencia",
     coleccion: "liderazgo"
   },
@@ -18,6 +18,13 @@ const actividadesIniciales = [
     cupoMaximo: 150,
     tipo: "Competencia", 
     coleccion: "hackathon"
+  },
+  {
+    id: 11,
+    nombre: "Doble Lumen",
+    cupoMaximo: 100,
+    tipo: "Conferencia",
+    coleccion: "doblalumen"
   },
   {
     id: 15,

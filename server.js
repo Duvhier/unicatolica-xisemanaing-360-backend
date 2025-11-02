@@ -82,6 +82,18 @@ app.get("/debug-cors", (req, res) => {
 // =========================================================
 app.use("/inscripciones", inscripcionesRouter);
 app.use("/organizador", organizadorRouter);
+
+// Ruta de depuración para verificar rutas 2FA
+app.get("/organizador/rutas-test", (req, res) => {
+  res.json({
+    rutas: [
+      "POST /organizador/login",
+      "POST /organizador/2fa/solicitar",
+      "POST /organizador/2fa/verificar"
+    ],
+    mensaje: "Rutas 2FA disponibles"
+  });
+});
 app.use("/liderazgo", liderazgoRoutes);
 app.use("/technological", technologicalRoutes);
 app.use('/visitazonaamerica', visitazonaamericaRoutes);

@@ -5,13 +5,19 @@ import {
   loginOrganizador, 
   getInscripciones, 
   actualizarAsistencia,
-  buscarInscripcionPorId 
+  buscarInscripcionPorId,
+  solicitarCodigo2FA,
+  verificarCodigo2FA
 } from '../controllers/organizadorController.js';
 
 const router = Router();
 
-// Ruta pública
+// Rutas públicas de autenticación
 router.post('/login', loginOrganizador);
+
+// Rutas públicas de autenticación 2FA
+router.post('/2fa/solicitar', solicitarCodigo2FA);
+router.post('/2fa/verificar', verificarCodigo2FA);
 
 // Rutas protegidas
 router.get('/inscripciones', authMiddleware, getInscripciones);
