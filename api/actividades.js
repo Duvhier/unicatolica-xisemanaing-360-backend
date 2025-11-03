@@ -40,6 +40,13 @@ const actividadesIniciales = [
     cupoMaximo: 30,
     tipo: "Curso",
     coleccion: "desarrollofullstack"
+  },
+  {
+    id: 10,
+    nombre: "Industria en Acción",
+    cupoMaximo: 40,
+    tipo: "Taller",
+    coleccion: "industriaenaccion"
   }
 ];
 

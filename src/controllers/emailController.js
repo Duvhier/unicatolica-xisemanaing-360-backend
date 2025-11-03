@@ -1674,6 +1674,350 @@ Fundación Universitaria Católica Lumen Gentium
         `
         };
     },
+    // ✅ PLANTILLA PARA INDUSTRIA EN ACCIÓN
+industriaenaccion: (usuario) => {
+    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+    const imagenIndustria = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203705/CONFERENCIA_COACHING-8_wf68kj.png"; // Puedes reemplazar esta imagen
+
+    return {
+        asunto: "🏭 Confirmación de Registro - Industria en Acción",
+        html: `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación - Industria en Acción</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        .header-title {
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 10px 0 5px 0;
+        }
+        
+        .header-subtitle {
+            color: #bdc3c7;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .conferencia-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-title {
+            color: #2c3e50;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #2c3e50;
+        }
+        
+        .card-title {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .info-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .info-list li strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .qr-section {
+            text-align: center;
+            background: linear-gradient(135deg, #ecf0f1 0%, #bdc3c7 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px dashed #2c3e50;
+        }
+        
+        .qr-image {
+            width: 200px;
+            height: 200px;
+            border: 3px solid #2c3e50;
+            border-radius: 12px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .oportunidades-section {
+            background: #d5dbdb;
+            border: 1px solid #a6acaf;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #ecf0f1;
+            font-size: 12px;
+        }
+        
+        .footer-logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        @media screen and (max-width: 480px) {
+            .header { padding: 20px 15px; }
+            .logo { max-width: 200px; }
+            .content { padding: 20px 15px; }
+            .info-grid { grid-template-columns: 1fr; gap: 20px; }
+            .qr-image { width: 160px; height: 160px; }
+            .conferencia-image { max-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="logo">
+            <div class="header-title">XI Semana de la Ingeniería</div>
+            <div class="header-subtitle">"360°: Innovación, Liderazgo y Futuro"</div>
+        </div>
+        
+        <img src="${imagenIndustria}" alt="Industria en Acción" class="conferencia-image">
+        
+        <div class="content">
+            <div class="welcome-section">
+                <h1 class="welcome-title">¡Registro a Industria en Acción Confirmado!</h1>
+                <p class="welcome-text">
+                    Hola <strong>${usuario.nombre}</strong>,<br>
+                    Tu registro para <strong>Industria en Acción</strong> ha sido procesado exitosamente.
+                </p>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="card-title">👤 Información del Participante</h3>
+                    <ul class="info-list">
+                        <li><strong>Nombre:</strong> ${usuario.nombre}</li>
+                        <li><strong>Cédula:</strong> ${usuario.cedula}</li>
+                        <li><strong>Correo:</strong> ${usuario.correo}</li>
+                        <li><strong>Teléfono:</strong> ${usuario.telefono}</li>
+                        <li><strong>Rol:</strong> ${usuario.rol}</li>
+                        ${usuario.idEstudiante ? `<li><strong>ID Estudiante:</strong> ${usuario.idEstudiante}</li>` : ''}
+                        ${usuario.tipoEstudiante ? `<li><strong>Tipo:</strong> ${usuario.tipoEstudiante}</li>` : ''}
+                        ${usuario.programa ? `<li><strong>Programa:</strong> ${usuario.programa}</li>` : ''}
+                        ${usuario.facultad ? `<li><strong>Facultad:</strong> ${usuario.facultad}</li>` : ''}
+                        ${usuario.semestre ? `<li><strong>Semestre:</strong> ${usuario.semestre}</li>` : ''}
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="card-title">🏭 Detalles del Evento</h3>
+                    <ul class="info-list">
+                        <li><strong>Evento:</strong> Industria en Acción</li>
+                        <li><strong>Fecha:</strong> 12 de Noviembre 2025</li>
+                        <li><strong>Horario:</strong> 6:30 pm – 9:30 pm</li>
+                        <li><strong>Duración:</strong> 4 horas</li>
+                        <li><strong>Lugar:</strong> Laboratorio de Ingeniería e Innovación</li>
+                        <li><strong>Sede:</strong> Pance</li>
+                        <li><strong>Tipo:</strong> Encuentro Empresarial</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="oportunidades-section">
+                <h3 style="color: #2c3e50; margin: 0 0 15px 0; font-size: 18px;">💼 Espacio de Interacción Empresarial</h3>
+                <p style="color: #2c3e50; margin: 0; font-size: 14px; line-height: 1.5;">
+                    <strong>Industria en Acción</strong> es un espacio diseñado para facilitar la interacción entre estudiantes 
+                    y empresas del sector industrial. Podrás conocer oportunidades laborales, proyectos de innovación 
+                    y establecer contactos directos con representantes empresariales del sector.
+                </p>
+            </div>
+
+            ${usuario.qr_image ? `
+            <div class="qr-section">
+                <h3 class="card-title">🎫 Código QR de Acceso</h3>
+                <img src="${usuario.qr_image}" alt="Código QR" class="qr-image">
+                <p class="welcome-text">Presenta este código QR en la entrada del laboratorio</p>
+            </div>
+            ` : ''}
+
+            <div style="background: #e8f6f3; border: 1px solid #1abc9c; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #16a085; margin: 0 0 15px 0; font-size: 18px;">🎯 Lo que encontrarás en Industria en Acción</h3>
+                <ul style="color: #16a085; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li><strong>Oportunidades laborales</strong> en empresas líderes del sector industrial</li>
+                    <li><strong>Proyectos de innovación</strong> en desarrollo y oportunidades de participación</li>
+                    <li><strong>Networking directo</strong> con representantes empresariales</li>
+                    <li><strong>Conocimiento del mercado laboral</strong> actual del sector industrial</li>
+                    <li><strong>Posibilidades de prácticas</strong> y proyectos de grado</li>
+                    <li><strong>Tendencias tecnológicas</strong> en la industria</li>
+                </ul>
+            </div>
+
+            <div style="background: #fef9e7; border: 1px solid #f39c12; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #e67e22; margin: 0 0 15px 0; font-size: 18px;">📝 Recomendaciones para el Evento</h3>
+                <ul style="color: #e67e22; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Llega 15 minutos antes del inicio (6:15 pm)</li>
+                    <li>Prepara tu hoja de vida actualizada (opcional)</li>
+                    <li>Vestimenta casual formal apropiada para entorno empresarial</li>
+                    <li>Prepara preguntas para los representantes empresariales</li>
+                    <li>Trae tu documento de identidad original</li>
+                    <li>Actitud proactiva para networking</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="footer-logo">
+            <p>
+                <strong>Fundación Universitaria Católica Lumen Gentium</strong><br>
+                – Resolución No. 944 de 1996 MEN – SNIES 2731
+            </p>
+            <p style="margin-top: 15px; font-size: 11px; opacity: 0.8;">
+                © 2025 XI Semana de la Ingeniería - Industria en Acción
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `,
+        texto: `
+CONFIRMACIÓN DE REGISTRO - INDUSTRIA EN ACCIÓN
+XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
+
+🏭 ¡REGISTRO A INDUSTRIA EN ACCIÓN CONFIRMADO!
+
+Hola ${usuario.nombre},
+
+Tu registro para Industria en Acción ha sido procesado exitosamente.
+
+👤 INFORMACIÓN DEL PARTICIPANTE:
+- Nombre: ${usuario.nombre}
+- Cédula: ${usuario.cedula}
+- Correo: ${usuario.correo}
+- Teléfono: ${usuario.telefono}
+- Rol: ${usuario.rol}
+${usuario.idEstudiante ? `- ID Estudiante: ${usuario.idEstudiante}\n` : ''}
+${usuario.tipoEstudiante ? `- Tipo: ${usuario.tipoEstudiante}\n` : ''}
+${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
+${usuario.facultad ? `- Facultad: ${usuario.facultad}\n` : ''}
+${usuario.semestre ? `- Semestre: ${usuario.semestre}\n` : ''}
+
+🏭 DETALLES DEL EVENTO:
+- Evento: Industria en Acción
+- Fecha: 12 de Noviembre de 2025
+- Horario: 6:30 pm – 9:30 pm
+- Duración: 4 horas
+- Lugar: Laboratorio de Ingeniería e Innovación
+- Sede: Pance
+- Tipo: Encuentro Empresarial
+
+💼 ESPACIO DE INTERACCIÓN EMPRESARIAL:
+Industria en Acción es un espacio diseñado para facilitar la interacción entre estudiantes 
+y empresas del sector industrial. Podrás conocer oportunidades laborales, proyectos de innovación 
+y establecer contactos directos con representantes empresariales del sector.
+
+🎯 LO QUE ENCONTRARÁS:
+• Oportunidades laborales en empresas líderes del sector industrial
+• Proyectos de innovación en desarrollo
+• Networking directo con representantes empresariales
+• Conocimiento del mercado laboral actual
+• Posibilidades de prácticas y proyectos de grado
+• Tendencias tecnológicas en la industria
+
+📝 RECOMENDACIONES:
+• Llega 15 minutos antes (6:15 pm)
+• Prepara tu hoja de vida actualizada (opcional)
+• Vestimenta casual formal apropiada
+• Prepara preguntas para los representantes
+• Trae tu documento de identidad original
+• Actitud proactiva para networking
+
+--
+Fundación Universitaria Católica Lumen Gentium
+© 2025 XI Semana de la Ingeniería - Industria en Acción
+        `
+    };
+},
     // ✅ PLANTILLA PARA CERTIFICACIÓN FULL STACK - MODALIDAD VIRTUAL
 desarrollofullstack: (usuario) => {
     const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";

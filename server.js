@@ -10,6 +10,7 @@ import actividadesRouter from "./api/actividades.js";
 import asistenciainauguralRoutes from "./src/routes/asistenciainaugural.js";
 import doblalumenRoutes from "./src/routes/doblalumen.js";
 import desarrollofullstackRoutes from "./src/routes/desarrollofullstack.js";
+import industriaenaccionRoutes from "./src/routes/industriaenaccion.js";
 import dns from "dns";
 
 dotenv.config();
@@ -103,6 +104,7 @@ app.use('/api/actividades', actividadesRouter);
 app.use('/asistenciainaugural', asistenciainauguralRoutes);
 app.use("/doblalumen", doblalumenRoutes);
 app.use("/desarrollofullstack", desarrollofullstackRoutes);
+app.use("/industriaenaccion", industriaenaccionRoutes);
 
 // =========================================================
 // 🚀 INICIALIZACIÓN
