@@ -2858,6 +2858,342 @@ Fundación Universitaria Católica Lumen Gentium
         `
     };
 },
+// ✅ PLANTILLA PARA VISITA CÁRNICOS
+visitacarnicos: (usuario) => {
+    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+    const imagenVisita = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762186754/VISITA_EMPRESARIAL_-8_dmebly.png";
+
+    return {
+        asunto: "🥩 Confirmación de Registro - Visita CDI Alimentos Cárnicos",
+        html: `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación - Visita Cárnicos</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #8B0000 0%, #B22222 100%);
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        .header-title {
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 10px 0 5px 0;
+        }
+        
+        .header-subtitle {
+            color: #ffb3b3;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .conferencia-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-title {
+            color: #8B0000;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #8B0000;
+        }
+        
+        .card-title {
+            color: #8B0000;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .info-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .info-list li strong {
+            color: #8B0000;
+            font-weight: 600;
+        }
+        
+        .qr-section {
+            text-align: center;
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px dashed #8B0000;
+        }
+        
+        .qr-image {
+            width: 200px;
+            height: 200px;
+            border: 3px solid #8B0000;
+            border-radius: 12px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .vehiculo-section {
+            background: #ffeaa7;
+            border: 1px solid #fdcb6e;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #8B0000 0%, #B22222 100%);
+            color: #ffe6e6;
+            font-size: 12px;
+        }
+        
+        .footer-logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        @media screen and (max-width: 480px) {
+            .header { padding: 20px 15px; }
+            .logo { max-width: 200px; }
+            .content { padding: 20px 15px; }
+            .info-grid { grid-template-columns: 1fr; gap: 20px; }
+            .qr-image { width: 160px; height: 160px; }
+            .conferencia-image { max-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="logo">
+            <div class="header-title">XI Semana de la Ingeniería</div>
+            <div class="header-subtitle">"360°: Innovación, Liderazgo y Futuro"</div>
+        </div>
+        
+        <img src="${imagenVisita}" alt="Visita CDI Alimentos Cárnicos" class="conferencia-image">
+        
+        <div class="content">
+            <div class="welcome-section">
+                <h1 class="welcome-title">¡Registro a Visita CDI Alimentos Cárnicos Confirmado!</h1>
+                <p class="welcome-text">
+                    Hola <strong>${usuario.nombre}</strong>,<br>
+                    Tu registro para la <strong>Visita Cárnicos</strong> ha sido procesado exitosamente.
+                </p>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="card-title">👤 Información Personal</h3>
+                    <ul class="info-list">
+                        <li><strong>Nombre:</strong> ${usuario.nombre}</li>
+                        <li><strong>Tipo Documento:</strong> ${usuario.tipoDocumento}</li>
+                        <li><strong>N° Documento:</strong> ${usuario.numeroDocumento}</li>
+                        <li><strong>Correo:</strong> ${usuario.correo}</li>
+                        <li><strong>Teléfono:</strong> ${usuario.telefono}</li>
+                        <li><strong>Perfil:</strong> ${usuario.perfil}</li>
+                        ${usuario.idEstudiante ? `<li><strong>ID Estudiante:</strong> ${usuario.idEstudiante}</li>` : ''}
+                        ${usuario.programa ? `<li><strong>Programa:</strong> ${usuario.programa}</li>` : ''}
+                        ${usuario.eps ? `<li><strong>EPS:</strong> ${usuario.eps}</li>` : ''}
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="card-title">🥩 Detalles de la Visita</h3>
+                    <ul class="info-list">
+                        <li><strong>Evento:</strong> Visita Cárnicos</li>
+                        <li><strong>Tipo:</strong> Visita Empresarial</li>
+                        <li><strong>Fecha:</strong> 15 de Noviembre de 2025</li>
+                        <li><strong>Hora:</strong> 9:00 am a 12:00 pm</li>
+                        <li><strong>Lugar:</strong> Empresa del Sector Cárnico</li>
+                        <li><strong>Cupo:</strong> 40 personas máximo</li>
+                    </ul>
+                </div>
+            </div>
+
+            ${usuario.placasVehiculo ? `
+            <div class="vehiculo-section">
+                <h3 style="color: #e17055; margin: 0 0 15px 0; font-size: 18px;">🚗 Información de Vehículo</h3>
+                <p style="color: #e17055; margin: 0; font-size: 14px;">
+                    <strong>Placas del vehículo:</strong> ${usuario.placasVehiculo}<br>
+                    Recuerda que el estacionamiento es sujeto a disponibilidad.
+                </p>
+            </div>
+            ` : ''}
+
+            ${usuario.qr_image ? `
+            <div class="qr-section">
+                <h3 class="card-title">🎫 Código QR de Acceso</h3>
+                <img src="${usuario.qr_image}" alt="Código QR" class="qr-image">
+                <p class="welcome-text">Presenta este código QR en el punto de encuentro</p>
+            </div>
+            ` : ''}
+
+            <div style="background: #ffe6e6; border: 1px solid #8B0000; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #8B0000; margin: 0 0 15px 0; font-size: 18px;">📋 Información Importante</h3>
+                <ul style="color: #8B0000; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Lleva tu documento de identidad original</li>
+                    <li>Puntualidad en el punto de encuentro</li>
+                    <li>Vestimenta casual formal apropiada</li>
+                    <li>Sigue las indicaciones del personal</li>
+                    <li>Usa el equipo de protección proporcionado</li>
+                    ${usuario.placasVehiculo ? `<li>Estacionamiento sujeto a disponibilidad</li>` : ''}
+                </ul>
+            </div>
+
+            <div style="background: #fff5e6; border: 1px solid #e67e22; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #e67e22; margin: 0 0 15px 0; font-size: 18px;">🥩 Sobre la Visita al Sector Cárnico</h3>
+                <p style="color: #e67e22; margin: 0; font-size: 14px; line-height: 1.5;">
+                    Esta visita te permitirá conocer los procesos industriales del sector cárnico, 
+                    desde la recepción de materia prima hasta el producto final. Podrás observar 
+                    tecnologías de procesamiento, control de calidad y buenas prácticas de manufactura.
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="footer-logo">
+            <p>
+                <strong>Fundación Universitaria Católica Lumen Gentium</strong><br>
+                – Resolución No. 944 de 1996 MEN – SNIES 2731
+            </p>
+            <p style="margin-top: 15px; font-size: 11px; opacity: 0.8;">
+                © 2025 XI Semana de la Ingeniería - Visita Cárnicos
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `,
+        texto: `
+CONFIRMACIÓN DE REGISTRO - VISITA CÁRNICOS
+XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
+
+🥩 ¡REGISTRO A VISITA CÁRNICOS CONFIRMADO!
+
+Hola ${usuario.nombre},
+
+Tu registro para la Visita Cárnicos ha sido procesado exitosamente.
+
+👤 INFORMACIÓN PERSONAL:
+- Nombre: ${usuario.nombre}
+- Tipo Documento: ${usuario.tipoDocumento}
+- N° Documento: ${usuario.numeroDocumento}
+- Correo: ${usuario.correo}
+- Teléfono: ${usuario.telefono}
+- Perfil: ${usuario.perfil}
+${usuario.idEstudiante ? `- ID Estudiante: ${usuario.idEstudiante}\n` : ''}
+${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
+${usuario.eps ? `- EPS: ${usuario.eps}\n` : ''}
+
+🥩 DETALLES DE LA VISITA:
+- Evento: Visita Cárnicos
+- Tipo: Visita Empresarial
+- Fecha: 15 de Noviembre de 2025
+- Hora: 9:00 am a 12:00 pm
+- Lugar: Empresa del Sector Cárnico
+- Cupo: 40 personas máximo
+
+${usuario.placasVehiculo ? `
+🚗 INFORMACIÓN DE VEHÍCULO:
+- Placas: ${usuario.placasVehiculo}
+- Estacionamiento sujeto a disponibilidad
+` : ''}
+
+📋 INFORMACIÓN IMPORTANTE:
+• Lleva tu documento de identidad original
+• Puntualidad en el punto de encuentro
+• Vestimenta casual formal apropiada
+• Sigue las indicaciones del personal
+• Usa el equipo de protección proporcionado
+${usuario.placasVehiculo ? `• Estacionamiento sujeto a disponibilidad\n` : ''}
+
+🥩 SOBRE LA VISITA AL SECTOR CÁRNICO:
+Esta visita te permitirá conocer los procesos industriales del sector cárnico, 
+desde la recepción de materia prima hasta el producto final. Podrás observar 
+tecnologías de procesamiento, control de calidad y buenas prácticas de manufactura.
+
+--
+Fundación Universitaria Católica Lumen Gentium
+© 2025 XI Semana de la Ingeniería - Visita Cárnicos
+        `
+    };
+},
     // ✅ PLANTILLA PARA ASISTENCIA INAUGURAL
     asistenciainaugural: (usuario) => {
         const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";

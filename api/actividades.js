@@ -61,6 +61,13 @@ const actividadesIniciales = [
     cupoMaximo: 40,
     tipo: "Visita Empresarial",
     coleccion: "visitazonaamerica"
+  },
+  {
+    id: 21,
+    nombre: "Visita CDI Alimentos Cárnicos",
+    cupoMaximo: 20,
+    tipo: "Visita Empresarial",
+    coleccion: "visitacarnicos"
   }
 ];
 
