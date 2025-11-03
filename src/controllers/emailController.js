@@ -1677,7 +1677,7 @@ Fundación Universitaria Católica Lumen Gentium
     // ✅ PLANTILLA PARA INDUSTRIA EN ACCIÓN
 industriaenaccion: (usuario) => {
     const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenIndustria = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203705/CONFERENCIA_COACHING-8_wf68kj.png"; // Puedes reemplazar esta imagen
+    const imagenIndustria = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762157109/INDUSTRIA_EN_ACCION-8_pjizmj.png"; // Puedes reemplazar esta imagen
 
     return {
         asunto: "🏭 Confirmación de Registro - Industria en Acción",

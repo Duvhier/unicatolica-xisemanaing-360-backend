@@ -234,8 +234,8 @@ router.post('/registro', async (req, res) => {
       // Metadatos del evento - ACTUALIZADO PARA INDUSTRIA EN ACCIÓN
       evento: 'Industria en Acción',
       tipo_evento: 'industria',
-      horario: 'Miércoles 12 de Noviembre de 2025, 8:00 am a 12:00 pm',
-      lugar: 'Sede Melendez - Auditorio Lumen',
+      horario: 'Miércoles 12 de Noviembre de 2025, 6:30 pm a 9:30 pm',
+      lugar: 'Sede Pance - Laboratotio de Ingeniería e Innovación',
       created_at: nowIso,
       updated_at: nowIso
     };
@@ -261,8 +261,8 @@ router.post('/registro', async (req, res) => {
       },
       actividad: 'Industria en Acción',
       evento: 'Industria en Acción',
-      horario: 'Miércoles 12 de Noviembre de 2025, 8:00 am a 12:00 pm',
-      lugar: 'Sede Melendez - Auditorio Lumen',
+      horario: 'Miércoles 12 de Noviembre de 2025, 6:30 pm a 9:30 pm',
+      lugar: 'Sede Pance - Laboratotio de Ingeniería e Innovación',
       emitido: nowIso
     };
 
@@ -305,8 +305,8 @@ router.post('/registro', async (req, res) => {
         qr: qrDataUrl,
         qr_image: qrDataUrl,
         evento: 'Industria en Acción',
-        horario: 'Miércoles 12 de Noviembre de 2025, 8:00 am a 12:00 pm',
-        lugar: 'Sede Melendez - Auditorio Lumen'
+        horario: 'Miércoles 12 de Noviembre de 2025, 6:30 pm a 9:30 pm',
+        lugar: 'Sede Pance - Laboratotio de Ingeniería e Innovación'
       };
 
       // ✅ ELIMINADO: Información del equipo (ya no aplica)
