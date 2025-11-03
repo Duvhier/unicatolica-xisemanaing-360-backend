@@ -47,6 +47,20 @@ const actividadesIniciales = [
     cupoMaximo: 40,
     tipo: "Taller",
     coleccion: "industriaenaccion"
+  },
+  {
+    id: 6,
+    nombre: "Visita EMAVI",
+    cupoMaximo: 40,
+    tipo: "Visita Empresarial",
+    coleccion: "visitaemavi"
+  },
+  {
+    id: 13,
+    nombre: "Visita Zona America",
+    cupoMaximo: 40,
+    tipo: "Visita Empresarial",
+    coleccion: "visitazonaamerica"
   }
 ];
 

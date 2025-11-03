@@ -1674,6 +1674,342 @@ Fundación Universitaria Católica Lumen Gentium
         `
         };
     },
+ // ✅ PLANTILLA PARA VISITA EMAVI
+visitaemavi: (usuario) => {
+    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+    const imagenVisita = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762178284/VISITA_EMPRESARIAL_-12-8_rbboti.png"; 
+
+    return {
+        asunto: "✈️ Confirmación de Registro - Visita EMAVI",
+        html: `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación - Visita EMAVI</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        .header-title {
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 10px 0 5px 0;
+        }
+        
+        .header-subtitle {
+            color: #c5d5ff;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .conferencia-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-title {
+            color: #1e3c72;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #1e3c72;
+        }
+        
+        .card-title {
+            color: #1e3c72;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .info-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .info-list li strong {
+            color: #1e3c72;
+            font-weight: 600;
+        }
+        
+        .qr-section {
+            text-align: center;
+            background: linear-gradient(135deg, #e8f0ff 0%, #d1e0ff 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px dashed #1e3c72;
+        }
+        
+        .qr-image {
+            width: 200px;
+            height: 200px;
+            border: 3px solid #1e3c72;
+            border-radius: 12px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .vehiculo-section {
+            background: #ffeaa7;
+            border: 1px solid #fdcb6e;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #e8f0ff;
+            font-size: 12px;
+        }
+        
+        .footer-logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        @media screen and (max-width: 480px) {
+            .header { padding: 20px 15px; }
+            .logo { max-width: 200px; }
+            .content { padding: 20px 15px; }
+            .info-grid { grid-template-columns: 1fr; gap: 20px; }
+            .qr-image { width: 160px; height: 160px; }
+            .conferencia-image { max-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="logo">
+            <div class="header-title">XI Semana de la Ingeniería</div>
+            <div class="header-subtitle">"360°: Innovación, Liderazgo y Futuro"</div>
+        </div>
+        
+        <img src="${imagenVisita}" alt="Visita EMAVI" class="conferencia-image">
+        
+        <div class="content">
+            <div class="welcome-section">
+                <h1 class="welcome-title">¡Registro a Visita EMAVI Confirmado!</h1>
+                <p class="welcome-text">
+                    Hola <strong>${usuario.nombre}</strong>,<br>
+                    Tu registro para la <strong>Visita EMAVI</strong> ha sido procesado exitosamente.
+                </p>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="card-title">👤 Información Personal</h3>
+                    <ul class="info-list">
+                        <li><strong>Nombre:</strong> ${usuario.nombre}</li>
+                        <li><strong>Tipo Documento:</strong> ${usuario.tipoDocumento}</li>
+                        <li><strong>N° Documento:</strong> ${usuario.numeroDocumento}</li>
+                        <li><strong>Correo:</strong> ${usuario.correo}</li>
+                        <li><strong>Teléfono:</strong> ${usuario.telefono}</li>
+                        <li><strong>Perfil:</strong> ${usuario.perfil}</li>
+                        ${usuario.idEstudiante ? `<li><strong>ID Estudiante:</strong> ${usuario.idEstudiante}</li>` : ''}
+                        ${usuario.programa ? `<li><strong>Programa:</strong> ${usuario.programa}</li>` : ''}
+                        ${usuario.eps ? `<li><strong>EPS:</strong> ${usuario.eps}</li>` : ''}
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="card-title">✈️ Detalles de la Visita</h3>
+                    <ul class="info-list">
+                        <li><strong>Evento:</strong> Visita EMAVI</li>
+                        <li><strong>Tipo:</strong> Visita Empresarial</li>
+                        <li><strong>Fecha:</strong> 13 de Noviembre de 2025</li>
+                        <li><strong>Hora:</strong> 8:00 am a 12:00 pm</li>
+                        <li><strong>Lugar:</strong> Escuela Militar de Aviación (EMAVI)</li>
+                        <li><strong>Cupo:</strong> 40 personas máximo</li>
+                    </ul>
+                </div>
+            </div>
+
+            ${usuario.placasVehiculo ? `
+            <div class="vehiculo-section">
+                <h3 style="color: #e17055; margin: 0 0 15px 0; font-size: 18px;">🚗 Información de Vehículo</h3>
+                <p style="color: #e17055; margin: 0; font-size: 14px;">
+                    <strong>Placas del vehículo:</strong> ${usuario.placasVehiculo}<br>
+                    Recuerda que el estacionamiento es sujeto a disponibilidad.
+                </p>
+            </div>
+            ` : ''}
+
+            ${usuario.qr_image ? `
+            <div class="qr-section">
+                <h3 class="card-title">🎫 Código QR de Acceso</h3>
+                <img src="${usuario.qr_image}" alt="Código QR" class="qr-image">
+                <p class="welcome-text">Presenta este código QR en el punto de encuentro</p>
+            </div>
+            ` : ''}
+
+            <div style="background: #d1f2eb; border: 1px solid #1e3c72; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #1e3c72; margin: 0 0 15px 0; font-size: 18px;">📋 Información Importante</h3>
+                <ul style="color: #1e3c72; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Lleva tu documento de identidad original</li>
+                    <li>Puntualidad en el punto de encuentro</li>
+                    <li>Vestimenta casual formal apropiada</li>
+                    <li>Sigue las indicaciones del personal</li>
+                    <li>No tomar fotografías sin autorización</li>
+                    ${usuario.placasVehiculo ? `<li>Estacionamiento sujeto a disponibilidad</li>` : ''}
+                </ul>
+            </div>
+
+            <div style="background: #e8f4ff; border: 1px solid #3498db; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #2980b9; margin: 0 0 15px 0; font-size: 18px;">✈️ Sobre la Visita a EMAVI</h3>
+                <p style="color: #2980b9; margin: 0; font-size: 14px; line-height: 1.5;">
+                    La Escuela Militar de Aviación (EMAVI) es una institución de educación superior 
+                    de las Fuerzas Militares de Colombia. Durante esta visita podrás conocer 
+                    sus instalaciones, procesos de formación y tecnología aeronáutica.
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="footer-logo">
+            <p>
+                <strong>Fundación Universitaria Católica Lumen Gentium</strong><br>
+                – Resolución No. 944 de 1996 MEN – SNIES 2731
+            </p>
+            <p style="margin-top: 15px; font-size: 11px; opacity: 0.8;">
+                © 2025 XI Semana de la Ingeniería - Visita EMAVI
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `,
+        texto: `
+CONFIRMACIÓN DE REGISTRO - VISITA EMAVI
+XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
+
+✈️ ¡REGISTRO A VISITA EMAVI CONFIRMADO!
+
+Hola ${usuario.nombre},
+
+Tu registro para la Visita EMAVI ha sido procesado exitosamente.
+
+👤 INFORMACIÓN PERSONAL:
+- Nombre: ${usuario.nombre}
+- Tipo Documento: ${usuario.tipoDocumento}
+- N° Documento: ${usuario.numeroDocumento}
+- Correo: ${usuario.correo}
+- Teléfono: ${usuario.telefono}
+- Perfil: ${usuario.perfil}
+${usuario.idEstudiante ? `- ID Estudiante: ${usuario.idEstudiante}\n` : ''}
+${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
+${usuario.eps ? `- EPS: ${usuario.eps}\n` : ''}
+
+✈️ DETALLES DE LA VISITA:
+- Evento: Visita EMAVI
+- Tipo: Visita Empresarial
+- Fecha: 13 de Noviembre de 2025
+- Hora: 8:00 am a 12:00 pm
+- Lugar: Escuela Militar de Aviación (EMAVI)
+- Cupo: 40 personas máximo
+
+${usuario.placasVehiculo ? `
+🚗 INFORMACIÓN DE VEHÍCULO:
+- Placas: ${usuario.placasVehiculo}
+- Estacionamiento sujeto a disponibilidad
+` : ''}
+
+📋 INFORMACIÓN IMPORTANTE:
+• Lleva tu documento de identidad original
+• Puntualidad en el punto de encuentro
+• Vestimenta casual formal apropiada
+• Sigue las indicaciones del personal
+• No tomar fotografías sin autorización
+${usuario.placasVehiculo ? `• Estacionamiento sujeto a disponibilidad\n` : ''}
+
+✈️ SOBRE LA VISITA A EMAVI:
+La Escuela Militar de Aviación (EMAVI) es una institución de educación superior 
+de las Fuerzas Militares de Colombia. Durante esta visita podrás conocer 
+sus instalaciones, procesos de formación y tecnología aeronáutica.
+
+--
+Fundación Universitaria Católica Lumen Gentium
+© 2025 XI Semana de la Ingeniería - Visita EMAVI
+        `
+    };
+},   
     // ✅ PLANTILLA PARA INDUSTRIA EN ACCIÓN
 industriaenaccion: (usuario) => {
     const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
