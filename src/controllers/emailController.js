@@ -1680,7 +1680,7 @@ desarrollofullstack: (usuario) => {
     const imagenFullStack = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762105982/devseniologo_vhjhlv.png";
 
     return {
-        asunto: "🚀 Confirmación de Inscripción - Certificación Full Stack Virtual",
+        asunto: "🚀 Confirmación de Inscripción - Certificación Full Stack Virtual DevSenior",
         html: `
 <!DOCTYPE html>
 <html lang="es">
@@ -1900,10 +1900,10 @@ desarrollofullstack: (usuario) => {
         <div class="content">
             <div class="welcome-section">
                 <div class="virtual-badge">🎯 MODALIDAD 100% VIRTUAL</div>
-                <h1 class="welcome-title">¡Inscripción a Certificación Virtual Confirmada!</h1>
+                <h1 class="welcome-title">¡Inscripción a Certificación FullStack DevSenior Confirmada!</h1>
                 <p class="welcome-text">
                     Hola <strong>${usuario.nombre}</strong>,<br>
-                    Te has inscrito exitosamente a la <strong>Certificación Full Stack Virtual: Spring Boot, Angular & AI</strong>.
+                    Te has inscrito exitosamente a la <strong>Certificación Full Stack DevSenior: Spring Boot, Angular & AI</strong>.
                 </p>
             </div>
             
@@ -1936,7 +1936,7 @@ desarrollofullstack: (usuario) => {
             </div>
 
             <div class="info-card">
-                <h3 class="card-title">🎯 Detalles de la Certificación Virtual</h3>
+                <h3 class="card-title">🎯 Detalles de la Certificación DevSenior</h3>
                 <ul class="info-list">
                     <li><strong>Evento:</strong> Certificación Full Stack Virtual</li>
                     <li><strong>Nombre:</strong> Spring Boot, Angular & AI</li>

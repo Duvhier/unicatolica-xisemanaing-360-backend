@@ -3,7 +3,7 @@ import { connectMongo } from '../src/mongo.js';
 
 const router = Router();
 
-// Datos iniciales de actividades con cupos
+// Datos iniciales de actividades con cupos - ACTUALIZADO CON FULL STACK
 const actividadesIniciales = [
   {
     id: 1,
@@ -32,6 +32,14 @@ const actividadesIniciales = [
     cupoMaximo: 200,
     tipo: "Evento",
     coleccion: "technologicaltouch"
+  },
+  // NUEVA ACTIVIDAD - CERTIFICACIÓN FULL STACK
+  {
+    id: 22,
+    nombre: "Certificación Full Stack: Spring Boot, Angular & AI",
+    cupoMaximo: 30,
+    tipo: "Curso",
+    coleccion: "desarrollofullstack"
   }
 ];
 

@@ -47,7 +47,7 @@ async function obtenerInfoRegistros(db) {
   }
 }
 
-// ✅ Validación de campos ACTUALIZADA - Incluye validación del ID
+// ✅ Validación de campos ACTUALIZADA - Eliminada validación de tipoEstudiante y grupo
 function validatePayload(body) {
   const errors = [];
 
@@ -60,17 +60,10 @@ function validatePayload(body) {
     }
   }
 
-  // ✅ NUEVO: Validar ID para estudiantes
+  // ✅ MODIFICADO: Validar ID para estudiantes (sin tipoEstudiante)
   if (body.rol === 'estudiante') {
     if (!body.id || typeof body.id !== 'string' || !body.id.trim()) {
       errors.push('ID/Número de estudiante es requerido');
-    }
-  }
-
-  // Validar campos específicos por rol
-  if (body.rol === 'estudiante') {
-    if (!body.tipoEstudiante || !body.tipoEstudiante.trim()) {
-      errors.push('Tipo de estudiante es requerido');
     }
     if (!body.facultad || !body.facultad.trim()) {
       errors.push('Facultad es requerida para estudiantes');
@@ -80,28 +73,6 @@ function validatePayload(body) {
     }
     if (!body.semestre || !body.semestre.trim()) {
       errors.push('Semestre es requerido para estudiantes');
-    }
-
-    // Solo validar campos de equipo si es PARTICIPANTE
-    if (body.tipoEstudiante === 'participante') {
-      if (!body.grupo || !body.grupo.nombre || !body.grupo.nombre.trim()) {
-        errors.push('Nombre del equipo es requerido para participantes');
-      }
-      if (!body.grupo || !body.grupo.proyecto || !body.grupo.proyecto.nombre || !body.grupo.proyecto.nombre.trim()) {
-        errors.push('Nombre del proyecto es requerido para participantes');
-      }
-      if (!body.grupo || !body.grupo.proyecto || !body.grupo.proyecto.descripcion || !body.grupo.proyecto.descripcion.trim()) {
-        errors.push('Descripción del proyecto es requerida para participantes');
-      }
-      if (!body.grupo || !body.grupo.proyecto || !body.grupo.proyecto.categoria || !body.grupo.proyecto.categoria.trim()) {
-        errors.push('Categoría de participación es requerida para participantes');
-      }
-      if (!body.grupo || !body.grupo.institucion || !body.grupo.institucion.trim()) {
-        errors.push('Institución o empresa es requerida para participantes');
-      }
-      if (!body.grupo || !body.grupo.correo || !body.grupo.correo.trim()) {
-        errors.push('Correo electrónico del equipo es requerido para participantes');
-      }
     }
   }
   else if (body.rol === 'egresado') {
@@ -135,7 +106,7 @@ function validatePayload(body) {
   return { ok: errors.length === 0, errors };
 }
 
-// ✅ Función para verificar duplicados en la base de datos - MODIFICADA PARA asistenciainaugural
+// ✅ Función para verificar duplicados en la base de datos - MODIFICADA (eliminada verificación de equipo y proyecto)
 async function checkDuplicates(db, payload) {
   const col = db.collection('asistenciainaugural');
   const duplicates = [];
@@ -158,27 +129,9 @@ async function checkDuplicates(db, payload) {
     }
   }
 
-  // 3. Verificar nombre de equipo duplicado (solo para participantes)
-  if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && payload.grupo.nombre) {
-    const existingTeam = await col.findOne({
-      'grupo.nombre': payload.grupo.nombre.trim()
-    });
-    if (existingTeam) {
-      duplicates.push(`El nombre de equipo "${payload.grupo.nombre}" ya está registrado`);
-    }
-  }
+  // ✅ ELIMINADO: Verificación de nombre de equipo y proyecto (ya no aplica)
 
-  // 4. Verificar nombre de proyecto duplicado (solo para participantes)
-  if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && payload.grupo.proyecto && payload.grupo.proyecto.nombre) {
-    const existingProject = await col.findOne({
-      'grupo.proyecto.nombre': payload.grupo.proyecto.nombre.trim()
-    });
-    if (existingProject) {
-      duplicates.push(`El nombre de proyecto "${payload.grupo.proyecto.nombre}" ya está registrado`);
-    }
-  }
-
-  // 5. Verificar correo duplicado
+  // 3. Verificar correo duplicado
   const existingEmail = await col.findOne({
     correo: payload.correo.trim()
   });
@@ -189,7 +142,7 @@ async function checkDuplicates(db, payload) {
   return duplicates;
 }
 
-// ✅ Endpoint principal para registro - MODIFICADO PARA asistenciainaugural
+// ✅ Endpoint principal para registro - MODIFICADO PARA asistenciainaugural (sin tipoEstudiante ni grupo)
 router.post('/registro', async (req, res) => {
   try {
     const payload = req.body || {};
@@ -240,7 +193,7 @@ router.post('/registro', async (req, res) => {
 
     const nowIso = new Date().toISOString();
 
-    // 🔹 Construcción del documento a guardar - ACTUALIZADO CON ID
+    // 🔹 Construcción del documento a guardar - ACTUALIZADO SIN tipoEstudiante NI grupo
     const doc = {
       // Datos personales básicos
       nombre: payload.nombre.trim(),
@@ -249,14 +202,9 @@ router.post('/registro', async (req, res) => {
       telefono: payload.telefono.trim(),
       rol: payload.rol.trim(),
 
-      // ✅ NUEVO: Incluir ID para estudiantes
+      // ✅ MODIFICADO: Incluir ID para estudiantes (sin tipoEstudiante)
       ...(payload.rol === 'estudiante' && {
-        id: payload.id.trim() // ID del estudiante
-      }),
-
-      // Campos específicos por rol
-      ...(payload.rol === 'estudiante' && {
-        tipoEstudiante: payload.tipoEstudiante.trim(),
+        id: payload.id.trim(), // ID del estudiante
         facultad: payload.facultad.trim(),
         programa: payload.programa.trim(),
         semestre: payload.semestre.trim()
@@ -281,26 +229,12 @@ router.post('/registro', async (req, res) => {
       actividades: payload.actividades || ['asistencia-inaugural'],
       actividad: 'asistencia-inaugural',
 
-      // Información del equipo SOLO para estudiantes participantes
-      ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && {
-        grupo: {
-          nombre: payload.grupo.nombre.trim(),
-          integrantes: payload.grupo.integrantes || [payload.nombre.trim()],
-          proyecto: {
-            nombre: payload.grupo.proyecto.nombre.trim(),
-            descripcion: payload.grupo.proyecto.descripcion.trim(),
-            categoria: payload.grupo.proyecto.categoria.trim()
-          },
-          institucion: payload.grupo.institucion.trim(),
-          correo: payload.grupo.correo.trim(),
-          ...(payload.grupo.telefono && { telefono: payload.grupo.telefono.trim() })
-        }
-      }),
+      // ✅ ELIMINADO: Información del equipo (ya no aplica para participantes)
 
       // Metadatos del evento - ACTUALIZADO PARA ASISTENCIA INAUGURAL
       evento: 'Asistencia Inaugural',
       tipo_evento: 'inaugural',
-      horario: 'Martes 13 de Noviembre de 2025, 6:30 pm a 7:15 am',
+      horario: 'Martes 11 de Noviembre de 2025, 6:30 pm a 7:15 pm',
       lugar: 'Sede Melendez Auditorio Lumen',
       created_at: nowIso,
       updated_at: nowIso
@@ -314,7 +248,7 @@ router.post('/registro', async (req, res) => {
 
     console.log('✅✅✅ DOCUMENTO GUARDADO EN COLECCIÓN ASISTENCIAINAUGURAL CON ID:', insertedId);
 
-    // 🔹 Generar el código QR - ACTUALIZADO CON ID
+    // 🔹 Generar el código QR - ACTUALIZADO SIN tipoEstudiante
     const qrPayload = {
       id: insertedId.toString(),
       participante: {
@@ -322,17 +256,12 @@ router.post('/registro', async (req, res) => {
         cedula: payload.cedula,
         rol: payload.rol,
         ...(payload.rol === 'estudiante' && {
-          tipoEstudiante: payload.tipoEstudiante,
-          idEstudiante: payload.id // ✅ INCLUIR ID EN EL QR
+          idEstudiante: payload.id // ✅ INCLUIR ID EN EL QR (sin tipoEstudiante)
         })
       },
-      ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && {
-        equipo: payload.grupo.nombre,
-        proyecto: payload.grupo.proyecto.nombre
-      }),
       actividad: 'Asistencia Inaugural',
       evento: 'Asistencia Inaugural',
-      horario: 'Martes 13 de Noviembre de 2025, 6:30 pm a 7:15 am',
+      horario: 'Martes 11 de Noviembre de 2025, 6:30 pm a 7:15 pm',
       lugar: 'Sede Melendez Auditorio Lumen',
       emitido: nowIso
     };
@@ -370,7 +299,6 @@ router.post('/registro', async (req, res) => {
         telefono: payload.telefono.trim(),
         rol: payload.rol.trim(),
         idEstudiante: payload.id?.trim(),
-        tipoEstudiante: payload.tipoEstudiante?.trim(),
         programa: payload.programa?.trim(),
         facultad: payload.facultad?.trim(),
         semestre: payload.semestre?.trim(),
@@ -378,13 +306,7 @@ router.post('/registro', async (req, res) => {
         qr_image: qrDataUrl 
       };
 
-      // Agregar información del equipo si es participante
-      if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo) {
-        datosCorreo.equipo = payload.grupo.nombre?.trim();
-        datosCorreo.proyecto = payload.grupo.proyecto?.nombre?.trim();
-        datosCorreo.categoria = payload.grupo.proyecto?.categoria?.trim();
-        datosCorreo.institucion = payload.grupo.institucion?.trim();
-      }
+      // ✅ ELIMINADO: Información del equipo (ya no aplica)
 
       // Agregar información adicional según el rol
       if (payload.rol === 'egresado' && payload.empresa) {
@@ -415,7 +337,7 @@ router.post('/registro', async (req, res) => {
     // 🔹 Obtener información actualizada después del registro
     const infoActualizada = await obtenerInfoRegistros(db);
 
-    // 🔹 Respuesta exitosa - ACTUALIZADA CON ID Y ESTADO DE CORREO
+    // 🔹 Respuesta exitosa - ACTUALIZADA SIN tipoEstudiante NI EQUIPO
     const response = {
       message: 'Inscripción a la Asistencia Inaugural registrada correctamente',
       id: insertedId,
@@ -431,13 +353,9 @@ router.post('/registro', async (req, res) => {
         nombre: payload.nombre,
         rol: payload.rol,
         ...(payload.rol === 'estudiante' && {
-          tipoEstudiante: payload.tipoEstudiante,
-          idEstudiante: payload.id, // ✅ INCLUIR ID EN RESPUESTA
+          idEstudiante: payload.id, // ✅ INCLUIR ID EN RESPUESTA (sin tipoEstudiante)
           programa: payload.programa,
           semestre: payload.semestre
-        }),
-        ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && {
-          equipo: payload.grupo.nombre
         })
       },
       coleccion: 'asistenciainaugural',
@@ -455,14 +373,14 @@ router.post('/registro', async (req, res) => {
   }
 });
 
-// ✅ Endpoint para verificar disponibilidad de datos - MODIFICADO PARA asistenciainaugural
+// ✅ Endpoint para verificar disponibilidad de datos - MODIFICADO (eliminada verificación de equipo y proyecto)
 router.post('/verificar-disponibilidad', async (req, res) => {
   try {
-    const { cedula, idEstudiante, nombreEquipo, nombreProyecto, correo } = req.body;
+    const { cedula, idEstudiante, correo } = req.body; // ✅ ELIMINADOS: nombreEquipo, nombreProyecto
     const { db } = await connectMongo();
     const col = db.collection('asistenciainaugural');
 
-    console.log('🔍 Verificando disponibilidad de datos:', { cedula, idEstudiante, nombreEquipo, nombreProyecto, correo });
+    console.log('🔍 Verificando disponibilidad de datos:', { cedula, idEstudiante, correo });
 
     // 🔹 Obtener información actual de registros
     const infoRegistros = await obtenerInfoRegistros(db);
@@ -470,8 +388,6 @@ router.post('/verificar-disponibilidad', async (req, res) => {
     const disponibilidad = {
       cedula: true,
       idEstudiante: true,
-      nombreEquipo: true,
-      nombreProyecto: true,
       correo: true,
       mensajes: []
     };
@@ -494,23 +410,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
       }
     }
 
-    // Verificar nombre de equipo
-    if (nombreEquipo) {
-      const existingTeam = await col.findOne({ 'grupo.nombre': nombreEquipo.trim() });
-      if (existingTeam) {
-        disponibilidad.nombreEquipo = false;
-        disponibilidad.mensajes.push('El nombre del equipo ya está registrado');
-      }
-    }
-
-    // Verificar nombre de proyecto
-    if (nombreProyecto) {
-      const existingProject = await col.findOne({ 'grupo.proyecto.nombre': nombreProyecto.trim() });
-      if (existingProject) {
-        disponibilidad.nombreProyecto = false;
-        disponibilidad.mensajes.push('El nombre del proyecto ya está registrado');
-      }
-    }
+    // ✅ ELIMINADO: Verificación de nombre de equipo y proyecto
 
     // Verificar correo
     if (correo) {
@@ -525,7 +425,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
     return res.json({
       message: 'Verificación de disponibilidad completada',
       disponibilidad,
-      todosDisponibles: disponibilidad.cedula && disponibilidad.idEstudiante && disponibilidad.nombreEquipo && disponibilidad.nombreProyecto && disponibilidad.correo,
+      todosDisponibles: disponibilidad.cedula && disponibilidad.idEstudiante && disponibilidad.correo,
       infoRegistros: {
         inscritos: infoRegistros.inscritos,
         cupoMaximo: infoRegistros.cupoMaximo,
@@ -568,7 +468,7 @@ router.get("/estado-registros", async (req, res) => {
   }
 });
 
-// ✅ Endpoint para listar inscripciones - MODIFICADO PARA asistenciainaugural
+// ✅ Endpoint para listar inscripciones - MODIFICADO PARA asistenciainaugural (sin tipoEstudiante ni equipo)
 router.get('/listar', async (req, res) => {
   try {
     const { db } = await connectMongo();
@@ -595,16 +495,12 @@ router.get('/listar', async (req, res) => {
         correo: insc.correo,
         telefono: insc.telefono,
         rol: insc.rol,
-        tipoEstudiante: insc.tipoEstudiante,
         programa: insc.programa,
         semestre: insc.semestre,
         facultad: insc.facultad,
         area: insc.area,
         cargo: insc.cargo,
         empresa: insc.empresa,
-        equipo: insc.grupo?.nombre,
-        proyecto: insc.grupo?.proyecto?.nombre,
-        categoria: insc.grupo?.proyecto?.categoria,
         evento: insc.evento,
         actividades: insc.actividades,
         created_at: insc.created_at
@@ -619,7 +515,7 @@ router.get('/listar', async (req, res) => {
   }
 });
 
-// ✅ Endpoint para buscar inscripción - MODIFICADO PARA asistenciainaugural
+// ✅ Endpoint para buscar inscripción - MODIFICADO PARA asistenciainaugural (sin tipoEstudiante ni equipo)
 router.get('/buscar/:cedula', async (req, res) => {
   try {
     const { cedula } = req.params;
@@ -652,17 +548,12 @@ router.get('/buscar/:cedula', async (req, res) => {
         correo: inscripcion.correo,
         telefono: inscripcion.telefono,
         rol: inscripcion.rol,
-        tipoEstudiante: inscripcion.tipoEstudiante,
         programa: inscripcion.programa,
         semestre: inscripcion.semestre,
         facultad: inscripcion.facultad,
         area: inscripcion.area,
         cargo: inscripcion.cargo,
         empresa: inscripcion.empresa,
-        equipo: inscripcion.grupo?.nombre,
-        proyecto: inscripcion.grupo?.proyecto?.nombre,
-        categoria: inscripcion.grupo?.proyecto?.categoria,
-        institucion: inscripcion.grupo?.institucion,
         evento: inscripcion.evento,
         actividades: inscripcion.actividades,
         created_at: inscripcion.created_at

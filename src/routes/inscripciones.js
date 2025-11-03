@@ -7,7 +7,6 @@ import { enviarCorreoRegistro } from '../controllers/emailController.js';
 const router = Router();
 
 // ✅ Función para obtener información de registros
-// ✅ Función para obtener información de registros - VERSIÓN CORREGIDA
 async function obtenerInfoRegistros(db) {
   try {
     console.log('🔍 Buscando configuración de hackathon en colección actividades...');
@@ -83,7 +82,8 @@ async function obtenerInfoRegistros(db) {
     }
   }
 }
-// ✅ Validación de campos ACTUALIZADA - Incluye validación del ID
+
+// ✅ Validación de campos ACTUALIZADA - CORREGIDA
 function validatePayload(body) {
   const errors = [];
 
@@ -96,7 +96,7 @@ function validatePayload(body) {
     }
   }
 
-  // ✅ NUEVO: Validar ID para estudiantes
+  // ✅ Validar ID para estudiantes
   if (body.rol === 'estudiante') {
     if (!body.id || typeof body.id !== 'string' || !body.id.trim()) {
       errors.push('ID/Número de estudiante es requerido');
@@ -118,26 +118,24 @@ function validatePayload(body) {
       errors.push('Semestre es requerido para estudiantes');
     }
 
-    // Solo validar campos de equipo si es PARTICIPANTE
-    if (body.tipoEstudiante === 'participante') {
-      if (!body.grupo || !body.grupo.nombre || !body.grupo.nombre.trim()) {
-        errors.push('Nombre del equipo es requerido para participantes');
-      }
-      if (!body.grupo || !body.grupo.proyecto || !body.grupo.proyecto.nombre || !body.grupo.proyecto.nombre.trim()) {
-        errors.push('Nombre del proyecto es requerido para participantes');
-      }
-      if (!body.grupo || !body.grupo.proyecto || !body.grupo.proyecto.descripcion || !body.grupo.proyecto.descripcion.trim()) {
-        errors.push('Descripción del proyecto es requerida para participantes');
-      }
-      if (!body.grupo || !body.grupo.proyecto || !body.grupo.proyecto.categoria || !body.grupo.proyecto.categoria.trim()) {
-        errors.push('Categoría de participación es requerida para participantes');
-      }
-      if (!body.grupo || !body.grupo.institucion || !body.grupo.institucion.trim()) {
-        errors.push('Institución o empresa es requerida para participantes');
-      }
-      if (!body.grupo || !body.grupo.correo || !body.grupo.correo.trim()) {
-        errors.push('Correo electrónico del equipo es requerido para participantes');
-      }
+    // ✅ VALIDACIONES DE EQUIPO PARA TODOS LOS ESTUDIANTES (SIN CONDICIÓN DUPLICADA)
+    if (!body.grupo || !body.grupo.nombre || !body.grupo.nombre.trim()) {
+      errors.push('Nombre del equipo es requerido');
+    }
+    if (!body.grupo || !body.grupo.proyecto || !body.grupo.proyecto.nombre || !body.grupo.proyecto.nombre.trim()) {
+      errors.push('Nombre del proyecto es requerido');
+    }
+    if (!body.grupo || !body.grupo.proyecto || !body.grupo.proyecto.descripcion || !body.grupo.proyecto.descripcion.trim()) {
+      errors.push('Descripción del proyecto es requerida');
+    }
+    if (!body.grupo || !body.grupo.proyecto || !body.grupo.proyecto.categoria || !body.grupo.proyecto.categoria.trim()) {
+      errors.push('Categoría de participación es requerida');
+    }
+    if (!body.grupo || !body.grupo.institucion || !body.grupo.institucion.trim()) {
+      errors.push('Institución o empresa es requerida');
+    }
+    if (!body.grupo || !body.grupo.correo || !body.grupo.correo.trim()) {
+      errors.push('Correo electrónico del equipo es requerido');
     }
   }
   else if (body.rol === 'egresado') {
@@ -171,7 +169,7 @@ function validatePayload(body) {
   return { ok: errors.length === 0, errors };
 }
 
-// ✅ Función para verificar duplicados en la base de datos
+// ✅ Función para verificar duplicados en la base de datos - ACTUALIZADA
 async function checkDuplicates(db, payload) {
   const col = db.collection('hackathon');
   const duplicates = [];
@@ -194,8 +192,8 @@ async function checkDuplicates(db, payload) {
     }
   }
 
-  // 3. Verificar nombre de equipo duplicado (solo para participantes)
-  if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && payload.grupo.nombre) {
+  // 3. Verificar nombre de equipo duplicado (✅ AHORA PARA TODOS LOS ESTUDIANTES)
+  if (payload.rol === 'estudiante' && payload.grupo && payload.grupo.nombre) {
     const existingTeam = await col.findOne({
       'grupo.nombre': payload.grupo.nombre.trim()
     });
@@ -204,8 +202,8 @@ async function checkDuplicates(db, payload) {
     }
   }
 
-  // 4. Verificar nombre de proyecto duplicado (solo para participantes)
-  if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && payload.grupo.proyecto && payload.grupo.proyecto.nombre) {
+  // 4. Verificar nombre de proyecto duplicado (✅ AHORA PARA TODOS LOS ESTUDIANTES)
+  if (payload.rol === 'estudiante' && payload.grupo && payload.grupo.proyecto && payload.grupo.proyecto.nombre) {
     const existingProject = await col.findOne({
       'grupo.proyecto.nombre': payload.grupo.proyecto.nombre.trim()
     });
@@ -225,7 +223,7 @@ async function checkDuplicates(db, payload) {
   return duplicates;
 }
 
-// ✅ Endpoint principal para registro - CON VALIDACIÓN DE DUPLICADOS Y CUPOS
+// ✅ Endpoint principal para registro - CORREGIDO
 router.post('/registro', async (req, res) => {
   try {
     const payload = req.body || {};
@@ -276,7 +274,7 @@ router.post('/registro', async (req, res) => {
 
     const nowIso = new Date().toISOString();
 
-    // 🔹 Construcción del documento a guardar - ACTUALIZADO CON ID
+    // 🔹 Construcción del documento a guardar - CORREGIDA
     const doc = {
       // Datos personales básicos
       nombre: payload.nombre.trim(),
@@ -285,9 +283,9 @@ router.post('/registro', async (req, res) => {
       telefono: payload.telefono.trim(),
       rol: payload.rol.trim(),
 
-      // ✅ NUEVO: Incluir ID para estudiantes
+      // ✅ INCLUIR ID PARA ESTUDIANTES
       ...(payload.rol === 'estudiante' && {
-        id: payload.id.trim() // ID del estudiante
+        id: payload.id.trim()
       }),
 
       // Campos específicos por rol
@@ -313,12 +311,8 @@ router.post('/registro', async (req, res) => {
         cargo: payload.cargo.trim()
       }),
 
-      // Información de actividades
-      actividades: payload.actividades || ['hackathon-universidades'],
-      actividad: 'hackathon-universidades',
-
-      // Información del equipo SOLO para estudiantes participantes
-      ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && {
+      // ✅ INFORMACIÓN DEL EQUIPO PARA TODOS LOS ESTUDIANTES
+      ...(payload.rol === 'estudiante' && payload.grupo && {
         grupo: {
           nombre: payload.grupo.nombre.trim(),
           integrantes: payload.grupo.integrantes || [payload.nombre.trim()],
@@ -332,6 +326,10 @@ router.post('/registro', async (req, res) => {
           ...(payload.grupo.telefono && { telefono: payload.grupo.telefono.trim() })
         }
       }),
+
+      // Información de actividades
+      actividades: payload.actividades || ['hackathon-universidades'],
+      actividad: 'hackathon-universidades',
 
       // Metadatos del evento
       evento: 'Hackathon Universidades',
@@ -351,7 +349,7 @@ router.post('/registro', async (req, res) => {
 
     console.log('✅✅✅ DOCUMENTO GUARDADO EN COLECCIÓN HACKATHON CON ID:', insertedId);
 
-    // 🔹 Generar el código QR - ACTUALIZADO CON ID
+    // 🔹 Generar el código QR - ACTUALIZADO
     const qrPayload = {
       id: insertedId.toString(),
       participante: {
@@ -360,10 +358,10 @@ router.post('/registro', async (req, res) => {
         rol: payload.rol,
         ...(payload.rol === 'estudiante' && {
           tipoEstudiante: payload.tipoEstudiante,
-          idEstudiante: payload.id // ✅ INCLUIR ID EN EL QR
+          idEstudiante: payload.id
         })
       },
-      ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && {
+      ...(payload.rol === 'estudiante' && payload.grupo && {
         equipo: payload.grupo.nombre,
         proyecto: payload.grupo.proyecto.nombre
       }),
@@ -395,12 +393,11 @@ router.post('/registro', async (req, res) => {
     console.log('✅ QR guardado en la base de datos');
 
     // 🔹 ENVÍO DE CORREO ELECTRÓNICO
-    // 🔹 ENVÍO DE CORREO ELECTRÓNICO
     let emailEnviado = false;
     try {
       console.log("📧 Preparando envío de correo de confirmación...");
 
-      // Preparar datos para el correo - VERSIÓN CORREGIDA CON MÚLTIPLES PROPIEDADES QR
+      // Preparar datos para el correo - ACTUALIZADA
       const datosCorreo = {
         nombre: payload.nombre.trim(),
         cedula: payload.cedula.trim(),
@@ -418,8 +415,8 @@ router.post('/registro', async (req, res) => {
         qrDataUrl: qrDataUrl
       };
 
-      // Agregar información del equipo si es participante
-      if (payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo) {
+      // ✅ AGREGAR INFORMACIÓN DEL EQUIPO PARA TODOS LOS ESTUDIANTES
+      if (payload.rol === 'estudiante' && payload.grupo) {
         datosCorreo.equipo = payload.grupo.nombre?.trim();
         datosCorreo.proyecto = payload.grupo.proyecto?.nombre?.trim();
         datosCorreo.categoria = payload.grupo.proyecto?.categoria?.trim();
@@ -464,10 +461,11 @@ router.post('/registro', async (req, res) => {
       console.error("❌ Error al enviar correo:", emailError);
       // No retornamos error aquí, solo logueamos para no afectar el registro
     }
+
     // 🔹 Obtener información actualizada después del registro
     const infoActualizada = await obtenerInfoRegistros(db);
 
-    // 🔹 Respuesta exitosa - ACTUALIZADA CON ID Y ESTADO DE CORREO
+    // 🔹 Respuesta exitosa - ACTUALIZADA
     const response = {
       message: 'Inscripción al Hackathon Universidades registrada correctamente',
       id: insertedId,
@@ -484,11 +482,12 @@ router.post('/registro', async (req, res) => {
         rol: payload.rol,
         ...(payload.rol === 'estudiante' && {
           tipoEstudiante: payload.tipoEstudiante,
-          idEstudiante: payload.id, // ✅ INCLUIR ID EN RESPUESTA
+          idEstudiante: payload.id,
           programa: payload.programa,
           semestre: payload.semestre
         }),
-        ...(payload.rol === 'estudiante' && payload.tipoEstudiante === 'participante' && payload.grupo && {
+        // ✅ AHORA TODOS LOS ESTUDIANTES TIENEN EQUIPO
+        ...(payload.rol === 'estudiante' && payload.grupo && {
           equipo: payload.grupo.nombre
         })
       },
@@ -622,6 +621,7 @@ router.get("/estado-registros", async (req, res) => {
     });
   }
 });
+
 // ✅ Endpoint para listar inscripciones - ACTUALIZADO CON ID
 router.get('/listar', async (req, res) => {
   try {
@@ -645,7 +645,7 @@ router.get('/listar', async (req, res) => {
         id: insc._id,
         nombre: insc.nombre,
         cedula: insc.cedula,
-        idEstudiante: insc.id, // ✅ INCLUIR ID EN LISTADO
+        idEstudiante: insc.id,
         correo: insc.correo,
         telefono: insc.telefono,
         rol: insc.rol,
@@ -686,7 +686,7 @@ router.get('/buscar/:cedula', async (req, res) => {
       $or: [
         { cedula: cedula },
         { correo: cedula },
-        { id: cedula } // ✅ BUSCAR TAMBIÉN POR ID DE ESTUDIANTE
+        { id: cedula }
       ]
     });
 
@@ -702,7 +702,7 @@ router.get('/buscar/:cedula', async (req, res) => {
         id: inscripcion._id,
         nombre: inscripcion.nombre,
         cedula: inscripcion.cedula,
-        idEstudiante: inscripcion.id, // ✅ INCLUIR ID EN BÚSQUEDA
+        idEstudiante: inscripcion.id,
         correo: inscripcion.correo,
         telefono: inscripcion.telefono,
         rol: inscripcion.rol,
