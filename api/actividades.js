@@ -13,6 +13,13 @@ const actividadesIniciales = [
     coleccion: "liderazgo"
   },
   {
+    id: 6,
+    nombre: "Visita EMAVI",
+    cupoMaximo: 40,
+    tipo: "Visita Empresarial", 
+    coleccion: "visitaemavi"
+  },
+  {
     id: 9,
     nombre: "Hackathon Universidades",
     cupoMaximo: 150,
@@ -33,7 +40,6 @@ const actividadesIniciales = [
     tipo: "Evento",
     coleccion: "technologicaltouch"
   },
-  // NUEVA ACTIVIDAD - CERTIFICACIÓN FULL STACK
   {
     id: 22,
     nombre: "Certificación Full Stack: Spring Boot, Angular & AI",
@@ -68,7 +74,14 @@ const actividadesIniciales = [
     cupoMaximo: 20,
     tipo: "Visita Empresarial",
     coleccion: "visitacarnicos"
-  }
+  },
+  {
+    id: 14,
+    nombre: "Olimpiadas en Lógica Matemáticas",
+    cupoMaximo: 100,
+    tipo: "Competencia",
+    coleccion: "olimpiadasmatematicas"
+  },
 ];
 
 // Inicializar actividades en la base de datos

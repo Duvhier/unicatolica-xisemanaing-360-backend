@@ -3195,9 +3195,9 @@ Fundación Universitaria Católica Lumen Gentium
     };
 },
 // ✅ PLANTILLA PARA OLIMPIADAS LÓGICA MATEMÁTICA
-olimpiadaslogica: (usuario) => {
+olimpiadasmatematica: (usuario) => {
     const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenOlimpiadas = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203705/CONFERENCIA_COACHING-8_wf68kj.png"; // Puedes cambiar esta imagen
+    const imagenOlimpiadas = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762200198/OLIMPIADAS_MATEMATICAS_-8_cmnovu.png";
 
     return {
         asunto: "🧮 Confirmación de Registro - Olimpiadas en Lógica Matemática",
