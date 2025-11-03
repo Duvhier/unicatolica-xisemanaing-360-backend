@@ -242,7 +242,7 @@ router.post('/registro', async (req, res) => {
             // Metadatos del evento
             evento: 'Visita EMAVI',
             actividad: 'visita-emavi',
-            horario: '10:00 am a 11:30 am',
+            horario: '8:00 am a 12:00 pm',
             lugar: 'Escuela Militar de Aviación (EMAVI)',
 
             // Metadatos del sistema
@@ -274,7 +274,7 @@ router.post('/registro', async (req, res) => {
             },
             actividad: 'Visita EMAVI',
             evento: 'Visita EMAVI',
-            horario: '10:00 am a 11:30 am',
+            horario: '8:00 am a 12:00 pm',
             lugar: 'Escuela Militar de Aviación (EMAVI)',
             emitido: nowIso
         };
