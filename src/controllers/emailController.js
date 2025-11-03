@@ -1980,7 +1980,7 @@ ${usuario.eps ? `- EPS: ${usuario.eps}\n` : ''}
 ✈️ DETALLES DE LA VISITA:
 - Evento: Visita EMAVI
 - Tipo: Visita Empresarial
-- Fecha: 13 de Noviembre de 2025
+- Fecha: 12 de Noviembre de 2025
 - Hora: 8:00 am a 12:00 pm
 - Lugar: Escuela Militar de Aviación (EMAVI)
 - Cupo: 40 personas máximo
