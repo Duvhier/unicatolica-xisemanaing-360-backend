@@ -46,7 +46,7 @@ async function obtenerInfoRegistros(db) {
   }
 }
 
-// ✅ Validación de campos para Olimpiadas Matemáticas
+// ✅ CORREGIDO: Validación de campos para Olimpiadas Matemáticas
 function validatePayload(body) {
   const errors = [];
 
@@ -59,7 +59,7 @@ function validatePayload(body) {
     }
   }
 
-  // Campos específicos para olimpiadas matemáticas
+  // ✅ CORREGIDO: Los campos de olimpiadas vienen directamente en el payload, NO dentro de competencia_logica
   const camposOlimpiadas = ['nivel_matematicas', 'experiencia_competencia', 'modalidad_participacion', 'tiempo_preparacion', 'motivacion_participacion'];
   
   for (const key of camposOlimpiadas) {
@@ -73,9 +73,10 @@ function validatePayload(body) {
     errors.push('El campo "actividades" debe ser un arreglo con al menos una actividad.');
   }
 
-  // Validar competencia_logica existe
-  if (!body.competencia_logica || typeof body.competencia_logica !== 'object') {
-    errors.push('Datos de competencia lógica son requeridos');
+  // ✅ CORREGIDO: competencia_logica es opcional porque los campos vienen directamente
+  // Solo validar si existe competencia_logica, que algunos campos puedan venir de ahí
+  if (body.competencia_logica && typeof body.competencia_logica !== 'object') {
+    errors.push('Datos de competencia lógica deben ser un objeto válido');
   }
 
   return { ok: errors.length === 0, errors };
@@ -115,7 +116,7 @@ async function checkDuplicates(db, payload) {
   return duplicates;
 }
 
-// ✅ Endpoint principal para registro
+// ✅ CORREGIDO: Endpoint principal para registro
 router.post('/registro', async (req, res) => {
   try {
     const payload = req.body || {};
@@ -166,7 +167,7 @@ router.post('/registro', async (req, res) => {
 
     const nowIso = new Date().toISOString();
 
-    // 🔹 Construcción del documento a guardar
+    // ✅ CORREGIDO: Construcción del documento a guardar
     const doc = {
       // Datos personales básicos (solo estudiantes)
       nombre: payload.nombre.trim(),
@@ -185,20 +186,20 @@ router.post('/registro', async (req, res) => {
       actividades: payload.actividades || ['olimpiadas-logica-matematica'],
       actividad: 'olimpiadas-logica-matematica',
 
-      // Datos específicos de la competencia
+      // ✅ CORREGIDO: Datos específicos de la competencia - usar los campos directos del payload
       competencia_logica: {
-        nivel_matematicas: payload.competencia_logica?.nivel_matematicas || payload.nivel_matematicas,
-        experiencia_competencia: payload.competencia_logica?.experiencia_competencia || payload.experiencia_competencia,
-        modalidad_participacion: payload.competencia_logica?.modalidad_participacion || payload.modalidad_participacion,
-        tiempo_preparacion: payload.competencia_logica?.tiempo_preparacion || payload.tiempo_preparacion,
-        herramientas_utilizadas: payload.competencia_logica?.herramientas_utilizadas || payload.herramientas_utilizadas || '',
-        motivacion_participacion: payload.competencia_logica?.motivacion_participacion || payload.motivacion_participacion
+        nivel_matematicas: payload.nivel_matematicas,
+        experiencia_competencia: payload.experiencia_competencia,
+        modalidad_participacion: payload.modalidad_participacion,
+        tiempo_preparacion: payload.tiempo_preparacion,
+        herramientas_utilizadas: payload.herramientas_utilizadas || '',
+        motivacion_participacion: payload.motivacion_participacion
       },
 
       // Metadatos del evento
       evento: 'Olimpiadas en Lógica Matemática',
       tipo_evento: 'competencia',
-      horario: 'Miércoles 12 de Noviembre de 2025, 6:30 pm a 9:30 pm',
+      horario: 'Miércoles 13 de Noviembre de 2025, 10:00 am a 12:00 pm',
       lugar: 'Sala 3 de Sistemas - Sede Pance',
       created_at: nowIso,
       updated_at: nowIso,
@@ -226,12 +227,12 @@ router.post('/registro', async (req, res) => {
       },
       competencia: {
         nombre: 'Olimpiadas en Lógica Matemática',
-        nivel: payload.competencia_logica?.nivel_matematicas || payload.nivel_matematicas,
-        modalidad: payload.competencia_logica?.modalidad_participacion || payload.modalidad_participacion
+        nivel: payload.nivel_matematicas,
+        modalidad: payload.modalidad_participacion
       },
       actividad: 'Olimpiadas en Lógica Matemática',
       evento: 'Olimpiadas en Lógica Matemática',
-      horario: 'Miércoles 12 de Noviembre de 2025, 6:30 pm a 9:30 pm',
+      horario: 'Miércoles 13 de Noviembre de 2025, 10:00 am a 12:00 pm',
       lugar: 'Sala 3 de Sistemas - Sede Pance',
       emitido: nowIso
     };
@@ -261,7 +262,7 @@ router.post('/registro', async (req, res) => {
     try {
       console.log("📧 Preparando envío de correo de confirmación...");
       
-      // Preparar datos para el correo
+      // ✅ CORREGIDO: Preparar datos para el correo
       const datosCorreo = {
         nombre: payload.nombre.trim(),
         cedula: payload.cedula.trim(),
@@ -272,16 +273,16 @@ router.post('/registro', async (req, res) => {
         programa: payload.programa.trim(),
         facultad: payload.facultad.trim(),
         semestre: payload.semestre.trim(),
-        nivel_matematicas: payload.competencia_logica?.nivel_matematicas || payload.nivel_matematicas,
-        experiencia_competencia: payload.competencia_logica?.experiencia_competencia || payload.experiencia_competencia,
-        modalidad_participacion: payload.competencia_logica?.modalidad_participacion || payload.modalidad_participacion,
-        tiempo_preparacion: payload.competencia_logica?.tiempo_preparacion || payload.tiempo_preparacion,
-        herramientas_utilizadas: payload.competencia_logica?.herramientas_utilizadas || payload.herramientas_utilizadas || '',
-        motivacion_participacion: payload.competencia_logica?.motivacion_participacion || payload.motivacion_participacion,
+        nivel_matematicas: payload.nivel_matematicas,
+        experiencia_competencia: payload.experiencia_competencia,
+        modalidad_participacion: payload.modalidad_participacion,
+        tiempo_preparacion: payload.tiempo_preparacion,
+        herramientas_utilizadas: payload.herramientas_utilizadas || '',
+        motivacion_participacion: payload.motivacion_participacion,
         qr: qrDataUrl,
         qr_image: qrDataUrl,
         evento: 'Olimpiadas en Lógica Matemática',
-        horario: 'Miércoles 12 de Noviembre de 2025, 6:30 pm a 9:30 pm',
+        horario: 'Miércoles 13 de Noviembre de 2025, 10:00 am a 12:00 pm',
         lugar: 'Sala 3 de Sistemas - Sede Pance'
       };
 
@@ -322,8 +323,8 @@ router.post('/registro', async (req, res) => {
         programa: payload.programa,
         semestre: payload.semestre,
         competencia: {
-          nivel_matematicas: payload.competencia_logica?.nivel_matematicas || payload.nivel_matematicas,
-          modalidad_participacion: payload.competencia_logica?.modalidad_participacion || payload.modalidad_participacion
+          nivel_matematicas: payload.nivel_matematicas,
+          modalidad_participacion: payload.modalidad_participacion
         }
       },
       coleccion: 'olimpiadasmatematicas',
