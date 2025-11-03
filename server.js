@@ -13,6 +13,7 @@ import desarrollofullstackRoutes from "./src/routes/desarrollofullstack.js";
 import industriaenaccionRoutes from "./src/routes/industriaenaccion.js";
 import visitaemaviRoutes from "./src/routes/visitaemavi.js";
 import visitacarnicosRoutes from "./src/routes/visitacarnicos.js";
+import olimpiadasmatematicasRoutes from "./src/routes/olimpiadasmatematicas.js"
 import dns from "dns";
 
 dotenv.config();
@@ -109,6 +110,7 @@ app.use("/desarrollofullstack", desarrollofullstackRoutes);
 app.use("/industriaenaccion", industriaenaccionRoutes);
 app.use("/visitaemavi", visitaemaviRoutes);
 app.use("/visitacarnicos", visitacarnicosRoutes);
+app.use("/olimpiadasmatematicas", olimpiadasmatematicasRoutes);
 
 // =========================================================
 // 🚀 INICIALIZACIÓN

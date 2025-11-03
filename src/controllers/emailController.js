@@ -2013,7 +2013,7 @@ Fundación Universitaria Católica Lumen Gentium
     // ✅ PLANTILLA PARA INDUSTRIA EN ACCIÓN
 industriaenaccion: (usuario) => {
     const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenIndustria = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762157109/INDUSTRIA_EN_ACCION-8_pjizmj.png"; // Puedes reemplazar esta imagen
+    const imagenIndustria = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762191991/OLIMPIADAS_LOGICA_MATEMATICA_qtptvj.jpg";
 
     return {
         asunto: "🏭 Confirmación de Registro - Industria en Acción",
@@ -3191,6 +3191,381 @@ tecnologías de procesamiento, control de calidad y buenas prácticas de manufac
 --
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Visita Cárnicos
+        `
+    };
+},
+// ✅ PLANTILLA PARA OLIMPIADAS LÓGICA MATEMÁTICA
+olimpiadaslogica: (usuario) => {
+    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+    const imagenOlimpiadas = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203705/CONFERENCIA_COACHING-8_wf68kj.png"; // Puedes cambiar esta imagen
+
+    return {
+        asunto: "🧮 Confirmación de Registro - Olimpiadas en Lógica Matemática",
+        html: `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación - Olimpiadas Lógica Matemática</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        .header-title {
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 10px 0 5px 0;
+        }
+        
+        .header-subtitle {
+            color: #ddd6fe;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .conferencia-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-title {
+            color: #7C3AED;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #8B5CF6;
+        }
+        
+        .card-title {
+            color: #7C3AED;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .info-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .info-list li strong {
+            color: #7C3AED;
+            font-weight: 600;
+        }
+        
+        .qr-section {
+            text-align: center;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px dashed #8B5CF6;
+        }
+        
+        .qr-image {
+            width: 200px;
+            height: 200px;
+            border: 3px solid #8B5CF6;
+            border-radius: 12px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .competencia-section {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+            color: #f3f4f6;
+            font-size: 12px;
+        }
+        
+        .footer-logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        @media screen and (max-width: 480px) {
+            .header { padding: 20px 15px; }
+            .logo { max-width: 200px; }
+            .content { padding: 20px 15px; }
+            .info-grid { grid-template-columns: 1fr; gap: 20px; }
+            .qr-image { width: 160px; height: 160px; }
+            .conferencia-image { max-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="logo">
+            <div class="header-title">XI Semana de la Ingeniería</div>
+            <div class="header-subtitle">"360°: Innovación, Liderazgo y Futuro"</div>
+        </div>
+        
+        <img src="${imagenOlimpiadas}" alt="Olimpiadas en Lógica Matemática" class="conferencia-image">
+        
+        <div class="content">
+            <div class="welcome-section">
+                <h1 class="welcome-title">¡Registro a Olimpiadas en Lógica Matemática Confirmado!</h1>
+                <p class="welcome-text">
+                    Hola <strong>${usuario.nombre}</strong>,<br>
+                    Tu registro para las <strong>Olimpiadas en Lógica Matemática</strong> ha sido procesado exitosamente.
+                </p>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="card-title">👤 Información del Estudiante</h3>
+                    <ul class="info-list">
+                        <li><strong>Nombre:</strong> ${usuario.nombre}</li>
+                        <li><strong>Cédula:</strong> ${usuario.cedula}</li>
+                        <li><strong>Correo:</strong> ${usuario.correo}</li>
+                        <li><strong>Teléfono:</strong> ${usuario.telefono}</li>
+                        <li><strong>Rol:</strong> Estudiante</li>
+                        ${usuario.idEstudiante ? `<li><strong>ID Estudiante:</strong> ${usuario.idEstudiante}</li>` : ''}
+                        ${usuario.facultad ? `<li><strong>Facultad:</strong> ${usuario.facultad}</li>` : ''}
+                        ${usuario.programa ? `<li><strong>Programa:</strong> ${usuario.programa}</li>` : ''}
+                        ${usuario.semestre ? `<li><strong>Semestre:</strong> ${usuario.semestre}</li>` : ''}
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="card-title">🧮 Detalles de las Olimpiadas</h3>
+                    <ul class="info-list">
+                        <li><strong>Evento:</strong> Olimpiadas en Lógica Matemática</li>
+                        <li><strong>Fecha:</strong> 13 de Noviembre 2025</li>
+                        <li><strong>Horario:</strong> 10:00 am - 12:00 pm</li>
+                        <li><strong>Lugar:</strong> Sala 3 de Sistemas</li>
+                        <li><strong>Sede:</strong> Pance</li>
+                        <li><strong>Duración:</strong> 3 horas</li>
+                        <li><strong>Tipo:</strong> Competencia Académica</li>
+                    </ul>
+                </div>
+            </div>
+
+            ${usuario.competencia_logica ? `
+            <div class="competencia-section">
+                <h3 style="color: #7C3AED; margin: 0 0 15px 0; font-size: 18px;">📊 Información de la Competencia</h3>
+                <ul class="info-list">
+                    <li><strong>Nivel en Matemáticas:</strong> ${usuario.competencia_logica.nivel_matematicas || usuario.nivel_matematicas || 'No especificado'}</li>
+                    <li><strong>Experiencia en Competencias:</strong> ${usuario.competencia_logica.experiencia_competencia || usuario.experiencia_competencia || 'No especificada'}</li>
+                    <li><strong>Modalidad de Participación:</strong> ${usuario.competencia_logica.modalidad_participacion || usuario.modalidad_participacion || 'No especificada'}</li>
+                    <li><strong>Tiempo de Preparación:</strong> ${usuario.competencia_logica.tiempo_preparacion || usuario.tiempo_preparacion || 'No especificado'}</li>
+                    ${(usuario.competencia_logica.herramientas_utilizadas || usuario.herramientas_utilizadas) ? `<li><strong>Herramientas Utilizadas:</strong> ${usuario.competencia_logica.herramientas_utilizadas || usuario.herramientas_utilizadas}</li>` : ''}
+                </ul>
+            </div>
+            ` : ''}
+
+            ${usuario.qr_image ? `
+            <div class="qr-section">
+                <h3 class="card-title">🎫 Código QR de Acceso</h3>
+                <img src="${usuario.qr_image}" alt="Código QR" class="qr-image">
+                <p class="welcome-text">Presenta este código QR en el registro de las olimpiadas</p>
+            </div>
+            ` : ''}
+
+            <div style="background: #f0f9ff; border: 1px solid #7dd3fc; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #0369a1; margin: 0 0 15px 0; font-size: 18px;">🎯 Preparación para las Olimpiadas</h3>
+                <ul style="color: #0369a1; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Llega 30 minutos antes del inicio (6:00 pm)</li>
+                    <li>Trae calculadora científica (permitida)</li>
+                    <li>Prepara lápiz, borrador y lapicero</li>
+                    <li>Revisa conceptos de lógica proposicional y teoría de conjuntos</li>
+                    <li>Mantén una actitud positiva y competitiva</li>
+                    <li>Trae tu documento de identidad original</li>
+                </ul>
+            </div>
+
+            <div style="background: #fdf4ff; border: 1px solid #e9d5ff; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #7C3AED; margin: 0 0 15px 0; font-size: 18px;">🧠 Sobre las Olimpiadas de Lógica Matemática</h3>
+                <p style="color: #7C3AED; margin: 0; font-size: 14px; line-height: 1.5;">
+                    Las Olimpiadas en Lógica Matemática son una competencia diseñada para poner a prueba tus habilidades 
+                    en resolución de problemas, pensamiento lógico y razonamiento abstracto. Participarás en desafíos 
+                    que evalúan tu capacidad para analizar, deducir y resolver problemas matemáticos complejos.
+                </p>
+            </div>
+
+            <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #d97706; margin: 0 0 15px 0; font-size: 18px;">🏆 Áreas de Evaluación</h3>
+                <ul style="color: #d97706; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li><strong>Lógica Proposicional:</strong> Tablas de verdad, inferencias lógicas</li>
+                    <li><strong>Teoría de Conjuntos:</strong> Operaciones, relaciones y propiedades</li>
+                    <li><strong>Razonamiento Abstracto:</strong> Secuencias, patrones y analogías</li>
+                    <li><strong>Problemas de Optimización:</strong> Toma de decisiones y estrategias</li>
+                    <li><strong>Pensamiento Crítico:</strong> Análisis y evaluación de argumentos</li>
+                </ul>
+            </div>
+
+            ${usuario.motivacion_participacion ? `
+            <div style="background: #ecfdf5; border: 1px solid #10b981; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #047857; margin: 0 0 15px 0; font-size: 18px;">💫 Tu Motivación</h3>
+                <p style="color: #047857; margin: 0; font-size: 14px; line-height: 1.5; font-style: italic;">
+                    "${usuario.motivacion_participacion}"
+                </p>
+            </div>
+            ` : ''}
+        </div>
+        
+        <div class="footer">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="footer-logo">
+            <p>
+                <strong>Fundación Universitaria Católica Lumen Gentium</strong><br>
+                – Resolución No. 944 de 1996 MEN – SNIES 2731
+            </p>
+            <p style="margin-top: 15px; font-size: 11px; opacity: 0.8;">
+                © 2025 XI Semana de la Ingeniería - Olimpiadas en Lógica Matemática
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `,
+        texto: `
+CONFIRMACIÓN DE REGISTRO - OLIMPIADAS EN LÓGICA MATEMÁTICA
+XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
+
+🧮 ¡REGISTRO A OLIMPIADAS EN LÓGICA MATEMÁTICA CONFIRMADO!
+
+Hola ${usuario.nombre},
+
+Tu registro para las Olimpiadas en Lógica Matemática ha sido procesado exitosamente.
+
+👤 INFORMACIÓN DEL ESTUDIANTE:
+- Nombre: ${usuario.nombre}
+- Cédula: ${usuario.cedula}
+- Correo: ${usuario.correo}
+- Teléfono: ${usuario.telefono}
+- Rol: Estudiante
+${usuario.idEstudiante ? `- ID Estudiante: ${usuario.idEstudiante}\n` : ''}
+${usuario.facultad ? `- Facultad: ${usuario.facultad}\n` : ''}
+${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
+${usuario.semestre ? `- Semestre: ${usuario.semestre}\n` : ''}
+
+🧮 DETALLES DE LAS OLIMPIADAS:
+- Evento: Olimpiadas en Lógica Matemática
+- Fecha: 12 de Noviembre de 2025
+- Horario: 10:00 am - 12:00 pm
+- Lugar: Sala 3 de Sistemas - Sede Pance
+- Duración: 3 horas
+- Tipo: Competencia Académica
+
+${usuario.competencia_logica ? `
+📊 INFORMACIÓN DE LA COMPETENCIA:
+- Nivel en Matemáticas: ${usuario.competencia_logica.nivel_matematicas || usuario.nivel_matematicas || 'No especificado'}
+- Experiencia en Competencias: ${usuario.competencia_logica.experiencia_competencia || usuario.experiencia_competencia || 'No especificada'}
+- Modalidad de Participación: ${usuario.competencia_logica.modalidad_participacion || usuario.modalidad_participacion || 'No especificada'}
+- Tiempo de Preparación: ${usuario.competencia_logica.tiempo_preparacion || usuario.tiempo_preparacion || 'No especificado'}
+${(usuario.competencia_logica.herramientas_utilizadas || usuario.herramientas_utilizadas) ? `- Herramientas Utilizadas: ${usuario.competencia_logica.herramientas_utilizadas || usuario.herramientas_utilizadas}\n` : ''}
+` : ''}
+
+🎯 PREPARACIÓN PARA LAS OLIMPIADAS:
+• Llega 30 minutos antes del inicio (6:00 pm)
+• Trae calculadora científica (permitida)
+• Prepara lápiz, borrador y lapicero
+• Revisa conceptos de lógica proposicional y teoría de conjuntos
+• Mantén una actitud positiva y competitiva
+• Trae tu documento de identidad original
+
+🧠 SOBRE LAS OLIMPIADAS DE LÓGICA MATEMÁTICA:
+Las Olimpiadas en Lógica Matemática son una competencia diseñada para poner a prueba tus habilidades 
+en resolución de problemas, pensamiento lógico y razonamiento abstracto. Participarás en desafíos 
+que evalúan tu capacidad para analizar, deducir y resolver problemas matemáticos complejos.
+
+🏆 ÁREAS DE EVALUACIÓN:
+• Lógica Proposicional: Tablas de verdad, inferencias lógicas
+• Teoría de Conjuntos: Operaciones, relaciones y propiedades
+• Razonamiento Abstracto: Secuencias, patrones y analogías
+• Problemas de Optimización: Toma de decisiones y estrategias
+• Pensamiento Crítico: Análisis y evaluación de argumentos
+
+${usuario.motivacion_participacion ? `
+💫 TU MOTIVACIÓN:
+"${usuario.motivacion_participacion}"
+` : ''}
+
+--
+Fundación Universitaria Católica Lumen Gentium
+© 2025 XI Semana de la Ingeniería - Olimpiadas en Lógica Matemática
         `
     };
 },
