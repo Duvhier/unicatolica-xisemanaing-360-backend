@@ -243,7 +243,7 @@ router.post('/registro', async (req, res) => {
             evento: 'Visita Cárnicos',
             actividad: 'visita-carnicos',
             horario: '9:00 am a 12:00 pm',
-            lugar: 'Empresa del Sector Cárnico',
+            lugar: 'CDI Alimentos Cárnicos',
 
             // Metadatos del sistema
             created_at: nowIso,
@@ -275,7 +275,7 @@ router.post('/registro', async (req, res) => {
             actividad: 'Visita Cárnicos',
             evento: 'Visita Cárnicos',
             horario: '9:00 am a 12:00 pm',
-            lugar: 'Empresa del Sector Cárnico',
+            lugar: 'CDI Alimentos Cárnicos',
             emitido: nowIso
         };
 

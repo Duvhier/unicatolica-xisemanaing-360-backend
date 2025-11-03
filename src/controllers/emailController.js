@@ -3080,7 +3080,7 @@ visitacarnicos: (usuario) => {
                         <li><strong>Tipo:</strong> Visita Empresarial</li>
                         <li><strong>Fecha:</strong> 15 de Noviembre de 2025</li>
                         <li><strong>Hora:</strong> 9:00 am a 12:00 pm</li>
-                        <li><strong>Lugar:</strong> Empresa del Sector Cárnico</li>
+                        <li><strong>Lugar:</strong> CDI Alimentos Cárnicos</li>
                         <li><strong>Cupo:</strong> 40 personas máximo</li>
                     </ul>
                 </div>
@@ -3162,12 +3162,12 @@ ${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
 ${usuario.eps ? `- EPS: ${usuario.eps}\n` : ''}
 
 🥩 DETALLES DE LA VISITA:
-- Evento: Visita Cárnicos
+- Evento: Visita CDI Alimentos Cárnicos
 - Tipo: Visita Empresarial
 - Fecha: 15 de Noviembre de 2025
 - Hora: 9:00 am a 12:00 pm
-- Lugar: Empresa del Sector Cárnico
-- Cupo: 40 personas máximo
+- Lugar: CDI Alimentos Cárnicos 
+- Cupo: 20 personas máximo
 
 ${usuario.placasVehiculo ? `
 🚗 INFORMACIÓN DE VEHÍCULO:
