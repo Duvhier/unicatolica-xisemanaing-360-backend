@@ -2417,7 +2417,7 @@ Fundación Universitaria Católica Lumen Gentium
         `
     };
 },  
-tallerWordpress: (usuario) => {
+tallerwordpress: (usuario) => {
     const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
     const imagenTaller = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762243272/WORDPRESS_qjoich.jpg";
 
