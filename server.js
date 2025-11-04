@@ -14,7 +14,7 @@ import industriaenaccionRoutes from "./src/routes/industriaenaccion.js";
 import visitaemaviRoutes from "./src/routes/visitaemavi.js";
 import visitacarnicosRoutes from "./src/routes/visitacarnicos.js";
 import olimpiadasmatematicasRoutes from "./src/routes/olimpiadasmatematicas.js"
-import hackathonMonitoriaRoutes from './routes/hackathonmonitoria.js';
+import hackathonmonitoriaRoutes from './src/routes/hackathonmonitoria.js';
 import dns from "dns";
 
 dotenv.config();
@@ -112,7 +112,7 @@ app.use("/industriaenaccion", industriaenaccionRoutes);
 app.use("/visitaemavi", visitaemaviRoutes);
 app.use("/visitacarnicos", visitacarnicosRoutes);
 app.use("/olimpiadasmatematicas", olimpiadasmatematicasRoutes);
-app.use('/hackathonmonitoria', hackathonMonitoriaRoutes);
+app.use('/hackathonmonitoria', hackathonmonitoriaRoutes);
 
 // =========================================================
 // 🚀 INICIALIZACIÓN
