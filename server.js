@@ -15,6 +15,7 @@ import visitaemaviRoutes from "./src/routes/visitaemavi.js";
 import visitacarnicosRoutes from "./src/routes/visitacarnicos.js";
 import olimpiadasmatematicasRoutes from "./src/routes/olimpiadasmatematicas.js"
 import hackathonmonitoriaRoutes from './src/routes/hackathonmonitoria.js';
+import tallervueloRoutes from './src/routes/tallervuelo.js';
 import dns from "dns";
 
 dotenv.config();
@@ -113,6 +114,7 @@ app.use("/visitaemavi", visitaemaviRoutes);
 app.use("/visitacarnicos", visitacarnicosRoutes);
 app.use("/olimpiadasmatematicas", olimpiadasmatematicasRoutes);
 app.use('/hackathonmonitoria', hackathonmonitoriaRoutes);
+app.use('/tallervuelo', tallervueloRoutes);
 
 // =========================================================
 // 🚀 INICIALIZACIÓN

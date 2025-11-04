@@ -20,6 +20,13 @@ const actividadesIniciales = [
     coleccion: "visitaemavi"
   },
   {
+    id: 7,
+    nombre: "Iniciación al Vuelo y a La Cohetería",
+    cupoMaximo: 40,
+    tipo: "Conferencia", 
+    coleccion: "tallervuelo"
+  },
+  {
     id: 8,
     nombre: "Hackathon Monitoría Remota",
     cupoMaximo: 50,
