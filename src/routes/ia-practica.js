@@ -1,4 +1,4 @@
-// tallervuelo.js
+// ia-practica.js
 import { Router } from 'express';
 import QRCode from 'qrcode';
 import { connectMongo } from '../mongo.js';
@@ -6,12 +6,12 @@ import { enviarCorreoRegistro } from '../controllers/emailController.js';
 
 const router = Router();
 
-// ✅ Función para obtener información de registros - MODIFICADA PARA tallervuelo
+// ✅ Función para obtener información de registros - MODIFICADA PARA ia-practica
 async function obtenerInfoRegistros(db) {
   try {
     const actividadesCol = db.collection('actividades');
     const actividad = await actividadesCol.findOne({
-      coleccion: 'tallervuelo'
+      coleccion: 'ia-practica'
     });
 
     if (!actividad) {
@@ -23,7 +23,7 @@ async function obtenerInfoRegistros(db) {
       };
     }
 
-    const inscritosCol = db.collection('tallervuelo');
+    const inscritosCol = db.collection('ia-practica');
     const totalInscritos = await inscritosCol.countDocuments({});
     
     // ✅ Cambio principal: siempre mostrar número de inscritos
@@ -108,7 +108,7 @@ function validatePayload(body) {
 
 // ✅ Función para verificar duplicados en la base de datos - MODIFICADA (eliminada verificación de equipo y proyecto)
 async function checkDuplicates(db, payload) {
-  const col = db.collection('tallervuelo');
+  const col = db.collection('ia-practica');
   const duplicates = [];
 
   // 1. Verificar cédula duplicada
@@ -142,11 +142,11 @@ async function checkDuplicates(db, payload) {
   return duplicates;
 }
 
-// ✅ Endpoint principal para registro - MODIFICADO PARA tallervuelo (sin tipoEstudiante ni grupo)
+// ✅ Endpoint principal para registro - MODIFICADO PARA ia-practica (sin tipoEstudiante ni grupo)
 router.post('/registro', async (req, res) => {
   try {
     const payload = req.body || {};
-    console.log('🎯 INICIANDO REGISTRO EN COLECCIÓN TALLERVUELO');
+    console.log('🎯 INICIANDO REGISTRO EN COLECCIÓN IA-PRACTICA');
     console.log('📥 Payload recibido:', JSON.stringify(payload, null, 2));
 
     // 🔹 Validación básica del payload
@@ -164,18 +164,18 @@ router.post('/registro', async (req, res) => {
     const infoRegistros = await obtenerInfoRegistros(db);
 
     if (!infoRegistros.disponible) {
-      console.log('❌ Cupo agotado para Taller de Vuelo y Cohetería');
+      console.log('❌ Cupo agotado para IA en la Práctica y Casos de Uso');
       return res.status(409).json({
         message: 'Cupo agotado',
-        error: `Lo sentimos, no hay cupos disponibles para el Taller de Vuelo y Cohetería. ${infoRegistros.inscritos}/${infoRegistros.cupoMaximo} usuarios registrados.`
+        error: `Lo sentimos, no hay cupos disponibles para IA en la Práctica y Casos de Uso. ${infoRegistros.inscritos}/${infoRegistros.cupoMaximo} usuarios registrados.`
       });
     }
 
     console.log('✅ Información de registros:', infoRegistros.mensaje);
 
-    // ✅ COLECCIÓN TALLERVUELO
-    const col = db.collection('tallervuelo');
-    console.log('✅ Conectado a colección: tallervuelo');
+    // ✅ COLECCIÓN IA-PRACTICA
+    const col = db.collection('ia-practica');
+    console.log('✅ Conectado a colección: ia-practica');
 
     // 🔹 VERIFICAR DUPLICADOS ANTES DE INSERTAR
     console.log('🔍 Verificando duplicados en la base de datos...');
@@ -226,28 +226,28 @@ router.post('/registro', async (req, res) => {
       }),
 
       // Información de actividades
-      actividades: payload.actividades || ['taller-vuelo-coheteria'],
-      actividad: 'taller-vuelo-coheteria',
+      actividades: payload.actividades || ['ia-practica'],
+      actividad: 'ia-practica',
 
       // ✅ ELIMINADO: Información del equipo (ya no aplica para participantes)
 
-      // Metadatos del evento - ACTUALIZADO PARA TALLER DE VUELO Y COHETERÍA
-      evento: 'Taller de Vuelo y Cohetería',
-      tipo_evento: 'taller',
-      horario: 'Miércoles 12 de Noviembre de 2025, 10:00 am - 12:00 pm',
-      lugar: 'Auditorio 1 – Sede Pance',
-      ponente: 'P&D Julián Portocarrero Hermann',
+      // Metadatos del evento - ACTUALIZADO PARA IA EN LA PRÁCTICA Y CASOS DE USO
+      evento: 'IA en la Práctica y Casos de Uso',
+      tipo_evento: 'conferencia',
+      horario: 'Miércoles 12 de Noviembre de 2025, 7:00 pm - 8:00 pm',
+      lugar: 'Salón A201 – Sede Pance',
+      ponente: 'Mag. Lorena Cerón',
       created_at: nowIso,
       updated_at: nowIso
     };
 
-    console.log('📝 Documento a guardar EN COLECCIÓN TALLERVUELO:', JSON.stringify(doc, null, 2));
+    console.log('📝 Documento a guardar EN COLECCIÓN IA-PRACTICA:', JSON.stringify(doc, null, 2));
 
-    // 🔹 Inserción en la colección "tallervuelo"
+    // 🔹 Inserción en la colección "ia-practica"
     const insertRes = await col.insertOne(doc);
     const insertedId = insertRes.insertedId;
 
-    console.log('✅✅✅ DOCUMENTO GUARDADO EN COLECCIÓN TALLERVUELO CON ID:', insertedId);
+    console.log('✅✅✅ DOCUMENTO GUARDADO EN COLECCIÓN IA-PRACTICA CON ID:', insertedId);
 
     // 🔹 Generar el código QR - ACTUALIZADO SIN tipoEstudiante
     const qrPayload = {
@@ -260,11 +260,11 @@ router.post('/registro', async (req, res) => {
           idEstudiante: payload.id // ✅ INCLUIR ID EN EL QR (sin tipoEstudiante)
         })
       },
-      actividad: 'Taller de Vuelo y Cohetería',
-      evento: 'Taller Teórico – Práctico de Iniciación al Vuelo y a La Cohetería',
-      horario: 'Miércoles 12 de Noviembre de 2025, 10:00 am - 12:00 pm',
-      lugar: 'Auditorio 1 – Sede Pance',
-      ponente: 'P&D Julián Portocarrero Hermann',
+      actividad: 'IA en la Práctica y Casos de Uso',
+      evento: 'IA en la Práctica y Casos de Uso',
+      horario: 'Miércoles 12 de Noviembre de 2025, 7:00 pm - 8:00 pm',
+      lugar: 'Salón A201 – Sede Pance',
+      ponente: 'Mag. Lorena Cerón',
       emitido: nowIso
     };
 
@@ -306,11 +306,11 @@ router.post('/registro', async (req, res) => {
         semestre: payload.semestre?.trim(),
         qr: qrDataUrl,
         qr_image: qrDataUrl,
-        evento: 'Taller de Vuelo y Cohetería',
-        actividad: 'Taller Teórico – Práctico de Iniciación al Vuelo y a La Cohetería',
-        horario: 'Miércoles 12 de Noviembre de 2025, 10:00 am - 12:00 pm',
-        lugar: 'Auditorio 1 – Sede Pance',
-        ponente: 'P&D Julián Portocarrero Hermann'
+        evento: 'IA en la Práctica y Casos de Uso',
+        actividad: 'IA en la Práctica y Casos de Uso',
+        horario: 'Miércoles 12 de Noviembre de 2025, 7:00 pm - 8:00 pm',
+        lugar: 'Salón A201 – Sede Pance',
+        ponente: 'Mag. Lorena Cerón'
       };
 
       // ✅ ELIMINADO: Información del equipo (ya no aplica)
@@ -333,9 +333,9 @@ router.post('/registro', async (req, res) => {
       console.log("📨 Datos para el correo:", JSON.stringify(datosCorreo, null, 2));
       
       // Enviar correo
-      await enviarCorreoRegistro(datosCorreo, 'tallervuelo');
+      await enviarCorreoRegistro(datosCorreo, 'ia-practica');
       emailEnviado = true;
-      console.log("✅ Correo de Taller de Vuelo y Cohetería enviado exitosamente a:", payload.correo);
+      console.log("✅ Correo de IA en la Práctica y Casos de Uso enviado exitosamente a:", payload.correo);
     } catch (emailError) {
       console.error("❌ Error al enviar correo:", emailError);
       // No retornamos error aquí, solo logueamos para no afectar el registro
@@ -346,7 +346,7 @@ router.post('/registro', async (req, res) => {
 
     // 🔹 Respuesta exitosa - ACTUALIZADA SIN tipoEstudiante NI EQUIPO
     const response = {
-      message: 'Inscripción al Taller de Vuelo y Cohetería registrada correctamente',
+      message: 'Inscripción a IA en la Práctica y Casos de Uso registrada correctamente',
       id: insertedId,
       qr: qrDataUrl,
       qrData: qrPayload,
@@ -365,14 +365,14 @@ router.post('/registro', async (req, res) => {
           semestre: payload.semestre
         })
       },
-      coleccion: 'tallervuelo',
-      confirmacion: 'DATOS GUARDADOS EN COLECCIÓN TALLERVUELO'
+      coleccion: 'ia-practica',
+      confirmacion: 'DATOS GUARDADOS EN COLECCIÓN IA-PRACTICA'
     };
 
     console.log('✅ Respuesta exitosa:', JSON.stringify(response, null, 2));
     return res.status(201).json(response);
   } catch (err) {
-    console.error('❌ Error en /tallervuelo/registro:', err);
+    console.error('❌ Error en /ia-practica/registro:', err);
     return res.status(500).json({
       message: 'Error interno del servidor',
       error: err.message
@@ -385,7 +385,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
   try {
     const { cedula, idEstudiante, correo } = req.body; // ✅ ELIMINADOS: nombreEquipo, nombreProyecto
     const { db } = await connectMongo();
-    const col = db.collection('tallervuelo');
+    const col = db.collection('ia-practica');
 
     console.log('🔍 Verificando disponibilidad de datos:', { cedula, idEstudiante, correo });
 
@@ -441,7 +441,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('❌ Error en /tallervuelo/verificar-disponibilidad:', err);
+    console.error('❌ Error en /ia-practica/verificar-disponibilidad:', err);
     return res.status(500).json({
       message: 'Error interno del servidor',
       error: err.message
@@ -466,7 +466,7 @@ router.get("/estado-registros", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Error en /tallervuelo/estado-registros:", err);
+    console.error("❌ Error en /ia-practica/estado-registros:", err);
     return res.status(500).json({
       success: false,
       message: "Error obteniendo información de registros",
@@ -475,13 +475,13 @@ router.get("/estado-registros", async (req, res) => {
   }
 });
 
-// ✅ Endpoint para listar inscripciones - MODIFICADO PARA tallervuelo (sin tipoEstudiante ni equipo)
+// ✅ Endpoint para listar inscripciones - MODIFICADO PARA ia-practica (sin tipoEstudiante ni equipo)
 router.get('/listar', async (req, res) => {
   try {
     const { db } = await connectMongo();
-    const col = db.collection('tallervuelo');
+    const col = db.collection('ia-practica');
 
-    console.log('📋 Listando inscripciones de la colección: tallervuelo');
+    console.log('📋 Listando inscripciones de la colección: ia-practica');
 
     const inscripciones = await col.find({})
       .sort({ created_at: -1 })
@@ -491,9 +491,9 @@ router.get('/listar', async (req, res) => {
     console.log(`✅ Encontradas ${inscripciones.length} inscripciones`);
 
     return res.json({
-      message: 'Inscripciones al Taller de Vuelo y Cohetería encontradas',
+      message: 'Inscripciones a IA en la Práctica y Casos de Uso encontradas',
       total: inscripciones.length,
-      coleccion: 'tallervuelo',
+      coleccion: 'ia-practica',
       inscripciones: inscripciones.map(insc => ({
         id: insc._id,
         nombre: insc.nombre,
@@ -514,7 +514,7 @@ router.get('/listar', async (req, res) => {
       }))
     });
   } catch (err) {
-    console.error('❌ Error en /tallervuelo/listar:', err);
+    console.error('❌ Error en /ia-practica/listar:', err);
     return res.status(500).json({
       message: 'Error interno del servidor',
       error: err.message
@@ -522,12 +522,12 @@ router.get('/listar', async (req, res) => {
   }
 });
 
-// ✅ Endpoint para buscar inscripción - MODIFICADO PARA tallervuelo (sin tipoEstudiante ni equipo)
+// ✅ Endpoint para buscar inscripción - MODIFICADO PARA ia-practica (sin tipoEstudiante ni equipo)
 router.get('/buscar/:cedula', async (req, res) => {
   try {
     const { cedula } = req.params;
     const { db } = await connectMongo();
-    const col = db.collection('tallervuelo');
+    const col = db.collection('ia-practica');
 
     console.log(`🔍 Buscando inscripción: ${cedula}`);
 
@@ -567,7 +567,7 @@ router.get('/buscar/:cedula', async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('❌ Error en /tallervuelo/buscar:', err);
+    console.error('❌ Error en /ia-practica/buscar:', err);
     return res.status(500).json({
       message: 'Error interno del servidor',
       error: err.message

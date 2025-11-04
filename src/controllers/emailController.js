@@ -2761,6 +2761,374 @@ Fundación Universitaria Católica Lumen Gentium
         `
     };
 },
+// ✅ PLANTILLA PARA IA EN LA PRÁCTICA Y CASOS DE USO
+'ia-practica': (usuario) => {
+    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+    const imagenIAPractica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762241359/CONFERENCIA-IAPRACTICA-8_ede3cj.png"; 
+
+    return {
+        asunto: "🤖 Confirmación de Registro - IA en la Práctica y Casos de Uso",
+        html: `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación - IA en la Práctica</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4a148c 0%, #6a1b9a 100%);
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        .header-title {
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 10px 0 5px 0;
+        }
+        
+        .header-subtitle {
+            color: #e1bee7;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .conferencia-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-title {
+            color: #4a148c;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #4a148c;
+        }
+        
+        .card-title {
+            color: #4a148c;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .info-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .info-list li strong {
+            color: #4a148c;
+            font-weight: 600;
+        }
+        
+        .qr-section {
+            text-align: center;
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px dashed #4a148c;
+        }
+        
+        .qr-image {
+            width: 200px;
+            height: 200px;
+            border: 3px solid #4a148c;
+            border-radius: 12px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .ponente-section {
+            background: #ede7f6;
+            border: 1px solid #7e57c2;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #4a148c 0%, #6a1b9a 100%);
+            color: #f3e5f5;
+            font-size: 12px;
+        }
+        
+        .footer-logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        @media screen and (max-width: 480px) {
+            .header { padding: 20px 15px; }
+            .logo { max-width: 200px; }
+            .content { padding: 20px 15px; }
+            .info-grid { grid-template-columns: 1fr; gap: 20px; }
+            .qr-image { width: 160px; height: 160px; }
+            .conferencia-image { max-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="logo">
+            <div class="header-title">XI Semana de la Ingeniería</div>
+            <div class="header-subtitle">"360°: Innovación, Liderazgo y Futuro"</div>
+        </div>
+        
+        <img src="${imagenIAPractica}" alt="IA en la Práctica y Casos de Uso" class="conferencia-image">
+        
+        <div class="content">
+            <div class="welcome-section">
+                <h1 class="welcome-title">¡Registro a IA en la Práctica y Casos de Uso Confirmado!</h1>
+                <p class="welcome-text">
+                    Hola <strong>${usuario.nombre}</strong>,<br>
+                    Tu registro para la conferencia <strong>IA en la Práctica y Casos de Uso</strong> ha sido procesado exitosamente.
+                </p>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="card-title">👤 Información del Participante</h3>
+                    <ul class="info-list">
+                        <li><strong>Nombre:</strong> ${usuario.nombre}</li>
+                        <li><strong>Cédula:</strong> ${usuario.cedula}</li>
+                        <li><strong>Correo:</strong> ${usuario.correo}</li>
+                        <li><strong>Teléfono:</strong> ${usuario.telefono}</li>
+                        <li><strong>Rol:</strong> ${usuario.rol}</li>
+                        ${usuario.idEstudiante ? `<li><strong>ID Estudiante:</strong> ${usuario.idEstudiante}</li>` : ''}
+                        ${usuario.programa ? `<li><strong>Programa:</strong> ${usuario.programa}</li>` : ''}
+                        ${usuario.facultad ? `<li><strong>Facultad:</strong> ${usuario.facultad}</li>` : ''}
+                        ${usuario.semestre ? `<li><strong>Semestre:</strong> ${usuario.semestre}</li>` : ''}
+                        ${usuario.area ? `<li><strong>Área:</strong> ${usuario.area}</li>` : ''}
+                        ${usuario.cargo ? `<li><strong>Cargo:</strong> ${usuario.cargo}</li>` : ''}
+                        ${usuario.empresa ? `<li><strong>Empresa:</strong> ${usuario.empresa}</li>` : ''}
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="card-title">🤖 Detalles de la Conferencia</h3>
+                    <ul class="info-list">
+                        <li><strong>Conferencia:</strong> IA en la Práctica y Casos de Uso</li>
+                        <li><strong>Fecha:</strong> 12 de Noviembre 2025</li>
+                        <li><strong>Horario:</strong> 7:00 pm – 8:00 pm</li>
+                        <li><strong>Duración:</strong> 1 hora</li>
+                        <li><strong>Lugar:</strong> Salón A201</li>
+                        <li><strong>Sede:</strong> Pance</li>
+                        <li><strong>Tipo:</strong> Conferencia Especializada</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="ponente-section">
+                <h3 style="color: #4a148c; margin: 0 0 15px 0; font-size: 18px;">👩‍🏫 Ponente de la Conferencia</h3>
+                <p style="color: #4a148c; margin: 0; font-size: 16px; line-height: 1.5;">
+                    <strong>Mag. Lorena Cerón</strong><br>
+                    Especialista en Inteligencia Artificial con amplia experiencia en implementación 
+                    de soluciones basadas en IA en diversos sectores empresariales e industriales.
+                </p>
+            </div>
+
+            ${usuario.qr_image ? `
+            <div class="qr-section">
+                <h3 class="card-title">🎫 Código QR de Acceso</h3>
+                <img src="${usuario.qr_image}" alt="Código QR" class="qr-image">
+                <p class="welcome-text">Presenta este código QR en la entrada del salón</p>
+            </div>
+            ` : ''}
+
+            <div style="background: #e8f5e8; border: 1px solid #4caf50; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #2e7d32; margin: 0 0 15px 0; font-size: 18px;">🚀 Lo que aprenderás en la Conferencia</h3>
+                <ul style="color: #2e7d32; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li><strong>Aplicaciones reales</strong> de IA en diferentes industrias</li>
+                    <li><strong>Casos de éxito</strong> en implementación de soluciones de IA</li>
+                    <li><strong>Mejores prácticas</strong> para proyectos de inteligencia artificial</li>
+                    <li><strong>Tendencias actuales</strong> en machine learning y deep learning</li>
+                    <li><strong>Herramientas y frameworks</strong> más utilizados en IA</li>
+                    <li><strong>Retos y oportunidades</strong> en el campo de la inteligencia artificial</li>
+                </ul>
+            </div>
+
+            <div style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #1565c0; margin: 0 0 15px 0; font-size: 18px;">💡 Temas Clave que se Abordarán</h3>
+                <ul style="color: #1565c0; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Procesamiento de lenguaje natural (NLP) en aplicaciones empresariales</li>
+                    <li>Visión por computadora y reconocimiento de imágenes</li>
+                    <li>Sistemas de recomendación y personalización</li>
+                    <li>Análisis predictivo y forecasting con IA</li>
+                    <li>Automatización de procesos con machine learning</li>
+                    <li>Ética y responsabilidad en el desarrollo de IA</li>
+                </ul>
+            </div>
+
+            <div style="background: #fff3e0; border: 1px solid #ff9800; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #ef6c00; margin: 0 0 15px 0; font-size: 18px;">📝 Recomendaciones para la Conferencia</h3>
+                <ul style="color: #ef6c00; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Llega 10 minutos antes del inicio (6:50 pm)</li>
+                    <li>Trae cuaderno o dispositivo para tomar apuntes</li>
+                    <li>Prepara preguntas sobre aplicaciones específicas de IA</li>
+                    <li>Vestimenta casual formal apropiada</li>
+                    <li>Actitud participativa y curiosa</li>
+                    <li>Trae tu documento de identidad original</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="footer-logo">
+            <p>
+                <strong>Fundación Universitaria Católica Lumen Gentium</strong><br>
+                – Resolución No. 944 de 1996 MEN – SNIES 2731
+            </p>
+            <p style="margin-top: 15px; font-size: 11px; opacity: 0.8;">
+                © 2025 XI Semana de la Ingeniería - IA en la Práctica y Casos de Uso
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `,
+        texto: `
+CONFIRMACIÓN DE REGISTRO - IA EN LA PRÁCTICA Y CASOS DE USO
+XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
+
+🤖 ¡REGISTRO A IA EN LA PRÁCTICA Y CASOS DE USO CONFIRMADO!
+
+Hola ${usuario.nombre},
+
+Tu registro para la conferencia IA en la Práctica y Casos de Uso ha sido procesado exitosamente.
+
+👤 INFORMACIÓN DEL PARTICIPANTE:
+- Nombre: ${usuario.nombre}
+- Cédula: ${usuario.cedula}
+- Correo: ${usuario.correo}
+- Teléfono: ${usuario.telefono}
+- Rol: ${usuario.rol}
+${usuario.idEstudiante ? `- ID Estudiante: ${usuario.idEstudiante}\n` : ''}
+${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
+${usuario.facultad ? `- Facultad: ${usuario.facultad}\n` : ''}
+${usuario.semestre ? `- Semestre: ${usuario.semestre}\n` : ''}
+${usuario.area ? `- Área: ${usuario.area}\n` : ''}
+${usuario.cargo ? `- Cargo: ${usuario.cargo}\n` : ''}
+${usuario.empresa ? `- Empresa: ${usuario.empresa}\n` : ''}
+
+🤖 DETALLES DE LA CONFERENCIA:
+- Conferencia: IA en la Práctica y Casos de Uso
+- Fecha: 12 de Noviembre de 2025
+- Horario: 7:00 pm – 8:00 pm
+- Duración: 1 hora
+- Lugar: Salón A201
+- Sede: Pance
+- Tipo: Conferencia Especializada
+
+👩‍🏫 PONENTE DE LA CONFERENCIA:
+Mag. Lorena Cerón
+Especialista en Inteligencia Artificial con amplia experiencia en implementación 
+de soluciones basadas en IA en diversos sectores empresariales e industriales.
+
+🚀 LO QUE APRENDERÁS:
+• Aplicaciones reales de IA en diferentes industrias
+• Casos de éxito en implementación de soluciones de IA
+• Mejores prácticas para proyectos de inteligencia artificial
+• Tendencias actuales en machine learning y deep learning
+• Herramientas y frameworks más utilizados en IA
+• Retos y oportunidades en el campo de la inteligencia artificial
+
+💡 TEMAS CLAVE QUE SE ABORDARÁN:
+• Procesamiento de lenguaje natural (NLP) en aplicaciones empresariales
+• Visión por computadora y reconocimiento de imágenes
+• Sistemas de recomendación y personalización
+• Análisis predictivo y forecasting con IA
+• Automatización de procesos con machine learning
+• Ética y responsabilidad en el desarrollo de IA
+
+📝 RECOMENDACIONES:
+• Llega 10 minutos antes (6:50 pm)
+• Trae cuaderno o dispositivo para tomar apuntes
+• Prepara preguntas sobre aplicaciones específicas de IA
+• Vestimenta casual formal apropiada
+• Actitud participativa y curiosa
+• Trae tu documento de identidad original
+
+--
+Fundación Universitaria Católica Lumen Gentium
+© 2025 XI Semana de la Ingeniería - IA en la Práctica y Casos de Uso
+        `
+    };
+},
 // ✅ PLANTILLA PARA TALLER DE VUELO Y COHETERÍA
 tallervuelo: (usuario) => {
     const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
