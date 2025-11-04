@@ -17,6 +17,7 @@ import olimpiadasmatematicasRoutes from "./src/routes/olimpiadasmatematicas.js"
 import hackathonmonitoriaRoutes from './src/routes/hackathonmonitoria.js';
 import tallervueloRoutes from './src/routes/tallervuelo.js';
 import iapracticaRoutes from './src/routes/ia-practica.js';
+import tallerwordpressRoutes from "./src/routes/tallerwordpress.js"
 import dns from "dns";
 
 dotenv.config();
@@ -117,6 +118,7 @@ app.use("/olimpiadasmatematicas", olimpiadasmatematicasRoutes);
 app.use('/hackathonmonitoria', hackathonmonitoriaRoutes);
 app.use('/tallervuelo', tallervueloRoutes);
 app.use('/ia-practica', iapracticaRoutes);
+app.use('/tallerwordpress', tallerwordpressRoutes);
 
 // =========================================================
 // 🚀 INICIALIZACIÓN

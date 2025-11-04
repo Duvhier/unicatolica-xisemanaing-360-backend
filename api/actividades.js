@@ -96,6 +96,20 @@ const actividadesIniciales = [
     tipo: "Competencia",
     coleccion: "olimpiadasmatematicas"
   },
+  {
+    id: 17,
+    nombre: "Taller Instalación de WordPress",
+    cupoMaximo: 40,
+    tipo: "Taller",
+    coleccion: "tallerwordpress"
+  },
+  {
+    id: 12,
+    nombre: "IA en la Práctica y Casos de Uso",
+    cupoMaximo: 40,
+    tipo: "Conferencia",
+    coleccion: "ia-practica"
+  },
 ];
 
 // Inicializar actividades en la base de datos
