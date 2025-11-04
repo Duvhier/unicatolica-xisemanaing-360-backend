@@ -20,6 +20,13 @@ const actividadesIniciales = [
     coleccion: "visitaemavi"
   },
   {
+    id: 8,
+    nombre: "Hackathon Monitoría Remota",
+    cupoMaximo: 50,
+    tipo: "Competencia", 
+    coleccion: "hackathonmonitoria"
+  },
+  {
     id: 9,
     nombre: "Hackathon Universidades",
     cupoMaximo: 150,
