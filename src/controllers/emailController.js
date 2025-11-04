@@ -2761,6 +2761,372 @@ Fundación Universitaria Católica Lumen Gentium
         `
     };
 },
+// ✅ PLANTILLA PARA TALLER DE VUELO Y COHETERÍA
+tallervuelo: (usuario) => {
+    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+    const imagenTallerVuelo = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762238592/INICIACION_AL_VUELO-8_eppiuv.png";
+
+    return {
+        asunto: "🚀 Confirmación de Registro - Taller de Vuelo y Cohetería",
+        html: `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación - Taller de Vuelo y Cohetería</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        .header-title {
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 10px 0 5px 0;
+        }
+        
+        .header-subtitle {
+            color: #bdc3c7;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .taller-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-title {
+            color: #1a237e;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #1a237e;
+        }
+        
+        .card-title {
+            color: #1a237e;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .info-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .info-list li strong {
+            color: #1a237e;
+            font-weight: 600;
+        }
+        
+        .qr-section {
+            text-align: center;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px dashed #1a237e;
+        }
+        
+        .qr-image {
+            width: 200px;
+            height: 200px;
+            border: 3px solid #1a237e;
+            border-radius: 12px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .ponente-section {
+            background: #e8eaf6;
+            border: 1px solid #7986cb;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            color: #e3f2fd;
+            font-size: 12px;
+        }
+        
+        .footer-logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        @media screen and (max-width: 480px) {
+            .header { padding: 20px 15px; }
+            .logo { max-width: 200px; }
+            .content { padding: 20px 15px; }
+            .info-grid { grid-template-columns: 1fr; gap: 20px; }
+            .qr-image { width: 160px; height: 160px; }
+            .taller-image { max-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="logo">
+            <div class="header-title">XI Semana de la Ingeniería</div>
+            <div class="header-subtitle">"360°: Innovación, Liderazgo y Futuro"</div>
+        </div>
+        
+        <img src="${imagenTallerVuelo}" alt="Taller de Vuelo y Cohetería" class="taller-image">
+        
+        <div class="content">
+            <div class="welcome-section">
+                <h1 class="welcome-title">¡Registro al Taller de Vuelo y Cohetería Confirmado!</h1>
+                <p class="welcome-text">
+                    Hola <strong>${usuario.nombre}</strong>,<br>
+                    Tu registro para el <strong>Taller Teórico-Práctico de Iniciación al Vuelo y a La Cohetería</strong> ha sido procesado exitosamente.
+                </p>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="card-title">👤 Información del Participante</h3>
+                    <ul class="info-list">
+                        <li><strong>Nombre:</strong> ${usuario.nombre}</li>
+                        <li><strong>Cédula:</strong> ${usuario.cedula}</li>
+                        <li><strong>Correo:</strong> ${usuario.correo}</li>
+                        <li><strong>Teléfono:</strong> ${usuario.telefono}</li>
+                        <li><strong>Rol:</strong> ${usuario.rol}</li>
+                        ${usuario.idEstudiante ? `<li><strong>ID Estudiante:</strong> ${usuario.idEstudiante}</li>` : ''}
+                        ${usuario.programa ? `<li><strong>Programa:</strong> ${usuario.programa}</li>` : ''}
+                        ${usuario.facultad ? `<li><strong>Facultad:</strong> ${usuario.facultad}</li>` : ''}
+                        ${usuario.semestre ? `<li><strong>Semestre:</strong> ${usuario.semestre}</li>` : ''}
+                        ${usuario.area ? `<li><strong>Área:</strong> ${usuario.area}</li>` : ''}
+                        ${usuario.cargo ? `<li><strong>Cargo:</strong> ${usuario.cargo}</li>` : ''}
+                        ${usuario.empresa ? `<li><strong>Empresa:</strong> ${usuario.empresa}</li>` : ''}
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="card-title">🚀 Detalles del Taller</h3>
+                    <ul class="info-list">
+                        <li><strong>Taller:</strong> Iniciación al Vuelo y Cohetería</li>
+                        <li><strong>Fecha:</strong> 12 de Noviembre 2025</li>
+                        <li><strong>Horario:</strong> 10:00 am – 11:00 am</li>
+                        <li><strong>Duración:</strong> 1 hora</li>
+                        <li><strong>Lugar:</strong> Auditorio 1</li>
+                        <li><strong>Sede:</strong> Pance</li>
+                        <li><strong>Tipo:</strong> Taller Teórico-Práctico</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="ponente-section">
+                <h3 style="color: #1a237e; margin: 0 0 15px 0; font-size: 18px;">👨‍🏫 Ponente del Taller</h3>
+                <p style="color: #1a237e; margin: 0; font-size: 16px; line-height: 1.5;">
+                    <strong>P&D Julián Portocarrero Hermann</strong><br>
+                    Experto en aerodinámica y propulsión, con amplia experiencia en proyectos 
+                    educativos de cohetería y vuelo experimental.
+                </p>
+            </div>
+
+            ${usuario.qr_image ? `
+            <div class="qr-section">
+                <h3 class="card-title">🎫 Código QR de Acceso</h3>
+                <img src="${usuario.qr_image}" alt="Código QR" class="qr-image">
+                <p class="welcome-text">Presenta este código QR en la entrada del auditorio</p>
+            </div>
+            ` : ''}
+
+            <div style="background: #e8f5e9; border: 1px solid #4caf50; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #2e7d32; margin: 0 0 15px 0; font-size: 18px;">🎯 Lo que aprenderás en el Taller</h3>
+                <ul style="color: #2e7d32; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li><strong>Fundamentos básicos</strong> de aerodinámica y propulsión</li>
+                    <li><strong>Principios físicos</strong> del vuelo y la cohetería</li>
+                    <li><strong>Diseño básico</strong> de cohetes experimentales</li>
+                    <li><strong>Conceptos de estabilidad</strong> y control de vuelo</li>
+                    <li><strong>Materiales y técnicas</strong> de construcción</li>
+                    <li><strong>Seguridad en experimentación</strong> con cohetes</li>
+                </ul>
+            </div>
+
+            <div style="background: #fff3e0; border: 1px solid #ff9800; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #ef6c00; margin: 0 0 15px 0; font-size: 18px;">🔬 Componente Práctico</h3>
+                <ul style="color: #ef6c00; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Demostraciones en vivo de principios aerodinámicos</li>
+                    <li>Exhibición de modelos de cohetes educativos</li>
+                    <li>Simulaciones básicas de trayectorias de vuelo</li>
+                    <li>Análisis de casos de estudio reales</li>
+                    <li>Espacio para preguntas y respuestas interactivas</li>
+                </ul>
+            </div>
+
+            <div style="background: #f3e5f5; border: 1px solid #8e24aa; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #6a1b9a; margin: 0 0 15px 0; font-size: 18px;">📝 Recomendaciones para el Taller</h3>
+                <ul style="color: #6a1b9a; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Llega 10 minutos antes del inicio (9:50 am)</li>
+                    <li>Trae cuaderno para tomar apuntes</li>
+                    <li>Vestimenta cómoda y adecuada</li>
+                    <li>Actitud participativa y curiosa</li>
+                    <li>Prepara preguntas sobre vuelo y cohetería</li>
+                    <li>Trae tu documento de identidad original</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="footer-logo">
+            <p>
+                <strong>Fundación Universitaria Católica Lumen Gentium</strong><br>
+                – Resolución No. 944 de 1996 MEN – SNIES 2731
+            </p>
+            <p style="margin-top: 15px; font-size: 11px; opacity: 0.8;">
+                © 2025 XI Semana de la Ingeniería - Taller de Vuelo y Cohetería
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `,
+        texto: `
+CONFIRMACIÓN DE REGISTRO - TALLER DE VUELO Y COHETERÍA
+XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
+
+🚀 ¡REGISTRO AL TALLER DE VUELO Y COHETERÍA CONFIRMADO!
+
+Hola ${usuario.nombre},
+
+Tu registro para el Taller Teórico-Práctico de Iniciación al Vuelo y a La Cohetería ha sido procesado exitosamente.
+
+👤 INFORMACIÓN DEL PARTICIPANTE:
+- Nombre: ${usuario.nombre}
+- Cédula: ${usuario.cedula}
+- Correo: ${usuario.correo}
+- Teléfono: ${usuario.telefono}
+- Rol: ${usuario.rol}
+${usuario.idEstudiante ? `- ID Estudiante: ${usuario.idEstudiante}\n` : ''}
+${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
+${usuario.facultad ? `- Facultad: ${usuario.facultad}\n` : ''}
+${usuario.semestre ? `- Semestre: ${usuario.semestre}\n` : ''}
+${usuario.area ? `- Área: ${usuario.area}\n` : ''}
+${usuario.cargo ? `- Cargo: ${usuario.cargo}\n` : ''}
+${usuario.empresa ? `- Empresa: ${usuario.empresa}\n` : ''}
+
+🚀 DETALLES DEL TALLER:
+- Taller: Iniciación al Vuelo y Cohetería
+- Fecha: 12 de Noviembre de 2025
+- Horario: 10:00 am – 11:00 am
+- Duración: 1 hora
+- Lugar: Auditorio 1
+- Sede: Pance
+- Tipo: Taller Teórico-Práctico
+
+👨‍🏫 PONENTE DEL TALLER:
+P&D Julián Portocarrero Hermann
+Experto en aerodinámica y propulsión, con amplia experiencia en proyectos 
+educativos de cohetería y vuelo experimental.
+
+🎯 LO QUE APRENDERÁS:
+• Fundamentos básicos de aerodinámica y propulsión
+• Principios físicos del vuelo y la cohetería
+• Diseño básico de cohetes experimentales
+• Conceptos de estabilidad y control de vuelo
+• Materiales y técnicas de construcción
+• Seguridad en experimentación con cohetes
+
+🔬 COMPONENTE PRÁCTICO:
+• Demostraciones en vivo de principios aerodinámicos
+• Exhibición de modelos de cohetes educativos
+• Simulaciones básicas de trayectorias de vuelo
+• Análisis de casos de estudio reales
+• Espacio para preguntas y respuestas interactivas
+
+📝 RECOMENDACIONES:
+• Llega 10 minutos antes (9:50 am)
+• Trae cuaderno para tomar apuntes
+• Vestimenta cómoda y adecuada
+• Actitud participativa y curiosa
+• Prepara preguntas sobre vuelo y cohetería
+• Trae tu documento de identidad original
+
+--
+Fundación Universitaria Católica Lumen Gentium
+© 2025 XI Semana de la Ingeniería - Taller de Vuelo y Cohetería
+        `
+    };
+},
     // ✅ PLANTILLA PARA CERTIFICACIÓN FULL STACK - MODALIDAD VIRTUAL
 desarrollofullstack: (usuario) => {
     const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
