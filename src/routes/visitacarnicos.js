@@ -98,7 +98,10 @@ function validatePayload(body) {
         // Validar programa académico
         const programasValidos = [
             'Ingeniería de Sistemas',
-            'Tecnología en Desarrollo de Software'
+            'Tecnología en Desarrollo de Software',
+            'Ingeniería Industrial', 
+            'Administración de Empresas', 
+            'Contaduría Pública'
         ];
         if (body.programa && !programasValidos.includes(body.programa)) {
             errors.push('Programa académico no válido');
