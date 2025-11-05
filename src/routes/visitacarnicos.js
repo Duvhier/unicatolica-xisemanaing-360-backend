@@ -95,13 +95,14 @@ function validatePayload(body) {
             errors.push('Programa académico es requerido para estudiantes');
         }
 
-        // Validar programa académico
+        // ✅ Validar programa académico
         const programasValidos = [
             'Ingeniería de Sistemas',
             'Tecnología en Desarrollo de Software',
-            'Ingeniería Industrial', 
-            'Administración de Empresas', 
-            'Contaduría Pública'
+            'Ingeniería Industrial',
+            'Administración de Empresas',
+            'Contaduría Pública',
+            'Tecnología en Gestión de Logística Empresarial'
         ];
         if (body.programa && !programasValidos.includes(body.programa)) {
             errors.push('Programa académico no válido');
