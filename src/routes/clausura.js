@@ -1,4 +1,4 @@
-// Hackathon
+// clausura.js
 import { Router } from 'express';
 import QRCode from 'qrcode';
 import { connectMongo } from '../mongo.js';
@@ -6,84 +6,48 @@ import { enviarCorreoRegistro } from '../controllers/emailController.js';
 
 const router = Router();
 
-// ✅ Función para obtener información de registros
+// ✅ Función para obtener información de registros - MODIFICADA PARA clausura
 async function obtenerInfoRegistros(db) {
   try {
-    console.log('🔍 Buscando configuración de hackathon en colección actividades...');
-
     const actividadesCol = db.collection('actividades');
-
-    // 🔹 BUSCAR DE MÚLTIPLES FORMAS PARA ENCONTRAR LA CONFIGURACIÓN
     const actividad = await actividadesCol.findOne({
-      $or: [
-        { coleccion: 'hackathon' },
-        { nombre: 'hackathon' },
-        { evento: 'hackathon' },
-        { 'actividad': 'hackathon-universidades' },
-        { 'actividad': 'hackathon' }
-      ]
+      coleccion: 'clausura'
     });
 
-    console.log('📋 Resultado de búsqueda de actividad:', actividad);
-
     if (!actividad) {
-      console.log('⚠️ No se encontró configuración de hackathon, usando valores por defecto');
-      // Obtener el conteo actual de inscritos
-      const inscritosCol = db.collection('hackathon');
-      const totalInscritos = await inscritosCol.countDocuments({});
-
-      return {
-        disponible: true,
-        mensaje: `Actividad no configurada - Usuarios registrados: ${totalInscritos}`,
-        inscritos: totalInscritos,
-        cupoMaximo: 0 // Cupo ilimitado si no hay configuración
-      };
-    }
-
-    const inscritosCol = db.collection('hackathon');
-    const totalInscritos = await inscritosCol.countDocuments({});
-
-    // 🔹 OBTENER CUPO MÁXIMO DE DIFERENTES POSIBLES CAMPOS
-    const cupoMaximo = actividad.cupoMaximo || actividad.cupo || actividad.capacidad || 0;
-
-    console.log(`📊 Estadísticas: Inscritos=${totalInscritos}, CupoMaximo=${cupoMaximo}`);
-
-    const cuposDisponibles = Math.max(0, cupoMaximo - totalInscritos);
-    const disponible = cupoMaximo === 0 ? true : cuposDisponibles > 0;
-
-    return {
-      disponible: disponible,
-      cuposDisponibles: cuposDisponibles,
-      cupoMaximo: cupoMaximo,
-      inscritos: totalInscritos,
-      mensaje: `Usuarios registrados: ${totalInscritos}${cupoMaximo > 0 ? `/${cupoMaximo}` : ''}`
-    };
-  } catch (err) {
-    console.error('❌ Error obteniendo información de registros:', err);
-
-    // En caso de error, intentar al menos obtener el conteo de inscritos
-    try {
-      const inscritosCol = db.collection('hackathon');
-      const totalInscritos = await inscritosCol.countDocuments({});
-
-      return {
-        disponible: true,
-        mensaje: `Error en configuración - Usuarios registrados: ${totalInscritos}`,
-        inscritos: totalInscritos,
-        cupoMaximo: 0
-      };
-    } catch (countError) {
-      return {
-        disponible: true,
-        mensaje: 'Error obteniendo información',
+      return { 
+        disponible: true, 
+        mensaje: 'Actividad no configurada',
         inscritos: 0,
         cupoMaximo: 0
       };
     }
+
+    const inscritosCol = db.collection('clausura');
+    const totalInscritos = await inscritosCol.countDocuments({});
+    
+    // ✅ Cambio principal: siempre mostrar número de inscritos
+    const cuposDisponibles = Math.max(0, actividad.cupoMaximo - totalInscritos);
+
+    return {
+      disponible: cuposDisponibles > 0,
+      cuposDisponibles: cuposDisponibles,
+      cupoMaximo: actividad.cupoMaximo,
+      inscritos: totalInscritos,
+      mensaje: `Usuarios registrados: ${totalInscritos}/${actividad.cupoMaximo}`
+    };
+  } catch (err) {
+    console.error('❌ Error obteniendo información de registros:', err);
+    return { 
+      disponible: true, 
+      mensaje: 'Error obteniendo información',
+      inscritos: 0,
+      cupoMaximo: 0
+    };
   }
 }
 
-// ✅ Validación de campos ACTUALIZADA - SIN CAMPOS DE PROYECTO
+// ✅ Validación de campos ACTUALIZADA - Eliminada validación de tipoEstudiante y grupo
 function validatePayload(body) {
   const errors = [];
 
@@ -96,17 +60,10 @@ function validatePayload(body) {
     }
   }
 
-  // ✅ Validar ID para estudiantes
+  // ✅ MODIFICADO: Validar ID para estudiantes (sin tipoEstudiante)
   if (body.rol === 'estudiante') {
     if (!body.id || typeof body.id !== 'string' || !body.id.trim()) {
       errors.push('ID/Número de estudiante es requerido');
-    }
-  }
-
-  // Validar campos específicos por rol
-  if (body.rol === 'estudiante') {
-    if (!body.tipoEstudiante || !body.tipoEstudiante.trim()) {
-      errors.push('Tipo de estudiante es requerido');
     }
     if (!body.facultad || !body.facultad.trim()) {
       errors.push('Facultad es requerida para estudiantes');
@@ -117,21 +74,6 @@ function validatePayload(body) {
     if (!body.semestre || !body.semestre.trim()) {
       errors.push('Semestre es requerido para estudiantes');
     }
-
-    // ✅ VALIDACIONES DE EQUIPO SIMPLIFICADAS (SIN PROYECTO)
-    if (!body.grupo || !body.grupo.nombre || !body.grupo.nombre.trim()) {
-      errors.push('Nombre del equipo es requerido');
-    }
-    if (!body.grupo || !body.grupo.integrantes || !Array.isArray(body.grupo.integrantes) || body.grupo.integrantes.length === 0) {
-      errors.push('Integrantes del equipo son requeridos');
-    }
-    if (!body.grupo || !body.grupo.institucion || !body.grupo.institucion.trim()) {
-      errors.push('Institución o universidad es requerida');
-    }
-    if (!body.grupo || !body.grupo.correo || !body.grupo.correo.trim()) {
-      errors.push('Correo electrónico del equipo es requerido');
-    }
-    // ✅ CAMPOS DE PROYECTO ELIMINADOS
   }
   else if (body.rol === 'egresado') {
     if (!body.programa || !body.programa.trim()) {
@@ -164,9 +106,9 @@ function validatePayload(body) {
   return { ok: errors.length === 0, errors };
 }
 
-// ✅ Función para verificar duplicados en la base de datos - ACTUALIZADA SIN PROYECTO
+// ✅ Función para verificar duplicados en la base de datos - MODIFICADA (eliminada verificación de equipo y proyecto)
 async function checkDuplicates(db, payload) {
-  const col = db.collection('hackathon');
+  const col = db.collection('clausura');
   const duplicates = [];
 
   // 1. Verificar cédula duplicada
@@ -187,27 +129,9 @@ async function checkDuplicates(db, payload) {
     }
   }
 
-  // 3. Verificar nombre de equipo duplicado (✅ AHORA PARA TODOS LOS ESTUDIANTES)
-  if (payload.rol === 'estudiante' && payload.grupo && payload.grupo.nombre) {
-    const existingTeam = await col.findOne({
-      'grupo.nombre': payload.grupo.nombre.trim()
-    });
-    if (existingTeam) {
-      duplicates.push(`El nombre de equipo "${payload.grupo.nombre}" ya está registrado`);
-    }
-  }
+  // ✅ ELIMINADO: Verificación de nombre de equipo y proyecto (ya no aplica)
 
-  // ✅ ELIMINADO: Verificación de nombre de proyecto duplicado
-  // if (payload.rol === 'estudiante' && payload.grupo && payload.grupo.proyecto && payload.grupo.proyecto.nombre) {
-  //   const existingProject = await col.findOne({
-  //     'grupo.proyecto.nombre': payload.grupo.proyecto.nombre.trim()
-  //   });
-  //   if (existingProject) {
-  //     duplicates.push(`El nombre de proyecto "${payload.grupo.proyecto.nombre}" ya está registrado`);
-  //   }
-  // }
-
-  // 4. Verificar correo duplicado
+  // 3. Verificar correo duplicado
   const existingEmail = await col.findOne({
     correo: payload.correo.trim()
   });
@@ -218,11 +142,11 @@ async function checkDuplicates(db, payload) {
   return duplicates;
 }
 
-// ✅ Endpoint principal para registro - CORREGIDO SIN PROYECTO
+// ✅ Endpoint principal para registro - MODIFICADO PARA clausura (sin tipoEstudiante ni grupo)
 router.post('/registro', async (req, res) => {
   try {
     const payload = req.body || {};
-    console.log('🎯 INICIANDO REGISTRO EN COLECCIÓN HACKATHON');
+    console.log('🎯 INICIANDO REGISTRO EN COLECCIÓN CLAUSURA');
     console.log('📥 Payload recibido:', JSON.stringify(payload, null, 2));
 
     // 🔹 Validación básica del payload
@@ -240,18 +164,18 @@ router.post('/registro', async (req, res) => {
     const infoRegistros = await obtenerInfoRegistros(db);
 
     if (!infoRegistros.disponible) {
-      console.log('❌ Cupo agotado para Hackathon Universidades');
+      console.log('❌ Cupo agotado para Clausura');
       return res.status(409).json({
         message: 'Cupo agotado',
-        error: `Lo sentimos, no hay cupos disponibles para Hackathon Universidades. ${infoRegistros.inscritos}/${infoRegistros.cupoMaximo} usuarios registrados.`
+        error: `Lo sentimos, no hay cupos disponibles para Clausura. ${infoRegistros.inscritos}/${infoRegistros.cupoMaximo} usuarios registrados.`
       });
     }
 
     console.log('✅ Información de registros:', infoRegistros.mensaje);
 
-    // ✅ COLECCIÓN HACKATHON
-    const col = db.collection('hackathon');
-    console.log('✅ Conectado a colección: hackathon');
+    // ✅ COLECCIÓN CLAUSURA
+    const col = db.collection('clausura');
+    console.log('✅ Conectado a colección: clausura');
 
     // 🔹 VERIFICAR DUPLICADOS ANTES DE INSERTAR
     console.log('🔍 Verificando duplicados en la base de datos...');
@@ -269,7 +193,7 @@ router.post('/registro', async (req, res) => {
 
     const nowIso = new Date().toISOString();
 
-    // 🔹 Construcción del documento a guardar - CORREGIDA SIN PROYECTO
+    // 🔹 Construcción del documento a guardar - ACTUALIZADO SIN tipoEstudiante NI grupo
     const doc = {
       // Datos personales básicos
       nombre: payload.nombre.trim(),
@@ -278,14 +202,9 @@ router.post('/registro', async (req, res) => {
       telefono: payload.telefono.trim(),
       rol: payload.rol.trim(),
 
-      // ✅ INCLUIR ID PARA ESTUDIANTES
+      // ✅ MODIFICADO: Incluir ID para estudiantes (sin tipoEstudiante)
       ...(payload.rol === 'estudiante' && {
-        id: payload.id.trim()
-      }),
-
-      // Campos específicos por rol
-      ...(payload.rol === 'estudiante' && {
-        tipoEstudiante: payload.tipoEstudiante.trim(),
+        id: payload.id.trim(), // ID del estudiante
         facultad: payload.facultad.trim(),
         programa: payload.programa.trim(),
         semestre: payload.semestre.trim()
@@ -306,46 +225,30 @@ router.post('/registro', async (req, res) => {
         cargo: payload.cargo.trim()
       }),
 
-      // ✅ INFORMACIÓN DEL EQUIPO SIMPLIFICADA (SIN PROYECTO)
-      ...(payload.rol === 'estudiante' && payload.grupo && {
-        grupo: {
-          nombre: payload.grupo.nombre.trim(),
-          integrantes: payload.grupo.integrantes || [payload.nombre.trim()],
-          // ✅ ELIMINADO: Campos de proyecto
-          // proyecto: {
-          //   nombre: payload.grupo.proyecto.nombre.trim(),
-          //   descripcion: payload.grupo.proyecto.descripcion.trim(),
-          //   categoria: payload.grupo.proyecto.categoria.trim()
-          // },
-          institucion: payload.grupo.institucion.trim(),
-          correo: payload.grupo.correo.trim(),
-          ...(payload.grupo.telefono && { telefono: payload.grupo.telefono.trim() })
-        }
-      }),
-
       // Información de actividades
-      actividades: payload.actividades || ['hackathon-universidades'],
-      actividad: 'hackathon-universidades',
+      actividades: payload.actividades || ['clausura'],
+      actividad: 'clausura',
 
-      // Metadatos del evento
-      evento: 'Hackathon Universidades',
-      tipo_evento: 'universidades',
-      horario: '6:30 pm - 9:30 pm',
-      lugar: 'Sala de 1, 2, 3 - Sede Pance',
-      profesores: ['José Hernando Mosquera', 'Kellin', 'Nelson Andrade'],
+      // ✅ ELIMINADO: Información del equipo (ya no aplica para participantes)
+
+      // Metadatos del evento - ACTUALIZADO PARA CLAUSURA
+      evento: 'Acto de Clausura',
+      tipo_evento: 'clausura',
+      horario: 'Viernes 15 de Noviembre de 2025, 6:30 pm a 8:00 pm',
+      lugar: 'Sede Melendez Auditorio Lumen',
       created_at: nowIso,
       updated_at: nowIso
     };
 
-    console.log('📝 Documento a guardar EN COLECCIÓN HACKATHON:', JSON.stringify(doc, null, 2));
+    console.log('📝 Documento a guardar EN COLECCIÓN CLAUSURA:', JSON.stringify(doc, null, 2));
 
-    // 🔹 Inserción en la colección "hackathon"
+    // 🔹 Inserción en la colección "clausura"
     const insertRes = await col.insertOne(doc);
     const insertedId = insertRes.insertedId;
 
-    console.log('✅✅✅ DOCUMENTO GUARDADO EN COLECCIÓN HACKATHON CON ID:', insertedId);
+    console.log('✅✅✅ DOCUMENTO GUARDADO EN COLECCIÓN CLAUSURA CON ID:', insertedId);
 
-    // 🔹 Generar el código QR - ACTUALIZADO SIN PROYECTO
+    // 🔹 Generar el código QR - ACTUALIZADO SIN tipoEstudiante
     const qrPayload = {
       id: insertedId.toString(),
       participante: {
@@ -353,19 +256,13 @@ router.post('/registro', async (req, res) => {
         cedula: payload.cedula,
         rol: payload.rol,
         ...(payload.rol === 'estudiante' && {
-          tipoEstudiante: payload.tipoEstudiante,
-          idEstudiante: payload.id
+          idEstudiante: payload.id // ✅ INCLUIR ID EN EL QR (sin tipoEstudiante)
         })
       },
-      ...(payload.rol === 'estudiante' && payload.grupo && {
-        equipo: payload.grupo.nombre
-        // ✅ ELIMINADO: Información de proyecto del QR
-        // proyecto: payload.grupo.proyecto.nombre
-      }),
-      actividad: 'Hackathon Universidades',
-      evento: 'Hackathon Universidades',
-      horario: '6:30 pm - 9:30 pm',
-      lugar: 'Sala de 1, 2, 3 - Sede Pance',
+      actividad: 'Acto de Clausura',
+      evento: 'Acto de Clausura',
+      horario: 'Viernes 15 de Noviembre de 2025, 6:30 pm a 8:00 pm',
+      lugar: 'Sede Melendez Auditorio Lumen',
       emitido: nowIso
     };
 
@@ -393,8 +290,8 @@ router.post('/registro', async (req, res) => {
     let emailEnviado = false;
     try {
       console.log("📧 Preparando envío de correo de confirmación...");
-
-      // Preparar datos para el correo - ACTUALIZADA SIN PROYECTO
+      
+      // Preparar datos para el correo
       const datosCorreo = {
         nombre: payload.nombre.trim(),
         cedula: payload.cedula.trim(),
@@ -402,24 +299,14 @@ router.post('/registro', async (req, res) => {
         telefono: payload.telefono.trim(),
         rol: payload.rol.trim(),
         idEstudiante: payload.id?.trim(),
-        tipoEstudiante: payload.tipoEstudiante?.trim(),
         programa: payload.programa?.trim(),
         facultad: payload.facultad?.trim(),
         semestre: payload.semestre?.trim(),
-        // QR con múltiples nombres para compatibilidad
         qr: qrDataUrl,
-        qr_image: qrDataUrl,
-        qrDataUrl: qrDataUrl
+        qr_image: qrDataUrl 
       };
 
-      // ✅ AGREGAR INFORMACIÓN DEL EQUIPO SIMPLIFICADA (SIN PROYECTO)
-      if (payload.rol === 'estudiante' && payload.grupo) {
-        datosCorreo.equipo = payload.grupo.nombre?.trim();
-        // ✅ ELIMINADO: Campos de proyecto del correo
-        // datosCorreo.proyecto = payload.grupo.proyecto?.nombre?.trim();
-        // datosCorreo.categoria = payload.grupo.proyecto?.categoria?.trim();
-        datosCorreo.institucion = payload.grupo.institucion?.trim();
-      }
+      // ✅ ELIMINADO: Información del equipo (ya no aplica)
 
       // Agregar información adicional según el rol
       if (payload.rol === 'egresado' && payload.empresa) {
@@ -436,25 +323,12 @@ router.post('/registro', async (req, res) => {
         datosCorreo.cargo = payload.cargo.trim();
       }
 
-      // 🔍 VERIFICACIÓN DE DATOS ANTES DE ENVIAR
-      console.log("🔍 VERIFICACIÓN QR ANTES DE ENVIAR CORREO:");
-      console.log("QR Data URL length:", qrDataUrl.length);
-      console.log("QR starts with data:image:", qrDataUrl.startsWith('data:image'));
-      console.log("Datos correo QR property:", !!datosCorreo.qr);
-      console.log("Datos correo QR_IMAGE property:", !!datosCorreo.qr_image);
-      console.log("Datos correo QRDataUrl property:", !!datosCorreo.qrDataUrl);
-
-      console.log("📨 Datos para el correo:", JSON.stringify({
-        ...datosCorreo,
-        qr: datosCorreo.qr ? `[QR_DATA_LENGTH: ${datosCorreo.qr.length}]` : 'NO_QR',
-        qr_image: datosCorreo.qr_image ? `[QR_IMAGE_LENGTH: ${datosCorreo.qr_image.length}]` : 'NO_QR_IMAGE',
-        qrDataUrl: datosCorreo.qrDataUrl ? `[QR_DATA_URL_LENGTH: ${datosCorreo.qrDataUrl.length}]` : 'NO_QR_DATA_URL'
-      }, null, 2));
-
+      console.log("📨 Datos para el correo:", JSON.stringify(datosCorreo, null, 2));
+      
       // Enviar correo
-      await enviarCorreoRegistro(datosCorreo, 'hackathon');
+      await enviarCorreoRegistro(datosCorreo, 'clausura');
       emailEnviado = true;
-      console.log("✅ Correo de hackathon enviado exitosamente a:", payload.correo);
+      console.log("✅ Correo de clausura enviado exitosamente a:", payload.correo);
     } catch (emailError) {
       console.error("❌ Error al enviar correo:", emailError);
       // No retornamos error aquí, solo logueamos para no afectar el registro
@@ -463,9 +337,9 @@ router.post('/registro', async (req, res) => {
     // 🔹 Obtener información actualizada después del registro
     const infoActualizada = await obtenerInfoRegistros(db);
 
-    // 🔹 Respuesta exitosa - ACTUALIZADA SIN PROYECTO
+    // 🔹 Respuesta exitosa - ACTUALIZADA SIN tipoEstudiante NI EQUIPO
     const response = {
-      message: 'Inscripción al Hackathon Universidades registrada correctamente',
+      message: 'Inscripción a la Clausura registrada correctamente',
       id: insertedId,
       qr: qrDataUrl,
       qrData: qrPayload,
@@ -479,24 +353,19 @@ router.post('/registro', async (req, res) => {
         nombre: payload.nombre,
         rol: payload.rol,
         ...(payload.rol === 'estudiante' && {
-          tipoEstudiante: payload.tipoEstudiante,
-          idEstudiante: payload.id,
+          idEstudiante: payload.id, // ✅ INCLUIR ID EN RESPUESTA (sin tipoEstudiante)
           programa: payload.programa,
           semestre: payload.semestre
-        }),
-        // ✅ AHORA TODOS LOS ESTUDIANTES TIENEN EQUIPO (SIN PROYECTO)
-        ...(payload.rol === 'estudiante' && payload.grupo && {
-          equipo: payload.grupo.nombre
         })
       },
-      coleccion: 'hackathon',
-      confirmacion: 'DATOS GUARDADOS EN COLECCIÓN HACKATHON'
+      coleccion: 'clausura',
+      confirmacion: 'DATOS GUARDADOS EN COLECCIÓN CLAUSURA'
     };
 
     console.log('✅ Respuesta exitosa:', JSON.stringify(response, null, 2));
     return res.status(201).json(response);
   } catch (err) {
-    console.error('❌ Error en /inscripciones/registro:', err);
+    console.error('❌ Error en /clausura/registro:', err);
     return res.status(500).json({
       message: 'Error interno del servidor',
       error: err.message
@@ -504,14 +373,14 @@ router.post('/registro', async (req, res) => {
   }
 });
 
-// ✅ Endpoint para verificar disponibilidad de datos - ACTUALIZADO SIN PROYECTO
+// ✅ Endpoint para verificar disponibilidad de datos - MODIFICADO (eliminada verificación de equipo y proyecto)
 router.post('/verificar-disponibilidad', async (req, res) => {
   try {
-    const { cedula, idEstudiante, nombreEquipo, correo } = req.body; // ✅ ELIMINADO: nombreProyecto
+    const { cedula, idEstudiante, correo } = req.body; // ✅ ELIMINADOS: nombreEquipo, nombreProyecto
     const { db } = await connectMongo();
-    const col = db.collection('hackathon');
+    const col = db.collection('clausura');
 
-    console.log('🔍 Verificando disponibilidad de datos:', { cedula, idEstudiante, nombreEquipo, correo });
+    console.log('🔍 Verificando disponibilidad de datos:', { cedula, idEstudiante, correo });
 
     // 🔹 Obtener información actual de registros
     const infoRegistros = await obtenerInfoRegistros(db);
@@ -519,8 +388,6 @@ router.post('/verificar-disponibilidad', async (req, res) => {
     const disponibilidad = {
       cedula: true,
       idEstudiante: true,
-      nombreEquipo: true,
-      // ✅ ELIMINADO: nombreProyecto
       correo: true,
       mensajes: []
     };
@@ -543,23 +410,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
       }
     }
 
-    // Verificar nombre de equipo
-    if (nombreEquipo) {
-      const existingTeam = await col.findOne({ 'grupo.nombre': nombreEquipo.trim() });
-      if (existingTeam) {
-        disponibilidad.nombreEquipo = false;
-        disponibilidad.mensajes.push('El nombre del equipo ya está registrado');
-      }
-    }
-
-    // ✅ ELIMINADO: Verificación de nombre de proyecto
-    // if (nombreProyecto) {
-    //   const existingProject = await col.findOne({ 'grupo.proyecto.nombre': nombreProyecto.trim() });
-    //   if (existingProject) {
-    //     disponibilidad.nombreProyecto = false;
-    //     disponibilidad.mensajes.push('El nombre del proyecto ya está registrado');
-    //   }
-    // }
+    // ✅ ELIMINADO: Verificación de nombre de equipo y proyecto
 
     // Verificar correo
     if (correo) {
@@ -574,7 +425,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
     return res.json({
       message: 'Verificación de disponibilidad completada',
       disponibilidad,
-      todosDisponibles: disponibilidad.cedula && disponibilidad.idEstudiante && disponibilidad.nombreEquipo && disponibilidad.correo, // ✅ ACTUALIZADO
+      todosDisponibles: disponibilidad.cedula && disponibilidad.idEstudiante && disponibilidad.correo,
       infoRegistros: {
         inscritos: infoRegistros.inscritos,
         cupoMaximo: infoRegistros.cupoMaximo,
@@ -583,7 +434,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
       }
     });
   } catch (err) {
-    console.error('❌ Error en /inscripciones/verificar-disponibilidad:', err);
+    console.error('❌ Error en /clausura/verificar-disponibilidad:', err);
     return res.status(500).json({
       message: 'Error interno del servidor',
       error: err.message
@@ -591,27 +442,24 @@ router.post('/verificar-disponibilidad', async (req, res) => {
   }
 });
 
+// ✅ Endpoint para obtener información de registros (sin verificar disponibilidad) - MODIFICADO
 router.get("/estado-registros", async (req, res) => {
   try {
-    console.log('🔍 Solicitando estado de registros...');
     const { db } = await connectMongo();
     const infoRegistros = await obtenerInfoRegistros(db);
-
-    console.log('📊 Estado de registros obtenido:', infoRegistros);
 
     return res.json({
       success: true,
       data: {
         inscritos: infoRegistros.inscritos,
         cupoMaximo: infoRegistros.cupoMaximo,
-        cuposDisponibles: infoRegistros.cuposDisponibles,
-        disponible: infoRegistros.disponible,
-        mensaje: infoRegistros.mensaje
+        mensaje: infoRegistros.mensaje,
+        disponible: infoRegistros.disponible
       }
     });
 
   } catch (err) {
-    console.error("❌ Error en /hackathon/estado-registros:", err);
+    console.error("❌ Error en /clausura/estado-registros:", err);
     return res.status(500).json({
       success: false,
       message: "Error obteniendo información de registros",
@@ -620,13 +468,13 @@ router.get("/estado-registros", async (req, res) => {
   }
 });
 
-// ✅ Endpoint para listar inscripciones - ACTUALIZADO SIN PROYECTO
+// ✅ Endpoint para listar inscripciones - MODIFICADO PARA clausura (sin tipoEstudiante ni equipo)
 router.get('/listar', async (req, res) => {
   try {
     const { db } = await connectMongo();
-    const col = db.collection('hackathon');
+    const col = db.collection('clausura');
 
-    console.log('📋 Listando inscripciones de la colección: hackathon');
+    console.log('📋 Listando inscripciones de la colección: clausura');
 
     const inscripciones = await col.find({})
       .sort({ created_at: -1 })
@@ -636,37 +484,30 @@ router.get('/listar', async (req, res) => {
     console.log(`✅ Encontradas ${inscripciones.length} inscripciones`);
 
     return res.json({
-      message: 'Inscripciones al Hackathon Universidades encontradas',
+      message: 'Inscripciones a la Clausura encontradas',
       total: inscripciones.length,
-      coleccion: 'hackathon',
+      coleccion: 'clausura',
       inscripciones: inscripciones.map(insc => ({
         id: insc._id,
         nombre: insc.nombre,
         cedula: insc.cedula,
-        idEstudiante: insc.id,
+        idEstudiante: insc.id, // ✅ INCLUIR ID EN LISTADO
         correo: insc.correo,
         telefono: insc.telefono,
         rol: insc.rol,
-        tipoEstudiante: insc.tipoEstudiante,
         programa: insc.programa,
         semestre: insc.semestre,
         facultad: insc.facultad,
         area: insc.area,
         cargo: insc.cargo,
         empresa: insc.empresa,
-        equipo: insc.grupo?.nombre,
-        // ✅ ELIMINADO: Campos de proyecto
-        // proyecto: insc.grupo?.proyecto?.nombre,
-        // categoria: insc.grupo?.proyecto?.categoria,
-        institucion: insc.grupo?.institucion,
-        integrantes: insc.grupo?.integrantes,
         evento: insc.evento,
         actividades: insc.actividades,
         created_at: insc.created_at
       }))
     });
   } catch (err) {
-    console.error('❌ Error en /inscripciones/listar:', err);
+    console.error('❌ Error en /clausura/listar:', err);
     return res.status(500).json({
       message: 'Error interno del servidor',
       error: err.message
@@ -674,12 +515,12 @@ router.get('/listar', async (req, res) => {
   }
 });
 
-// ✅ Endpoint para buscar inscripción - ACTUALIZADO SIN PROYECTO
+// ✅ Endpoint para buscar inscripción - MODIFICADO PARA clausura (sin tipoEstudiante ni equipo)
 router.get('/buscar/:cedula', async (req, res) => {
   try {
     const { cedula } = req.params;
     const { db } = await connectMongo();
-    const col = db.collection('hackathon');
+    const col = db.collection('clausura');
 
     console.log(`🔍 Buscando inscripción: ${cedula}`);
 
@@ -687,7 +528,7 @@ router.get('/buscar/:cedula', async (req, res) => {
       $or: [
         { cedula: cedula },
         { correo: cedula },
-        { id: cedula }
+        { id: cedula } // ✅ BUSCAR TAMBIÉN POR ID DE ESTUDIANTE
       ]
     });
 
@@ -703,30 +544,23 @@ router.get('/buscar/:cedula', async (req, res) => {
         id: inscripcion._id,
         nombre: inscripcion.nombre,
         cedula: inscripcion.cedula,
-        idEstudiante: inscripcion.id,
+        idEstudiante: inscripcion.id, // ✅ INCLUIR ID EN BÚSQUEDA
         correo: inscripcion.correo,
         telefono: inscripcion.telefono,
         rol: inscripcion.rol,
-        tipoEstudiante: inscripcion.tipoEstudiante,
         programa: inscripcion.programa,
         semestre: inscripcion.semestre,
         facultad: inscripcion.facultad,
         area: inscripcion.area,
         cargo: inscripcion.cargo,
         empresa: inscripcion.empresa,
-        equipo: inscripcion.grupo?.nombre,
-        // ✅ ELIMINADO: Campos de proyecto
-        // proyecto: inscripcion.grupo?.proyecto?.nombre,
-        // categoria: inscripcion.grupo?.proyecto?.categoria,
-        institucion: inscripcion.grupo?.institucion,
-        integrantes: inscripcion.grupo?.integrantes,
         evento: inscripcion.evento,
         actividades: inscripcion.actividades,
         created_at: inscripcion.created_at
       }
     });
   } catch (err) {
-    console.error('❌ Error en /inscripciones/buscar:', err);
+    console.error('❌ Error en /clausura/buscar:', err);
     return res.status(500).json({
       message: 'Error interno del servidor',
       error: err.message

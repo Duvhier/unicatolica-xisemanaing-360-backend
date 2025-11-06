@@ -57,14 +57,14 @@ const actividadesIniciales = [
   {
     id: 22,
     nombre: "Certificación Full Stack: Spring Boot, Angular & AI",
-    cupoMaximo: 30,
+    cupoMaximo: 50,
     tipo: "Curso",
     coleccion: "desarrollofullstack"
   },
   {
     id: 10,
     nombre: "Industria en Acción",
-    cupoMaximo: 40,
+    cupoMaximo: 28,
     tipo: "Taller",
     coleccion: "industriaenaccion"
   },
@@ -109,6 +109,13 @@ const actividadesIniciales = [
     cupoMaximo: 40,
     tipo: "Conferencia",
     coleccion: "ia-practica"
+  },
+  {
+    id: 20,
+    nombre: "Clausura",
+    cupoMaximo: 500,
+    tipo: "Evento",
+    coleccion: "clausura"
   },
 ];
 

@@ -647,13 +647,13 @@ Fundación Universitaria Católica Lumen Gentium
         };
     },
     // ✅ PLANTILLA PARA HACKATHON MONITORÍA REMOTA
-hackathonmonitoria: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenHackathon = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761543310/HACKATON_copia-8_pphi6j.png";
+    hackathonmonitoria: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenHackathon = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761543310/HACKATON_copia-8_pphi6j.png";
 
-    return {
-        asunto: "🎯 Confirmación de Registro - Hackathon Monitoría Remota",
-        html: `
+        return {
+            asunto: "🎯 Confirmación de Registro - Hackathon Monitoría Remota",
+            html: `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -990,7 +990,7 @@ hackathonmonitoria: (usuario) => {
 </body>
 </html>
   `,
-        texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - HACKATHON MONITORÍA REMOTA
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -1051,8 +1051,8 @@ ${usuario.idea_proyecto ? `- Idea de Proyecto: ${usuario.idea_proyecto}\n` : ''}
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Hackathon Monitoría Remota
         `
-    };
-},
+        };
+    },
 
     // ✅ PLANTILLA PARA TECHNOLOGICAL TOUCH
     technologicaltouch: (usuario) => {
@@ -1592,8 +1592,8 @@ Fundación Universitaria Católica Lumen Gentium
                             <ul class="info-list">
                                 <li><strong>Evento:</strong> Visita Zona América</li>
                                 <li><strong>Tipo:</strong> Visita Empresarial</li>
-                                <li><strong>Fecha:</strong> 13 de Noviembre de 2025</li>
-                                <li><strong>Hora:</strong> 10:00 am a 11:30 am</li>
+                                <li><strong>Fecha:</strong> 14 de Noviembre de 2025</li>
+                                <li><strong>Hora:</strong> 9:30 am - 11:00 pm am</li>
                                 <li><strong>Lugar:</strong> Zona América</li>
                                 <li><strong>Cupo:</strong> 40 personas máximo</li>
                             </ul>
@@ -1668,8 +1668,8 @@ ${usuario.eps ? `- EPS: ${usuario.eps}\n` : ''}
 🏢 DETALLES DE LA VISITA:
 - Evento: Visita Zona América
 - Tipo: Visita Empresarial
-- Fecha: 13 de Noviembre de 2025
-- Hora: 10:00 am a 11:30 am
+- Fecha: 14 de Noviembre de 2025
+- Hora: 9:30 am - 11:00 pm
 - Lugar: Zona América
 - Cupo: 40 personas máximo
 
@@ -2081,14 +2081,14 @@ Fundación Universitaria Católica Lumen Gentium
         `
         };
     },
- // ✅ PLANTILLA PARA VISITA EMAVI
-visitaemavi: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenVisita = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762178284/VISITA_EMPRESARIAL_-12-8_rbboti.png"; 
+    // ✅ PLANTILLA PARA VISITA EMAVI
+    visitaemavi: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenVisita = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762178284/VISITA_EMPRESARIAL_-12-8_rbboti.png";
 
-    return {
-        asunto: "✈️ Confirmación de Registro - Visita EMAVI",
-        html: `
+        return {
+            asunto: "✈️ Confirmación de Registro - Visita EMAVI",
+            html: `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -2363,7 +2363,7 @@ visitaemavi: (usuario) => {
 </body>
 </html>
         `,
-        texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - VISITA EMAVI
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -2415,15 +2415,15 @@ sus instalaciones, procesos de formación y tecnología aeronáutica.
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Visita EMAVI
         `
-    };
-},  
-tallerwordpress: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenTaller = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762243272/WORDPRESS_qjoich.jpg";
+        };
+    },
+    tallerwordpress: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenTaller = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762243272/WORDPRESS_qjoich.jpg";
 
-    return {
-        asunto: "🖥️ Confirmación de Registro - Taller de WordPress",
-        html: `
+        return {
+            asunto: "🖥️ Confirmación de Registro - Taller de WordPress",
+            html: `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -2701,7 +2701,7 @@ tallerwordpress: (usuario) => {
 </body>
 </html>
         `,
-        texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - TALLER DE WORDPRESS
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -2756,16 +2756,16 @@ configurando MySQL, Apache y PHP. Trae tu computador personal para seguir el tal
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Taller de WordPress
         `
-    };
-}, 
+        };
+    },
     // ✅ PLANTILLA PARA INDUSTRIA EN ACCIÓN
-industriaenaccion: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenIndustria = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762191991/OLIMPIADAS_LOGICA_MATEMATICA_qtptvj.jpg";
+    industriaenaccion: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenIndustria = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762191991/OLIMPIADAS_LOGICA_MATEMATICA_qtptvj.jpg";
 
-    return {
-        asunto: "🏭 Confirmación de Registro - Industria en Acción",
-        html: `
+        return {
+            asunto: "🏭 Confirmación de Registro - Industria en Acción",
+            html: `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -3044,7 +3044,7 @@ industriaenaccion: (usuario) => {
 </body>
 </html>
         `,
-        texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - INDUSTRIA EN ACCIÓN
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -3100,16 +3100,16 @@ y establecer contactos directos con representantes empresariales del sector.
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Industria en Acción
         `
-    };
-},
-// ✅ PLANTILLA PARA IA EN LA PRÁCTICA Y CASOS DE USO
-'ia-practica': (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenIAPractica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762241359/CONFERENCIA-IAPRACTICA-8_ede3cj.png"; 
+        };
+    },
+    // ✅ PLANTILLA PARA IA EN LA PRÁCTICA Y CASOS DE USO
+    'ia-practica': (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenIAPractica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762241359/CONFERENCIA-IAPRACTICA-8_ede3cj.png";
 
-    return {
-        asunto: "🤖 Confirmación de Registro - IA en la Práctica y Casos de Uso",
-        html: `
+        return {
+            asunto: "🤖 Confirmación de Registro - IA en la Práctica y Casos de Uso",
+            html: `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -3402,7 +3402,7 @@ Fundación Universitaria Católica Lumen Gentium
 </body>
 </html>
         `,
-        texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - IA EN LA PRÁCTICA Y CASOS DE USO
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -3468,16 +3468,16 @@ de soluciones basadas en IA en diversos sectores empresariales e industriales.
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - IA en la Práctica y Casos de Uso
         `
-    };
-},
-// ✅ PLANTILLA PARA TALLER DE VUELO Y COHETERÍA
-tallervuelo: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenTallerVuelo = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762238592/INICIACION_AL_VUELO-8_eppiuv.png";
+        };
+    },
+    // ✅ PLANTILLA PARA TALLER DE VUELO Y COHETERÍA
+    tallervuelo: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenTallerVuelo = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762238592/INICIACION_AL_VUELO-8_eppiuv.png";
 
-    return {
-        asunto: "🚀 Confirmación de Registro - Taller de Vuelo y Cohetería",
-        html: `
+        return {
+            asunto: "🚀 Confirmación de Registro - Taller de Vuelo y Cohetería",
+            html: `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -3769,7 +3769,7 @@ tallervuelo: (usuario) => {
 </body>
 </html>
         `,
-        texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - TALLER DE VUELO Y COHETERÍA
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -3834,16 +3834,16 @@ educativos de cohetería y vuelo experimental.
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Taller de Vuelo y Cohetería
         `
-    };
-},
+        };
+    },
     // ✅ PLANTILLA PARA CERTIFICACIÓN FULL STACK - MODALIDAD VIRTUAL
-desarrollofullstack: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenFullStack = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762105982/devseniologo_vhjhlv.png";
+    desarrollofullstack: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenFullStack = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762105982/devseniologo_vhjhlv.png";
 
-    return {
-        asunto: "🚀 Confirmación de Inscripción - Certificación Full Stack Virtual DevSenior",
-        html: `
+        return {
+            asunto: "🚀 Confirmación de Inscripción - Certificación Full Stack Virtual DevSenior",
+            html: `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -4229,7 +4229,7 @@ desarrollofullstack: (usuario) => {
 </body>
 </html>
         `,
-        texto: `
+            texto: `
 CONFIRMACIÓN DE INSCRIPCIÓN - CERTIFICACIÓN FULL STACK VIRTUAL
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -4338,16 +4338,16 @@ IMPORTANTE: El enlace de acceso a Microsoft Teams se enviará a este correo 1 ho
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Certificación Full Stack Virtual: Spring Boot, Angular & AI
         `
-    };
-},
-// ✅ PLANTILLA PARA VISITA CÁRNICOS
-visitacarnicos: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenVisita = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762186754/VISITA_EMPRESARIAL_-8_dmebly.png";
+        };
+    },
+    // ✅ PLANTILLA PARA VISITA CÁRNICOS
+    visitacarnicos: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenVisita = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762186754/VISITA_EMPRESARIAL_-8_dmebly.png";
 
-    return {
-        asunto: "🥩 Confirmación de Registro - Visita CDI Alimentos Cárnicos",
-        html: `
+        return {
+            asunto: "🥩 Confirmación de Registro - Visita CDI Alimentos Cárnicos",
+            html: `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -4622,7 +4622,7 @@ visitacarnicos: (usuario) => {
 </body>
 </html>
         `,
-        texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - VISITA CÁRNICOS
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -4674,16 +4674,16 @@ tecnologías de procesamiento, control de calidad y buenas prácticas de manufac
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Visita Cárnicos
         `
-    };
-},
-// ✅ PLANTILLA PARA OLIMPIADAS LÓGICA MATEMÁTICA
-olimpiadasmatematica: (usuario) => {
-    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenOlimpiadas = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762200198/OLIMPIADAS_MATEMATICAS_-8_cmnovu.png";
+        };
+    },
+    // ✅ PLANTILLA PARA OLIMPIADAS LÓGICA MATEMÁTICA
+    olimpiadasmatematica: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenOlimpiadas = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762200198/OLIMPIADAS_MATEMATICAS_-8_cmnovu.png";
 
-    return {
-        asunto: "🧮 Confirmación de Registro - Olimpiadas en Lógica Matemática",
-        html: `
+        return {
+            asunto: "🧮 Confirmación de Registro - Olimpiadas en Lógica Matemática",
+            html: `
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -4982,7 +4982,7 @@ olimpiadasmatematica: (usuario) => {
 </body>
 </html>
         `,
-        texto: `
+            texto: `
 CONFIRMACIÓN DE REGISTRO - OLIMPIADAS EN LÓGICA MATEMÁTICA
 XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
 
@@ -5049,9 +5049,354 @@ ${usuario.motivacion_participacion ? `
 Fundación Universitaria Católica Lumen Gentium
 © 2025 XI Semana de la Ingeniería - Olimpiadas en Lógica Matemática
         `
-    };
-},
+        };
+    },
+    // ✅ PLANTILLA PARA CLAUSURA
+    clausura: (usuario) => {
+        const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+        const imagenClausura = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761602295/ACTO_CLAUSURA-8_yu6nbj.png";
 
+        return {
+            asunto: "🏆 Confirmación de Registro - Acto de Clausura XI Semana de la Ingeniería",
+            html: `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación - Acto de Clausura</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        .header-title {
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 10px 0 5px 0;
+        }
+        
+        .header-subtitle {
+            color: #d6eaff;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .conferencia-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-title {
+            color: #0984e3;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #0984e3;
+        }
+        
+        .card-title {
+            color: #0984e3;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .info-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .info-list li strong {
+            color: #0984e3;
+            font-weight: 600;
+        }
+        
+        .qr-section {
+            text-align: center;
+            background: linear-gradient(135deg, #e8f4ff 0%, #d6eaff 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px dashed #0984e3;
+        }
+        
+        .qr-image {
+            width: 200px;
+            height: 200px;
+            border: 3px solid #0984e3;
+            border-radius: 12px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .clausura-section {
+            background: #ffeaa7;
+            border: 1px solid #fdcb6e;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: #e8f4ff;
+            font-size: 12px;
+        }
+        
+        .footer-logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        @media screen and (max-width: 480px) {
+            .header { padding: 20px 15px; }
+            .logo { max-width: 200px; }
+            .content { padding: 20px 15px; }
+            .info-grid { grid-template-columns: 1fr; gap: 20px; }
+            .qr-image { width: 160px; height: 160px; }
+            .conferencia-image { max-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="logo">
+            <div class="header-title">XI Semana de la Ingeniería</div>
+            <div class="header-subtitle">"360°: Innovación, Liderazgo y Futuro"</div>
+        </div>
+        
+        <img src="${imagenClausura}" alt="Acto de Clausura XI Semana de la Ingeniería" class="conferencia-image">
+        
+        <div class="content">
+            <div class="welcome-section">
+                <h1 class="welcome-title">¡Registro al Acto de Clausura Confirmado!</h1>
+                <p class="welcome-text">
+                    Hola <strong>${usuario.nombre}</strong>,<br>
+                    Tu registro para el <strong>Acto de Clausura</strong> de la XI Semana de la Ingeniería ha sido procesado exitosamente.
+                </p>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="card-title">👤 Información del Asistente</h3>
+                    <ul class="info-list">
+                        <li><strong>Nombre:</strong> ${usuario.nombre}</li>
+                        <li><strong>Cédula:</strong> ${usuario.cedula}</li>
+                        <li><strong>Correo:</strong> ${usuario.correo}</li>
+                        <li><strong>Teléfono:</strong> ${usuario.telefono}</li>
+                        <li><strong>Rol:</strong> ${usuario.rol}</li>
+                        ${usuario.idEstudiante ? `<li><strong>ID Estudiante:</strong> ${usuario.idEstudiante}</li>` : ''}
+                        ${usuario.programa ? `<li><strong>Programa:</strong> ${usuario.programa}</li>` : ''}
+                        ${usuario.facultad ? `<li><strong>Facultad:</strong> ${usuario.facultad}</li>` : ''}
+                        ${usuario.semestre ? `<li><strong>Semestre:</strong> ${usuario.semestre}</li>` : ''}
+                        ${usuario.area ? `<li><strong>Área:</strong> ${usuario.area}</li>` : ''}
+                        ${usuario.cargo ? `<li><strong>Cargo:</strong> ${usuario.cargo}</li>` : ''}
+                        ${usuario.empresa ? `<li><strong>Empresa:</strong> ${usuario.empresa}</li>` : ''}
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="card-title">📅 Detalles del Acto de Clausura</h3>
+                    <ul class="info-list">
+                        <li><strong>Evento:</strong> Acto de Clausura</li>
+                        <li><strong>XI Semana de la Ingeniería:</strong> "360°: Innovación, Liderazgo y Futuro"</li>
+                        <li><strong>Fecha:</strong> 15 de Noviembre 2025</li>
+                        <li><strong>Hora:</strong> 6:30 pm - 8:00 pm</li>
+                        <li><strong>Lugar:</strong> Auditorio Lumen</li>
+                        <li><strong>Sede:</strong> Meléndez</li>
+                        <li><strong>Duración:</strong> 90 minutos</li>
+                        <li><strong>Actividades:</strong> Entrega de reconocimientos y cierre oficial</li>
+                    </ul>
+                </div>
+            </div>
+
+            ${usuario.qr ? `
+            <div class="qr-section">
+                <h3 class="card-title">🎫 Código QR de Acceso</h3>
+                <img src="${usuario.qr}" alt="Código QR" class="qr-image">
+                <p class="welcome-text">Presenta este código QR en la entrada del auditorio</p>
+            </div>
+            ` : ''}
+
+            <div class="clausura-section">
+                <h3 style="color: #e17055; margin: 0 0 15px 0; font-size: 18px;">🏆 ¡Únete a Nuestra Gran Clausura!</h3>
+                <p style="color: #e17055; margin: 0; font-size: 14px; line-height: 1.5;">
+                    El Acto de Clausura marca el cierre de una semana increíble llena de innovación, aprendizaje y logros. 
+                    Serás testigo de la entrega de reconocimientos a los participantes destacados y de la ceremonia oficial 
+                    de cierre de la XI Semana de la Ingeniería.
+                </p>
+            </div>
+
+            <div style="background: #e8f4ff; border: 1px solid #74b9ff; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #0984e3; margin: 0 0 15px 0; font-size: 18px;">📍 Recomendaciones para el Evento</h3>
+                <ul style="color: #0984e3; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Llega 20 minutos antes del inicio (6:10 pm)</li>
+                    <li>Presenta tu código QR o documento de identidad</li>
+                    <li>Vestimenta casual formal</li>
+                    <li>Prepárate para la entrega de reconocimientos</li>
+                    <li>Desactiva tu celular o ponlo en modo silencio</li>
+                    <li>Conserva este correo para cualquier consulta</li>
+                </ul>
+            </div>
+
+            <div style="background: #d5f4e6; border: 1px solid #2ecc71; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #27ae60; margin: 0 0 15px 0; font-size: 18px;">🎊 Actividades Especiales de Clausura</h3>
+                <ul style="color: #27ae60; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Ceremonia oficial de clausura</li>
+                    <li>Entrega de reconocimientos a participantes destacados</li>
+                    <li>Presentación de resultados y logros de la semana</li>
+                    <li>Mensaje de cierre de autoridades académicas</li>
+                    <li>Brindis de despedida (opcional)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="footer-logo">
+            <p>
+                <strong>Fundación Universitaria Católica Lumen Gentium</strong><br>
+                – Resolución No. 944 de 1996 MEN – SNIES 2731
+            </p>
+            <p style="margin-top: 15px; font-size: 11px; opacity: 0.8;">
+                © 2025 XI Semana de la Ingeniería - Acto de Clausura
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `,
+            texto: `
+CONFIRMACIÓN DE REGISTRO - ACTO DE CLAUSURA
+XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
+
+🏆 ¡REGISTRO AL ACTO DE CLAUSURA CONFIRMADO!
+
+Hola ${usuario.nombre},
+
+Tu registro para el Acto de Clausura de la XI Semana de la Ingeniería ha sido procesado exitosamente.
+
+👤 INFORMACIÓN DEL PARTICIPANTE:
+- Nombre: ${usuario.nombre}
+- Cédula: ${usuario.cedula}
+- Correo: ${usuario.correo}
+- Teléfono: ${usuario.telefono}
+- Rol: ${usuario.rol}
+${usuario.idEstudiante ? `- ID Estudiante: ${usuario.idEstudiante}\n` : ''}
+${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
+${usuario.facultad ? `- Facultad: ${usuario.facultad}\n` : ''}
+${usuario.semestre ? `- Semestre: ${usuario.semestre}\n` : ''}
+${usuario.area ? `- Área: ${usuario.area}\n` : ''}
+${usuario.cargo ? `- Cargo: ${usuario.cargo}\n` : ''}
+${usuario.empresa ? `- Empresa: ${usuario.empresa}\n` : ''}
+
+📅 DETALLES DEL ACTO DE CLAUSURA:
+- Evento: Acto de Clausura
+- XI Semana de la Ingeniería: "360°: Innovación, Liderazgo y Futuro"
+- Fecha: 15 de Noviembre de 2025
+- Hora: 6:30 pm - 8:00 pm
+- Lugar: Auditorio Lumen - Sede Meléndez
+- Duración: 90 minutos
+- Actividades: Entrega de reconocimientos y cierre oficial
+
+🏆 ¡ÚNETE A NUESTRA GRAN CLAUSURA!
+El Acto de Clausura marca el cierre de una semana increíble llena de innovación, aprendizaje y logros. 
+Serás testigo de la entrega de reconocimientos a los participantes destacados y de la ceremonia oficial 
+de cierre de la XI Semana de la Ingeniería.
+
+📍 RECOMENDACIONES:
+• Llega 20 minutos antes (6:10 pm)
+• Presenta tu código QR o documento de identidad
+• Prepárate para la entrega de reconocimientos
+• Vestimenta casual formal
+• Conserva este correo para consultas
+
+🎊 ACTIVIDADES ESPECIALES:
+• Ceremonia oficial de clausura
+• Entrega de reconocimientos a participantes destacados
+• Presentación de resultados y logros de la semana
+• Mensaje de cierre de autoridades académicas
+• Brindis de despedida (opcional)
+
+--
+Fundación Universitaria Católica Lumen Gentium
+© 2025 XI Semana de la Ingeniería - Acto de Clausura
+        `
+        };
+    },
     // ✅ PLANTILLA PARA ASISTENCIA INAUGURAL
     asistenciainaugural: (usuario) => {
         const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";

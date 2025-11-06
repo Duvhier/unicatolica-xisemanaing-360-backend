@@ -47,8 +47,39 @@ async function obtenerInfoRegistros(db) {
     }
 }
 
+// ✅ Función para cargar programas académicos desde JSON
+async function cargarProgramasAcademicos() {
+    try {
+        // En el backend, asumimos que el archivo está en la carpeta public o en una ruta accesible
+        const response = await fetch('http://localhost:4000/facultadesyprogramasacademicos.json');
+        
+        if (!response.ok) {
+            throw new Error('No se pudo cargar el archivo de programas académicos');
+        }
+        
+        const data = await response.json();
+        
+        if (data.facultades && Array.isArray(data.facultades)) {
+            // Crear una lista plana de todos los programas
+            const todosLosProgramas = [];
+            data.facultades.forEach((facultad) => {
+                if (facultad.programas && Array.isArray(facultad.programas)) {
+                    todosLosProgramas.push(...facultad.programas);
+                }
+            });
+            
+            return todosLosProgramas;
+        }
+        
+        return [];
+    } catch (error) {
+        console.error('Error cargando programas académicos:', error);
+        return [];
+    }
+}
+
 // ✅ Validación de campos
-function validatePayload(body) {
+async function validatePayload(body) {
     const errors = [];
 
     // Campos básicos requeridos para todos
@@ -95,13 +126,19 @@ function validatePayload(body) {
             errors.push('Programa académico es requerido para estudiantes');
         }
 
-        // Validar programa académico
-        const programasValidos = [
-            'Ingeniería de Sistemas',
-            'Tecnología en Desarrollo de Software'
-        ];
-        if (body.programa && !programasValidos.includes(body.programa)) {
-            errors.push('Programa académico no válido');
+        // ✅ CAMBIO PRINCIPAL: Validar programa académico contra el JSON
+        if (body.programa && body.programa.trim()) {
+            try {
+                const programasAcademicos = await cargarProgramasAcademicos();
+                const programasNombres = programasAcademicos.map(p => p.nombre);
+                
+                if (!programasNombres.includes(body.programa)) {
+                    errors.push('Programa académico no válido');
+                }
+            } catch (error) {
+                console.error('Error validando programa académico:', error);
+                errors.push('Error validando programa académico');
+            }
         }
     }
 
@@ -175,8 +212,8 @@ router.post('/registro', async (req, res) => {
         console.log('🎯 INICIANDO REGISTRO EN COLECCIÓN VISITAZONAAMERICA');
         console.log('📥 Payload recibido:', JSON.stringify(payload, null, 2));
 
-        // 🔹 Validación básica del payload
-        const { ok, errors } = validatePayload(payload);
+        // 🔹 Validación básica del payload - AHORA ES ASYNC
+        const { ok, errors } = await validatePayload(payload);
         if (!ok) {
             console.log('❌ Errores de validación:', errors);
             return res.status(400).json({ message: 'Validación fallida', errors });
@@ -300,12 +337,11 @@ router.post('/registro', async (req, res) => {
         console.log('✅ QR guardado en la base de datos');
 
         // 🔹 ENVÍO DE CORREO ELECTRÓNICO
-        // 🔹 ENVÍO DE CORREO ELECTRÓNICO - VERSIÓN CORREGIDA
         let emailEnviado = false;
         try {
             console.log("📧 Preparando envío de correo de confirmación...");
 
-            // Preparar datos para el correo - VERSIÓN CORREGIDA CON MÚLTIPLES PROPIEDADES QR
+            // Preparar datos para el correo
             const datosCorreo = {
                 nombre: payload.nombre.trim(),
                 tipoDocumento: payload.tipoDocumento.trim(),
@@ -346,6 +382,7 @@ router.post('/registro', async (req, res) => {
             console.error("❌ Error al enviar correo:", emailError);
             // No retornamos error aquí, solo logueamos para no afectar el registro
         }
+
         // 🔹 Obtener información actualizada después del registro
         const infoActualizada = await obtenerInfoRegistros(db);
 
