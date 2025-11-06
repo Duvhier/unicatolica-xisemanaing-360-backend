@@ -28,10 +28,6 @@ router.get('/inscripciones', authMiddleware, getInscripciones);
 router.put('/asistencia/:id', authMiddleware, actualizarAsistencia);
 router.get('/buscar-inscripcion/:id', authMiddleware, buscarInscripcionPorId);
 
-router.get('/resumen-completo-eventos', authenticateToken, getResumenCompletoEventos);
-router.get('/estadisticas-generales', authenticateToken, getEstadisticasGenerales);
-router.get('/exportar-datos-completos', authenticateToken, exportarDatosCompletos);
-router.get('/evento/:coleccion/detalles', authenticateToken, getDetallesEvento);
 
 // Perfil y stats
 router.get('/profile', authMiddleware, (req, res) => {
