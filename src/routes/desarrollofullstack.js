@@ -506,31 +506,58 @@ router.post('/verificar-disponibilidad', async (req, res) => {
 });
 
 // ✅ Endpoint para obtener información de registros (sin verificar disponibilidad)
-router.get("/estado-registros", async (req, res) => {
+// En tu desarrollofullstack.js del backend
+router.get('/estado-registros', async (req, res) => {
     try {
-        const { db } = await connectMongo();
-        const infoRegistros = await obtenerInfoRegistros(db);
-
-        return res.json({
-            success: true,
-            data: {
-                inscritos: infoRegistros.inscritos,
-                cupoMaximo: infoRegistros.cupoMaximo,
-                mensaje: infoRegistros.mensaje,
-                disponible: infoRegistros.disponible
-            }
-        });
-
-    } catch (err) {
-        console.error("❌ Error en /desarrollofullstack/estado-registros:", err);
-        return res.status(500).json({
-            success: false,
-            message: "Error obteniendo información de registros",
-            error: err.message
-        });
+      const { dia } = req.query; // Obtener el parámetro dia (22, 23, 24)
+      const { db } = await connectMongo();
+      
+      // Configuración de cupos por día
+      const configCuposPorDia = {
+        22: { // Día 1
+          cupoMaximo: 50,
+          nombre: "Certificación Full Stack: Spring Boot, Angular & AI"
+        },
+        23: { // Día 2
+          cupoMaximo: 50, 
+          nombre: "Certificación Full Stack: Frontend Empresarial con Angular + AI"
+        },
+        24: { // Día 3
+          cupoMaximo: 50,
+          nombre: "Certificación Full Stack: Integración Full Stack con AI"
+        }
+      };
+  
+      const configDia = configCuposPorDia[dia] || configCuposPorDia[22]; // Default al día 1
+      
+      // Contar todos los registros (o filtrar por día si tienes un campo dia en los documentos)
+      const inscritosCol = db.collection('desarrollofullstack');
+      const totalInscritos = await inscritosCol.countDocuments({});
+      
+      // O si tienes un campo "dia" en los documentos, filtrar por ese día:
+      // const totalInscritos = await inscritosCol.countDocuments({ dia: parseInt(dia) });
+      
+      const cuposDisponibles = Math.max(0, configDia.cupoMaximo - totalInscritos);
+  
+      return res.json({
+        data: {
+          disponible: cuposDisponibles > 0,
+          cuposDisponibles: cuposDisponibles,
+          cupoMaximo: configDia.cupoMaximo,
+          inscritos: totalInscritos,
+          actividad: configDia.nombre,
+          mensaje: `Usuarios Registrados: ${totalInscritos}/${configDia.cupoMaximo}`
+        }
+      });
+    } catch (error) {
+      console.error('Error obteniendo estado de registros Full Stack:', error);
+      return res.status(500).json({
+        message: 'Error interno del servidor',
+        error: error.message
+      });
     }
-});
-
+  });
+  
 // ✅ Endpoint para listar inscripciones
 router.get('/listar', async (req, res) => {
     try {

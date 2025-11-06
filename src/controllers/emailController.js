@@ -5054,7 +5054,7 @@ Fundación Universitaria Católica Lumen Gentium
     // ✅ PLANTILLA PARA CLAUSURA
     clausura: (usuario) => {
         const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-        const imagenClausura = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761602295/ACTO_CLAUSURA-8_yu6nbj.png";
+        const imagenClausura = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762456332/ACTO_CLAUSURA-8_z7niyw.png";
 
         return {
             asunto: "🏆 Confirmación de Registro - Acto de Clausura XI Semana de la Ingeniería",
