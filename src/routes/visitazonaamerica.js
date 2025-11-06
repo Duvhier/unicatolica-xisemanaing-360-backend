@@ -47,22 +47,24 @@ async function obtenerInfoRegistros(db) {
     }
 }
 
-// ✅ Función para cargar programas académicos desde JSON
+// ✅ Función para cargar programas académicos desde JSON - CORREGIDA
 async function cargarProgramasAcademicos() {
     try {
-        // En el backend, asumimos que el archivo está en la carpeta public o en una ruta accesible
-        const response = await fetch('http://localhost:4000/facultadesyprogramasacademicos.json');
+        // En el backend, usar importación directa o fs
+        const fs = await import('fs/promises');
+        const path = await import('path');
         
-        if (!response.ok) {
-            throw new Error('No se pudo cargar el archivo de programas académicos');
-        }
+        // Ruta al archivo JSON (ajusta según tu estructura de carpetas)
+        const filePath = path.join(process.cwd(), 'public', 'facultadesyprogramasacademicos.json');
         
-        const data = await response.json();
+        // Leer el archivo directamente
+        const data = await fs.readFile(filePath, 'utf8');
+        const jsonData = JSON.parse(data);
         
-        if (data.facultades && Array.isArray(data.facultades)) {
+        if (jsonData.facultades && Array.isArray(jsonData.facultades)) {
             // Crear una lista plana de todos los programas
             const todosLosProgramas = [];
-            data.facultades.forEach((facultad) => {
+            jsonData.facultades.forEach((facultad) => {
                 if (facultad.programas && Array.isArray(facultad.programas)) {
                     todosLosProgramas.push(...facultad.programas);
                 }
@@ -74,7 +76,21 @@ async function cargarProgramasAcademicos() {
         return [];
     } catch (error) {
         console.error('Error cargando programas académicos:', error);
-        return [];
+        
+        // 🔹 Datos de respaldo en caso de error
+        const programasRespaldo = [
+            { id: "1", nombre: "Ingeniería de Sistemas", facultad: "Facultad de Ingeniería" },
+            { id: "2", nombre: "Ingeniería Informática", facultad: "Facultad de Ingeniería" },
+            { id: "3", nombre: "Ingeniería Industrial", facultad: "Facultad de Ingeniería" },
+            { id: "4", nombre: "Administración de Empresas", facultad: "Facultad de Ciencias Administrativas" },
+            { id: "5", nombre: "Contaduría Pública", facultad: "Facultad de Ciencias Administrativas" },
+            { id: "6", nombre: "Psicología", facultad: "Facultad de Ciencias Humanas y Sociales" },
+            { id: "7", nombre: "Derecho", facultad: "Facultad de Derecho" },
+            { id: "8", nombre: "Comunicación Social", facultad: "Facultad de Comunicación" }
+        ];
+        
+        console.log('⚠️ Usando datos de respaldo para programas académicos');
+        return programasRespaldo;
     }
 }
 
@@ -276,11 +292,12 @@ router.post('/registro', async (req, res) => {
             ...(payload.eps && { eps: payload.eps.trim() }),
             ...(payload.placasVehiculo && { placasVehiculo: payload.placasVehiculo.trim() }),
 
-            // Metadatos del evento
-            evento: 'Visita Zona América',
+            // 🔹 CAMBIO: Metadatos actualizados para Zona América
+            evento: 'XI Semana de la Ingeniería - Visita Empresarial',
             actividad: 'visita-zona-america',
-            horario: '10:00 am a 11:30 am',
-            lugar: 'Zona América',
+            empresa: 'Zona América',
+            horario: '9:00 am a 12:00 pm', // 🔹 CAMBIO: Horario actualizado
+            lugar: 'Zona América, Cali',
 
             // Metadatos del sistema
             created_at: nowIso,
@@ -309,10 +326,12 @@ router.post('/registro', async (req, res) => {
                     programa: payload.programa
                 })
             },
-            actividad: 'Visita Zona América',
-            evento: 'Visita Zona América',
-            horario: '10:00 am a 11:30 am',
-            lugar: 'Zona América',
+            // 🔹 CAMBIO: Información actualizada para Zona América
+            actividad: 'Visita Empresarial Zona América',
+            evento: 'XI Semana de la Ingeniería',
+            empresa: 'Zona América',
+            horario: '9:00 am a 12:00 pm', // 🔹 CAMBIO: Horario actualizado
+            lugar: 'Zona América, Cali',
             emitido: nowIso
         };
 
@@ -353,6 +372,11 @@ router.post('/registro', async (req, res) => {
                 programa: payload.programa?.trim(),
                 eps: payload.eps?.trim(),
                 placasVehiculo: payload.placasVehiculo?.trim(),
+                // 🔹 CAMBIO: Información del evento actualizada
+                evento: 'XI Semana de la Ingeniería - Visita Empresarial Zona América',
+                empresa: 'Zona América',
+                horario: '9:00 am a 12:00 pm',
+                lugar: 'Zona América, Cali',
                 // QR con múltiples nombres para compatibilidad
                 qr: qrDataUrl,
                 qr_image: qrDataUrl,
@@ -388,7 +412,7 @@ router.post('/registro', async (req, res) => {
 
         // 🔹 Respuesta exitosa
         const response = {
-            message: 'Inscripción a Visita Zona América registrada correctamente',
+            message: 'Inscripción a Visita Empresarial Zona América registrada correctamente',
             id: insertedId,
             qr: qrDataUrl,
             qrData: qrPayload,
@@ -560,6 +584,9 @@ router.get('/listar', async (req, res) => {
                 eps: insc.eps,
                 placasVehiculo: insc.placasVehiculo,
                 evento: insc.evento,
+                empresa: insc.empresa,
+                horario: insc.horario,
+                lugar: insc.lugar,
                 created_at: insc.created_at
             }))
         });
@@ -610,6 +637,9 @@ router.get('/buscar/:documento', async (req, res) => {
                 eps: inscripcion.eps,
                 placasVehiculo: inscripcion.placasVehiculo,
                 evento: inscripcion.evento,
+                empresa: inscripcion.empresa,
+                horario: inscripcion.horario,
+                lugar: inscripcion.lugar,
                 created_at: inscripcion.created_at
             }
         });
