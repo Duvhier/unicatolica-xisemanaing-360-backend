@@ -7,7 +7,11 @@ import {
   actualizarAsistencia,
   buscarInscripcionPorId,
   solicitarCodigo2FA,
-  verificarCodigo2FA
+  verificarCodigo2FA,
+  getResumenCompletoEventos,
+  getEstadisticasGenerales,
+  exportarDatosCompletos,
+  getDetallesEvento
 } from '../controllers/organizadorController.js';
 
 const router = Router();
@@ -23,6 +27,11 @@ router.post('/2fa/verificar', verificarCodigo2FA);
 router.get('/inscripciones', authMiddleware, getInscripciones);
 router.put('/asistencia/:id', authMiddleware, actualizarAsistencia);
 router.get('/buscar-inscripcion/:id', authMiddleware, buscarInscripcionPorId);
+
+router.get('/resumen-completo-eventos', authenticateToken, getResumenCompletoEventos);
+router.get('/estadisticas-generales', authenticateToken, getEstadisticasGenerales);
+router.get('/exportar-datos-completos', authenticateToken, exportarDatosCompletos);
+router.get('/evento/:coleccion/detalles', authenticateToken, getDetallesEvento);
 
 // Perfil y stats
 router.get('/profile', authMiddleware, (req, res) => {
