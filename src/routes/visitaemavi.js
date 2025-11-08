@@ -689,7 +689,7 @@ router.get('/listar', async (req, res) => {
                 perfil: insc.perfil,
                 idEstudiante: insc.id,
                 programa: insc.programa,
-                programaInfo: insc.programaInfo, // ✅ NUEVO
+                programaInfo: insc.programaInfo, 
                 eps: insc.eps,
                 placasVehiculo: insc.placasVehiculo,
                 evento: insc.evento,
