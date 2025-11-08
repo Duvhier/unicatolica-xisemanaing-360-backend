@@ -64,7 +64,7 @@ const actividadesIniciales = [
   {
     id: 10,
     nombre: "Industria en Acción",
-    cupoMaximo: 28,
+    cupoMaximo: 20,
     tipo: "Taller",
     coleccion: "industriaenaccion"
   },
@@ -85,7 +85,7 @@ const actividadesIniciales = [
   {
     id: 21,
     nombre: "Visita CDI Alimentos Cárnicos",
-    cupoMaximo: 20,
+    cupoMaximo: 23,
     tipo: "Visita Empresarial",
     coleccion: "visitacarnicos"
   },

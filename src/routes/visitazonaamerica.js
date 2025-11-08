@@ -3,8 +3,14 @@ import { Router } from 'express';
 import QRCode from 'qrcode';
 import { connectMongo } from '../mongo.js';
 import { enviarCorreoRegistro } from '../controllers/emailController.js';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 const router = Router();
+
+// ✅ Obtener ruta del directorio actual (ES modules)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // ✅ Función para obtener información de registros
 async function obtenerInfoRegistros(db) {
@@ -17,7 +23,7 @@ async function obtenerInfoRegistros(db) {
         if (!actividad) {
             return {
                 disponible: true,
-                mensaje: 'Actividad no configurada',
+                mensaje: 'Actividad no configurada - Usando cupo por defecto',
                 inscritos: 0,
                 cupoMaximo: 40 // Cupo por defecto
             };
@@ -26,7 +32,6 @@ async function obtenerInfoRegistros(db) {
         const inscritosCol = db.collection('visitazonaamerica');
         const totalInscritos = await inscritosCol.countDocuments({});
 
-        // ✅ Cambio principal: siempre mostrar número de inscritos
         const cuposDisponibles = Math.max(0, actividad.cupoMaximo - totalInscritos);
 
         return {
@@ -40,29 +45,49 @@ async function obtenerInfoRegistros(db) {
         console.error('❌ Error obteniendo información de registros:', err);
         return {
             disponible: true,
-            mensaje: 'Error obteniendo información',
+            mensaje: 'Error obteniendo información - Usando valores por defecto',
             inscritos: 0,
             cupoMaximo: 40
         };
     }
 }
 
-// ✅ Función para cargar programas académicos desde JSON - CORREGIDA
+// ✅ Función para cargar programas académicos desde JSON - MEJORADA
 async function cargarProgramasAcademicos() {
     try {
-        // En el backend, usar importación directa o fs
         const fs = await import('fs/promises');
-        const path = await import('path');
         
-        // Ruta al archivo JSON (ajusta según tu estructura de carpetas)
-        const filePath = path.join(process.cwd(), 'public', 'facultadesyprogramasacademicos.json');
-        
-        // Leer el archivo directamente
-        const data = await fs.readFile(filePath, 'utf8');
-        const jsonData = JSON.parse(data);
+        // 🔹 MÚLTIPLES RUTAS POSIBLES para encontrar el archivo
+        const posiblesRutas = [
+            join(__dirname, '..', 'public', 'facultadesyprogramasacademicos.json'),
+            join(process.cwd(), 'public', 'facultadesyprogramasacademicos.json'),
+            join(process.cwd(), 'src', 'public', 'facultadesyprogramasacademicos.json'),
+            join(process.cwd(), 'facultadesyprogramasacademicos.json')
+        ];
+
+        let fileContent = null;
+        let rutaUsada = null;
+
+        // Intentar cada ruta posible
+        for (const ruta of posiblesRutas) {
+            try {
+                fileContent = await fs.readFile(ruta, 'utf8');
+                rutaUsada = ruta;
+                console.log(`✅ Archivo JSON encontrado en: ${ruta}`);
+                break;
+            } catch (error) {
+                console.log(`❌ No se encontró en: ${ruta}`);
+                continue;
+            }
+        }
+
+        if (!fileContent) {
+            throw new Error('No se pudo encontrar el archivo JSON en ninguna ruta');
+        }
+
+        const jsonData = JSON.parse(fileContent);
         
         if (jsonData.facultades && Array.isArray(jsonData.facultades)) {
-            // Crear una lista plana de todos los programas
             const todosLosProgramas = [];
             jsonData.facultades.forEach((facultad) => {
                 if (facultad.programas && Array.isArray(facultad.programas)) {
@@ -70,12 +95,13 @@ async function cargarProgramasAcademicos() {
                 }
             });
             
+            console.log(`✅ Cargados ${todosLosProgramas.length} programas académicos desde: ${rutaUsada}`);
             return todosLosProgramas;
         }
         
         return [];
     } catch (error) {
-        console.error('Error cargando programas académicos:', error);
+        console.error('❌ Error cargando programas académicos:', error);
         
         // 🔹 Datos de respaldo en caso de error
         const programasRespaldo = [
@@ -140,21 +166,6 @@ async function validatePayload(body) {
         }
         if (!body.programa || !body.programa.trim()) {
             errors.push('Programa académico es requerido para estudiantes');
-        }
-
-        // ✅ CAMBIO PRINCIPAL: Validar programa académico contra el JSON
-        if (body.programa && body.programa.trim()) {
-            try {
-                const programasAcademicos = await cargarProgramasAcademicos();
-                const programasNombres = programasAcademicos.map(p => p.nombre);
-                
-                if (!programasNombres.includes(body.programa)) {
-                    errors.push('Programa académico no válido');
-                }
-            } catch (error) {
-                console.error('Error validando programa académico:', error);
-                errors.push('Error validando programa académico');
-            }
         }
     }
 
@@ -228,7 +239,7 @@ router.post('/registro', async (req, res) => {
         console.log('🎯 INICIANDO REGISTRO EN COLECCIÓN VISITAZONAAMERICA');
         console.log('📥 Payload recibido:', JSON.stringify(payload, null, 2));
 
-        // 🔹 Validación básica del payload - AHORA ES ASYNC
+        // 🔹 Validación básica del payload
         const { ok, errors } = await validatePayload(payload);
         if (!ok) {
             console.log('❌ Errores de validación:', errors);
@@ -292,11 +303,11 @@ router.post('/registro', async (req, res) => {
             ...(payload.eps && { eps: payload.eps.trim() }),
             ...(payload.placasVehiculo && { placasVehiculo: payload.placasVehiculo.trim() }),
 
-            // 🔹 CAMBIO: Metadatos actualizados para Zona América
+            // 🔹 CORRECCIÓN: Horario actualizado para Zona América
             evento: 'XI Semana de la Ingeniería - Visita Empresarial',
             actividad: 'visita-zona-america',
             empresa: 'Zona América',
-            horario: '9:00 am a 12:00 pm', // 🔹 CAMBIO: Horario actualizado
+            horario: '9:30 am - 11:00 am', // 🔹 CORREGIDO: Horario actualizado
             lugar: 'Zona América, Cali',
 
             // Metadatos del sistema
@@ -326,11 +337,11 @@ router.post('/registro', async (req, res) => {
                     programa: payload.programa
                 })
             },
-            // 🔹 CAMBIO: Información actualizada para Zona América
+            // 🔹 CORRECCIÓN: Información actualizada para Zona América
             actividad: 'Visita Empresarial Zona América',
             evento: 'XI Semana de la Ingeniería',
             empresa: 'Zona América',
-            horario: '9:00 am a 12:00 pm', // 🔹 CAMBIO: Horario actualizado
+            horario: '9:30 am - 11:00 am', // 🔹 CORREGIDO: Horario actualizado
             lugar: 'Zona América, Cali',
             emitido: nowIso
         };
@@ -372,10 +383,10 @@ router.post('/registro', async (req, res) => {
                 programa: payload.programa?.trim(),
                 eps: payload.eps?.trim(),
                 placasVehiculo: payload.placasVehiculo?.trim(),
-                // 🔹 CAMBIO: Información del evento actualizada
+                // 🔹 CORRECCIÓN: Información del evento actualizada
                 evento: 'XI Semana de la Ingeniería - Visita Empresarial Zona América',
                 empresa: 'Zona América',
-                horario: '9:00 am a 12:00 pm',
+                horario: '9:30 am - 11:00 am', // 🔹 CORREGIDO
                 lugar: 'Zona América, Cali',
                 // QR con múltiples nombres para compatibilidad
                 qr: qrDataUrl,
@@ -383,20 +394,7 @@ router.post('/registro', async (req, res) => {
                 qrDataUrl: qrDataUrl
             };
 
-            // 🔍 VERIFICACIÓN DE DATOS ANTES DE ENVIAR
-            console.log("🔍 VERIFICACIÓN QR ANTES DE ENVIAR CORREO:");
-            console.log("QR Data URL length:", qrDataUrl.length);
-            console.log("QR starts with data:image:", qrDataUrl.startsWith('data:image'));
-            console.log("Datos correo QR property:", !!datosCorreo.qr);
-            console.log("Datos correo QR_IMAGE property:", !!datosCorreo.qr_image);
-            console.log("Datos correo QRDataUrl property:", !!datosCorreo.qrDataUrl);
-
-            console.log("📨 Datos para el correo:", JSON.stringify({
-                ...datosCorreo,
-                qr: datosCorreo.qr ? `[QR_DATA_LENGTH: ${datosCorreo.qr.length}]` : 'NO_QR',
-                qr_image: datosCorreo.qr_image ? `[QR_IMAGE_LENGTH: ${datosCorreo.qr_image.length}]` : 'NO_QR_IMAGE',
-                qrDataUrl: datosCorreo.qrDataUrl ? `[QR_DATA_URL_LENGTH: ${datosCorreo.qrDataUrl.length}]` : 'NO_QR_DATA_URL'
-            }, null, 2));
+            console.log("📨 Datos para el correo preparados");
 
             // Enviar correo
             await enviarCorreoRegistro(datosCorreo, 'visitazonaamerica');
@@ -438,10 +436,64 @@ router.post('/registro', async (req, res) => {
             confirmacion: 'DATOS GUARDADOS EN COLECCIÓN VISITAZONAAMERICA'
         };
 
-        console.log('✅ Respuesta exitosa:', JSON.stringify(response, null, 2));
+        console.log('✅ Respuesta exitosa para Zona América');
         return res.status(201).json(response);
     } catch (err) {
         console.error('❌ Error en /visitazonaamerica/registro:', err);
+        return res.status(500).json({
+            message: 'Error interno del servidor',
+            error: err.message
+        });
+    }
+});
+
+// ✅ Endpoint para CONFIGURAR la actividad (NUEVO)
+router.post('/configurar', async (req, res) => {
+    try {
+        const { cupoMaximo } = req.body;
+        const { db } = await connectMongo();
+        
+        if (!cupoMaximo || cupoMaximo < 1) {
+            return res.status(400).json({
+                message: 'El cupo máximo debe ser un número mayor a 0'
+            });
+        }
+
+        const actividadesCol = db.collection('actividades');
+        
+        // Configurar o actualizar la actividad
+        const resultado = await actividadesCol.updateOne(
+            { coleccion: 'visitazonaamerica' },
+            { 
+                $set: { 
+                    coleccion: 'visitazonaamerica',
+                    cupoMaximo: parseInt(cupoMaximo),
+                    nombre: 'Visita Empresarial Zona América',
+                    updated_at: new Date().toISOString()
+                } 
+            },
+            { upsert: true }
+        );
+
+        // Obtener información actualizada
+        const infoRegistros = await obtenerInfoRegistros(db);
+
+        return res.json({
+            message: 'Actividad Zona América configurada correctamente',
+            configuracion: {
+                cupoMaximo: parseInt(cupoMaximo),
+                inscritos: infoRegistros.inscritos,
+                disponibles: infoRegistros.cuposDisponibles
+            },
+            resultado: {
+                matched: resultado.matchedCount,
+                modified: resultado.modifiedCount,
+                upserted: resultado.upsertedId ? true : false
+            }
+        });
+
+    } catch (err) {
+        console.error('❌ Error en /visitazonaamerica/configurar:', err);
         return res.status(500).json({
             message: 'Error interno del servidor',
             error: err.message
@@ -456,7 +508,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
         const { db } = await connectMongo();
         const col = db.collection('visitazonaamerica');
 
-        console.log('🔍 Verificando disponibilidad de datos:', { numeroDocumento, idEstudiante, correo, placasVehiculo });
+        console.log('🔍 Verificando disponibilidad de datos para Zona América:', { numeroDocumento, idEstudiante, correo, placasVehiculo });
 
         // 🔹 Obtener información actual de registros
         const infoRegistros = await obtenerInfoRegistros(db);
@@ -505,7 +557,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
             }
         }
 
-        console.log('✅ Resultado de disponibilidad:', disponibilidad);
+        console.log('✅ Resultado de disponibilidad para Zona América:', disponibilidad);
         return res.json({
             message: 'Verificación de disponibilidad completada',
             disponibilidad,
@@ -526,7 +578,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
     }
 });
 
-// ✅ Endpoint para obtener información de registros (sin verificar disponibilidad)
+// ✅ Endpoint para obtener información de registros
 router.get("/estado-registros", async (req, res) => {
     try {
         const { db } = await connectMongo();
@@ -538,7 +590,8 @@ router.get("/estado-registros", async (req, res) => {
                 inscritos: infoRegistros.inscritos,
                 cupoMaximo: infoRegistros.cupoMaximo,
                 mensaje: infoRegistros.mensaje,
-                disponible: infoRegistros.disponible
+                disponible: infoRegistros.disponible,
+                actividad: 'Visita Empresarial Zona América'
             }
         });
 
@@ -565,7 +618,7 @@ router.get('/listar', async (req, res) => {
             .limit(40)
             .toArray();
 
-        console.log(`✅ Encontradas ${inscripciones.length} inscripciones`);
+        console.log(`✅ Encontradas ${inscripciones.length} inscripciones para Zona América`);
 
         return res.json({
             message: 'Inscripciones a Visita Zona América encontradas',
@@ -606,7 +659,7 @@ router.get('/buscar/:documento', async (req, res) => {
         const { db } = await connectMongo();
         const col = db.collection('visitazonaamerica');
 
-        console.log(`🔍 Buscando inscripción: ${documento}`);
+        console.log(`🔍 Buscando inscripción en Zona América: ${documento}`);
 
         const inscripcion = await col.findOne({
             $or: [
@@ -623,7 +676,7 @@ router.get('/buscar/:documento', async (req, res) => {
         }
 
         return res.json({
-            message: 'Inscripción encontrada',
+            message: 'Inscripción encontrada en Zona América',
             inscripcion: {
                 id: inscripcion._id,
                 nombre: inscripcion.nombre,
