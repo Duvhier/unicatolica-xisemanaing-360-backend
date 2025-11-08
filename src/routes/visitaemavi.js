@@ -3,8 +3,14 @@ import { Router } from 'express';
 import QRCode from 'qrcode';
 import { connectMongo } from '../mongo.js';
 import { enviarCorreoRegistro } from '../controllers/emailController.js';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 const router = Router();
+
+// ✅ Obtener ruta del directorio actual (ES modules)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // ✅ Función para obtener información de registros
 async function obtenerInfoRegistros(db) {
@@ -17,7 +23,7 @@ async function obtenerInfoRegistros(db) {
         if (!actividad) {
             return {
                 disponible: true,
-                mensaje: 'Actividad no configurada',
+                mensaje: 'Actividad no configurada - Usando cupo por defecto',
                 inscritos: 0,
                 cupoMaximo: 40 // Cupo por defecto
             };
@@ -26,7 +32,6 @@ async function obtenerInfoRegistros(db) {
         const inscritosCol = db.collection('visitaemavi');
         const totalInscritos = await inscritosCol.countDocuments({});
 
-        // ✅ Cambio principal: siempre mostrar número de inscritos
         const cuposDisponibles = Math.max(0, actividad.cupoMaximo - totalInscritos);
 
         return {
@@ -40,15 +45,94 @@ async function obtenerInfoRegistros(db) {
         console.error('❌ Error obteniendo información de registros:', err);
         return {
             disponible: true,
-            mensaje: 'Error obteniendo información',
+            mensaje: 'Error obteniendo información - Usando valores por defecto',
             inscritos: 0,
             cupoMaximo: 40
         };
     }
 }
 
+// ✅ Función para cargar programas académicos desde JSON - IGUAL A ZONA AMÉRICA
+async function cargarProgramasAcademicos() {
+    try {
+        const fs = await import('fs/promises');
+        
+        // 🔹 MÚLTIPLES RUTAS POSIBLES para encontrar el archivo
+        const posiblesRutas = [
+            join(__dirname, '..', 'public', 'facultadesyprogramasacademicos.json'),
+            join(process.cwd(), 'public', 'facultadesyprogramasacademicos.json'),
+            join(process.cwd(), 'src', 'public', 'facultadesyprogramasacademicos.json'),
+            join(process.cwd(), 'facultadesyprogramasacademicos.json')
+        ];
+
+        let fileContent = null;
+        let rutaUsada = null;
+
+        // Intentar cada ruta posible
+        for (const ruta of posiblesRutas) {
+            try {
+                fileContent = await fs.readFile(ruta, 'utf8');
+                rutaUsada = ruta;
+                console.log(`✅ Archivo JSON encontrado en: ${ruta}`);
+                break;
+            } catch (error) {
+                console.log(`❌ No se encontró en: ${ruta}`);
+                continue;
+            }
+        }
+
+        if (!fileContent) {
+            throw new Error('No se pudo encontrar el archivo JSON en ninguna ruta');
+        }
+
+        const jsonData = JSON.parse(fileContent);
+        
+        if (jsonData.facultades && Array.isArray(jsonData.facultades)) {
+            const todosLosProgramas = [];
+            jsonData.facultades.forEach((facultad) => {
+                if (facultad.programas && Array.isArray(facultad.programas)) {
+                    todosLosProgramas.push(...facultad.programas);
+                }
+            });
+            
+            console.log(`✅ Cargados ${todosLosProgramas.length} programas académicos desde: ${rutaUsada}`);
+            return todosLosProgramas;
+        }
+        
+        return [];
+    } catch (error) {
+        console.error('❌ Error cargando programas académicos:', error);
+        
+        // 🔹 Datos de respaldo en caso de error
+        const programasRespaldo = [
+            { id: "1", nombre: "Ingeniería de Sistemas", facultad: "Facultad de Ingeniería" },
+            { id: "2", nombre: "Ingeniería Informática", facultad: "Facultad de Ingeniería" },
+            { id: "3", nombre: "Ingeniería Industrial", facultad: "Facultad de Ingeniería" },
+            { id: "4", nombre: "Administración de Empresas", facultad: "Facultad de Ciencias Administrativas" },
+            { id: "5", nombre: "Contaduría Pública", facultad: "Facultad de Ciencias Administrativas" },
+            { id: "6", nombre: "Psicología", facultad: "Facultad de Ciencias Humanas y Sociales" },
+            { id: "7", nombre: "Derecho", facultad: "Facultad de Derecho" },
+            { id: "8", nombre: "Comunicación Social", facultad: "Facultad de Comunicación" }
+        ];
+        
+        console.log('⚠️ Usando datos de respaldo para programas académicos');
+        return programasRespaldo;
+    }
+}
+
+// ✅ Función para validar programa académico
+async function validarProgramaAcademico(programaNombre) {
+    try {
+        const programas = await cargarProgramasAcademicos();
+        return programas.some(programa => programa.nombre === programaNombre);
+    } catch (error) {
+        console.error('❌ Error validando programa académico:', error);
+        return false;
+    }
+}
+
 // ✅ Validación de campos
-function validatePayload(body) {
+async function validatePayload(body) {
     const errors = [];
 
     // Campos básicos requeridos para todos
@@ -93,15 +177,14 @@ function validatePayload(body) {
         }
         if (!body.programa || !body.programa.trim()) {
             errors.push('Programa académico es requerido para estudiantes');
-        }
-
-        // Validar programa académico
-        const programasValidos = [
-            'Ingeniería de Sistemas',
-            'Tecnología en Desarrollo de Software'
-        ];
-        if (body.programa && !programasValidos.includes(body.programa)) {
-            errors.push('Programa académico no válido');
+        } else {
+            // ✅ NUEVO: Validar programa académico contra la lista dinámica
+            const programaValido = await validarProgramaAcademico(body.programa.trim());
+            if (!programaValido) {
+                const programas = await cargarProgramasAcademicos();
+                const programasNombres = programas.map(p => p.nombre);
+                errors.push(`Programa académico no válido. Programas válidos: ${programasNombres.slice(0, 5).join(', ')}...`);
+            }
         }
     }
 
@@ -168,6 +251,33 @@ async function checkDuplicates(db, payload) {
     return duplicates;
 }
 
+// ✅ Endpoint para obtener programas académicos (NUEVO)
+router.get('/programas-academicos', async (req, res) => {
+    try {
+        console.log('📚 Solicitando lista de programas académicos para EMAVI');
+        
+        const programas = await cargarProgramasAcademicos();
+        
+        console.log(`✅ Enviando ${programas.length} programas académicos para EMAVI`);
+        
+        return res.json({
+            success: true,
+            data: {
+                programas: programas,
+                total: programas.length,
+                timestamp: new Date().toISOString()
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error obteniendo programas académicos para EMAVI:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error obteniendo programas académicos',
+            error: error.message
+        });
+    }
+});
+
 // ✅ Endpoint principal para registro
 router.post('/registro', async (req, res) => {
     try {
@@ -176,7 +286,7 @@ router.post('/registro', async (req, res) => {
         console.log('📥 Payload recibido:', JSON.stringify(payload, null, 2));
 
         // 🔹 Validación básica del payload
-        const { ok, errors } = validatePayload(payload);
+        const { ok, errors } = await validatePayload(payload);
         if (!ok) {
             console.log('❌ Errores de validación:', errors);
             return res.status(400).json({ message: 'Validación fallida', errors });
@@ -219,6 +329,14 @@ router.post('/registro', async (req, res) => {
 
         const nowIso = new Date().toISOString();
 
+        // 🔹 Obtener información adicional del programa académico si es estudiante
+        let programaInfo = null;
+        if (payload.perfil === 'Estudiante' && payload.programa) {
+            const programas = await cargarProgramasAcademicos();
+            programaInfo = programas.find(p => p.nombre === payload.programa.trim());
+            console.log('📚 Información del programa académico para EMAVI:', programaInfo);
+        }
+
         // 🔹 Construcción del documento a guardar
         const doc = {
             // Datos personales básicos
@@ -232,7 +350,13 @@ router.post('/registro', async (req, res) => {
             // Campos específicos por perfil
             ...(payload.perfil === 'Estudiante' && {
                 id: payload.id.trim(),
-                programa: payload.programa.trim()
+                programa: payload.programa.trim(),
+                // ✅ NUEVO: Guardar información adicional del programa
+                programaInfo: programaInfo || {
+                    nombre: payload.programa.trim(),
+                    facultad: 'No especificada',
+                    nivel: 'No especificado'
+                }
             }),
 
             // Campos opcionales
@@ -242,7 +366,7 @@ router.post('/registro', async (req, res) => {
             // Metadatos del evento
             evento: 'Visita EMAVI',
             actividad: 'visita-emavi',
-            horario: '8:00 am a 12:00 pm',
+            horario: '9:00 am a 12:00 pm',
             lugar: 'Escuela Militar de Aviación (EMAVI)',
 
             // Metadatos del sistema
@@ -269,12 +393,13 @@ router.post('/registro', async (req, res) => {
                 perfil: payload.perfil,
                 ...(payload.perfil === 'Estudiante' && {
                     idEstudiante: payload.id,
-                    programa: payload.programa
+                    programa: payload.programa,
+                    programaInfo: programaInfo
                 })
             },
             actividad: 'Visita EMAVI',
             evento: 'Visita EMAVI',
-            horario: '8:00 am a 12:00 pm',
+            horario: '9:00 am a 12:00 pm',
             lugar: 'Escuela Militar de Aviación (EMAVI)',
             emitido: nowIso
         };
@@ -314,6 +439,7 @@ router.post('/registro', async (req, res) => {
                 perfil: payload.perfil.trim(),
                 idEstudiante: payload.id?.trim(),
                 programa: payload.programa?.trim(),
+                programaInfo: programaInfo, // ✅ NUEVO: Información del programa
                 eps: payload.eps?.trim(),
                 placasVehiculo: payload.placasVehiculo?.trim(),
                 // QR con múltiples nombres para compatibilidad
@@ -322,20 +448,7 @@ router.post('/registro', async (req, res) => {
                 qrDataUrl: qrDataUrl
             };
 
-            // 🔍 VERIFICACIÓN DE DATOS ANTES DE ENVIAR
-            console.log("🔍 VERIFICACIÓN QR ANTES DE ENVIAR CORREO:");
-            console.log("QR Data URL length:", qrDataUrl.length);
-            console.log("QR starts with data:image:", qrDataUrl.startsWith('data:image'));
-            console.log("Datos correo QR property:", !!datosCorreo.qr);
-            console.log("Datos correo QR_IMAGE property:", !!datosCorreo.qr_image);
-            console.log("Datos correo QRDataUrl property:", !!datosCorreo.qrDataUrl);
-
-            console.log("📨 Datos para el correo:", JSON.stringify({
-                ...datosCorreo,
-                qr: datosCorreo.qr ? `[QR_DATA_LENGTH: ${datosCorreo.qr.length}]` : 'NO_QR',
-                qr_image: datosCorreo.qr_image ? `[QR_IMAGE_LENGTH: ${datosCorreo.qr_image.length}]` : 'NO_QR_IMAGE',
-                qrDataUrl: datosCorreo.qrDataUrl ? `[QR_DATA_URL_LENGTH: ${datosCorreo.qrDataUrl.length}]` : 'NO_QR_DATA_URL'
-            }, null, 2));
+            console.log("📨 Datos para el correo de EMAVI preparados");
 
             // Enviar correo
             await enviarCorreoRegistro(datosCorreo, 'visitaemavi');
@@ -366,7 +479,8 @@ router.post('/registro', async (req, res) => {
                 perfil: payload.perfil,
                 ...(payload.perfil === 'Estudiante' && {
                     idEstudiante: payload.id,
-                    programa: payload.programa
+                    programa: payload.programa,
+                    programaInfo: programaInfo // ✅ NUEVO
                 })
             },
             cupo: {
@@ -377,10 +491,64 @@ router.post('/registro', async (req, res) => {
             confirmacion: 'DATOS GUARDADOS EN COLECCIÓN VISITAEMAVI'
         };
 
-        console.log('✅ Respuesta exitosa:', JSON.stringify(response, null, 2));
+        console.log('✅ Respuesta exitosa para EMAVI');
         return res.status(201).json(response);
     } catch (err) {
         console.error('❌ Error en /visitaemavi/registro:', err);
+        return res.status(500).json({
+            message: 'Error interno del servidor',
+            error: err.message
+        });
+    }
+});
+
+// ✅ Endpoint para CONFIGURAR la actividad (NUEVO)
+router.post('/configurar', async (req, res) => {
+    try {
+        const { cupoMaximo } = req.body;
+        const { db } = await connectMongo();
+        
+        if (!cupoMaximo || cupoMaximo < 1) {
+            return res.status(400).json({
+                message: 'El cupo máximo debe ser un número mayor a 0'
+            });
+        }
+
+        const actividadesCol = db.collection('actividades');
+        
+        // Configurar o actualizar la actividad
+        const resultado = await actividadesCol.updateOne(
+            { coleccion: 'visitaemavi' },
+            { 
+                $set: { 
+                    coleccion: 'visitaemavi',
+                    cupoMaximo: parseInt(cupoMaximo),
+                    nombre: 'Visita Empresarial EMAVI',
+                    updated_at: new Date().toISOString()
+                } 
+            },
+            { upsert: true }
+        );
+
+        // Obtener información actualizada
+        const infoRegistros = await obtenerInfoRegistros(db);
+
+        return res.json({
+            message: 'Actividad EMAVI configurada correctamente',
+            configuracion: {
+                cupoMaximo: parseInt(cupoMaximo),
+                inscritos: infoRegistros.inscritos,
+                disponibles: infoRegistros.cuposDisponibles
+            },
+            resultado: {
+                matched: resultado.matchedCount,
+                modified: resultado.modifiedCount,
+                upserted: resultado.upsertedId ? true : false
+            }
+        });
+
+    } catch (err) {
+        console.error('❌ Error en /visitaemavi/configurar:', err);
         return res.status(500).json({
             message: 'Error interno del servidor',
             error: err.message
@@ -395,7 +563,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
         const { db } = await connectMongo();
         const col = db.collection('visitaemavi');
 
-        console.log('🔍 Verificando disponibilidad de datos:', { numeroDocumento, idEstudiante, correo, placasVehiculo });
+        console.log('🔍 Verificando disponibilidad de datos para EMAVI:', { numeroDocumento, idEstudiante, correo, placasVehiculo });
 
         // 🔹 Obtener información actual de registros
         const infoRegistros = await obtenerInfoRegistros(db);
@@ -444,7 +612,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
             }
         }
 
-        console.log('✅ Resultado de disponibilidad:', disponibilidad);
+        console.log('✅ Resultado de disponibilidad para EMAVI:', disponibilidad);
         return res.json({
             message: 'Verificación de disponibilidad completada',
             disponibilidad,
@@ -465,7 +633,7 @@ router.post('/verificar-disponibilidad', async (req, res) => {
     }
 });
 
-// ✅ Endpoint para obtener información de registros (sin verificar disponibilidad)
+// ✅ Endpoint para obtener información de registros
 router.get("/estado-registros", async (req, res) => {
     try {
         const { db } = await connectMongo();
@@ -477,7 +645,8 @@ router.get("/estado-registros", async (req, res) => {
                 inscritos: infoRegistros.inscritos,
                 cupoMaximo: infoRegistros.cupoMaximo,
                 mensaje: infoRegistros.mensaje,
-                disponible: infoRegistros.disponible
+                disponible: infoRegistros.disponible,
+                actividad: 'Visita Empresarial EMAVI'
             }
         });
 
@@ -504,7 +673,7 @@ router.get('/listar', async (req, res) => {
             .limit(40)
             .toArray();
 
-        console.log(`✅ Encontradas ${inscripciones.length} inscripciones`);
+        console.log(`✅ Encontradas ${inscripciones.length} inscripciones para EMAVI`);
 
         return res.json({
             message: 'Inscripciones a Visita EMAVI encontradas',
@@ -520,9 +689,12 @@ router.get('/listar', async (req, res) => {
                 perfil: insc.perfil,
                 idEstudiante: insc.id,
                 programa: insc.programa,
+                programaInfo: insc.programaInfo, // ✅ NUEVO
                 eps: insc.eps,
                 placasVehiculo: insc.placasVehiculo,
                 evento: insc.evento,
+                horario: insc.horario,
+                lugar: insc.lugar,
                 created_at: insc.created_at
             }))
         });
@@ -542,7 +714,7 @@ router.get('/buscar/:documento', async (req, res) => {
         const { db } = await connectMongo();
         const col = db.collection('visitaemavi');
 
-        console.log(`🔍 Buscando inscripción: ${documento}`);
+        console.log(`🔍 Buscando inscripción en EMAVI: ${documento}`);
 
         const inscripcion = await col.findOne({
             $or: [
@@ -559,7 +731,7 @@ router.get('/buscar/:documento', async (req, res) => {
         }
 
         return res.json({
-            message: 'Inscripción encontrada',
+            message: 'Inscripción encontrada en EMAVI',
             inscripcion: {
                 id: inscripcion._id,
                 nombre: inscripcion.nombre,
@@ -570,9 +742,12 @@ router.get('/buscar/:documento', async (req, res) => {
                 perfil: inscripcion.perfil,
                 idEstudiante: inscripcion.id,
                 programa: inscripcion.programa,
+                programaInfo: inscripcion.programaInfo, // ✅ NUEVO
                 eps: inscripcion.eps,
                 placasVehiculo: inscripcion.placasVehiculo,
                 evento: inscripcion.evento,
+                horario: inscripcion.horario,
+                lugar: inscripcion.lugar,
                 created_at: inscripcion.created_at
             }
         });
