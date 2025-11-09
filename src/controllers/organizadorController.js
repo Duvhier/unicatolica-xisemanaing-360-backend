@@ -20,8 +20,8 @@ export const loginOrganizador = async (req, res) => {
     const organizadoresCollection = db.collection('usuariosOrganizadores');
 
     // Buscar usuario con trim
-    let organizador = await organizadoresCollection.findOne({ 
-      usuario: usuario.trim() 
+    let organizador = await organizadoresCollection.findOne({
+      usuario: usuario.trim()
     });
 
     // Usuario demo por si no existe
@@ -240,10 +240,10 @@ export const buscarInscripcionPorId = async (req, res) => {
     const { db } = await connectMongo();
 
     const colecciones = coleccion ? [coleccion] : [
-      'inscripciones', 
-      'asistenciainaugural', 
-      'liderazgo', 
-      'hackathon', 
+      'inscripciones',
+      'asistenciainaugural',
+      'liderazgo',
+      'hackathon',
       'technologicaltouch',
       'visitazonaamerica'
     ];
@@ -255,7 +255,7 @@ export const buscarInscripcionPorId = async (req, res) => {
       try {
         const collection = db.collection(colName);
         const { ObjectId } = await import('mongodb');
-        
+
         let objectId;
         try {
           objectId = new ObjectId(id);
@@ -267,7 +267,7 @@ export const buscarInscripcionPorId = async (req, res) => {
               { correo: id }
             ]
           });
-          
+
           if (resultado) {
             inscripcionEncontrada = resultado;
             coleccionEncontrada = colName;
@@ -326,7 +326,7 @@ export const buscarInscripcionPorId = async (req, res) => {
 export const solicitarCodigo2FA = async (req, res) => {
   let objectId = null;
   let organizadoresCollection = null;
-  
+
   try {
     const { usuarioId } = req.body;
 
@@ -432,7 +432,7 @@ export const solicitarCodigo2FA = async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error solicitando código 2FA:', error);
-    
+
     try {
       if (objectId && organizadoresCollection) {
         await organizadoresCollection.updateOne(
@@ -443,7 +443,7 @@ export const solicitarCodigo2FA = async (req, res) => {
     } catch (cleanupError) {
       console.error('❌ Error limpiando código 2FA:', cleanupError);
     }
-    
+
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor',
@@ -604,23 +604,44 @@ export const verificarCodigo2FA = async (req, res) => {
 
 async function enviarWhatsApp2FA(telefono, codigo) {
   try {
-    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_WHATSAPP_FROM) {
-      console.error('❌ Configuración de Twilio incompleta');
+    console.log('🔧 Configurando Twilio...');
+
+    // Verificar variables de entorno con más detalle
+    if (!process.env.TWILIO_ACCOUNT_SID) {
+      console.error('❌ TWILIO_ACCOUNT_SID no está definida');
+      return false;
+    }
+
+    if (!process.env.TWILIO_AUTH_TOKEN) {
+      console.error('❌ TWILIO_AUTH_TOKEN no está definida');
+      return false;
+    }
+
+    if (!process.env.TWILIO_WHATSAPP_FROM) {
+      console.error('❌ TWILIO_WHATSAPP_FROM no está definida');
       return false;
     }
 
     const accountSid = process.env.TWILIO_ACCOUNT_SID.trim();
     const authToken = process.env.TWILIO_AUTH_TOKEN.trim();
-    
-    if (!accountSid || !authToken) {
-      console.error('❌ Credenciales vacías');
+    const fromNumber = process.env.TWILIO_WHATSAPP_FROM.trim();
+
+    console.log('🔧 Twilio config:', {
+      accountSid: accountSid ? '✅ Definida' : '❌ No definida',
+      authToken: authToken ? '✅ Definida' : '❌ No definida',
+      fromNumber: fromNumber ? '✅ Definida' : '❌ No definida'
+    });
+
+    if (!accountSid || !authToken || !fromNumber) {
+      console.error('❌ Credenciales de Twilio incompletas');
       return false;
     }
 
     const client = twilio(accountSid, authToken);
 
+    // Formatear número
     let numeroFormateado = telefono.trim().replace(/\D/g, '');
-    
+
     if (numeroFormateado.startsWith('0')) {
       numeroFormateado = 'whatsapp:+57' + numeroFormateado.substring(1);
     } else if (numeroFormateado.startsWith('57') && numeroFormateado.length === 12) {
@@ -631,7 +652,11 @@ async function enviarWhatsApp2FA(telefono, codigo) {
       numeroFormateado = 'whatsapp:+' + numeroFormateado;
     }
 
-    console.log(`📱 Enviando a: ${numeroFormateado}`);
+    console.log(`📱 Enviando WhatsApp:`, {
+      from: fromNumber,
+      to: numeroFormateado,
+      codigo: codigo
+    });
 
     const mensaje = `🔐 *Semana de la Ingeniería UC*
 
@@ -644,15 +669,37 @@ Tu código de verificación es:
 
     const message = await client.messages.create({
       body: mensaje,
-      from: process.env.TWILIO_WHATSAPP_FROM,
+      from: fromNumber,
       to: numeroFormateado
     });
 
-    console.log(`✅ WhatsApp enviado: ${message.sid}`);
+    console.log(`✅ WhatsApp enviado exitosamente:`, {
+      messageId: message.sid,
+      status: message.status,
+      to: message.to
+    });
+
     return true;
 
   } catch (error) {
-    console.error('❌ Error enviando WhatsApp:', error);
+    console.error('❌ Error detallado enviando WhatsApp:', {
+      error: error.message,
+      code: error.code,
+      moreInfo: error.moreInfo,
+      stack: error.stack
+    });
+
+    // Errores específicos de Twilio
+    if (error.code === 21211) {
+      console.error('❌ Número de teléfono inválido');
+    } else if (error.code === 21408) {
+      console.error('❌ No tienes permisos para enviar a este número');
+    } else if (error.code === 21610) {
+      console.error('❌ El número no está en el sandbox de Twilio');
+    } else if (error.code === 20404) {
+      console.error('❌ Account SID o Auth Token incorrectos');
+    }
+
     return false;
   }
 }
@@ -689,10 +736,10 @@ export const getResumenCompletoEventos = async (req, res) => {
 
     // 2. Obtener inscripciones de todas las colecciones
     const coleccionesEventos = [
-      'inscripciones', 
-      'asistenciainaugural', 
-      'liderazgo', 
-      'hackathon', 
+      'inscripciones',
+      'asistenciainaugural',
+      'liderazgo',
+      'hackathon',
       'technologicaltouch',
       'visitazonaamerica'
     ];
@@ -741,7 +788,7 @@ export const getResumenCompletoEventos = async (req, res) => {
 
           const totalInscritosColeccion = inscripciones.length;
           const totalAsistieronColeccion = inscripciones.filter(i => i.asistencia === true).length;
-          const tasaAsistencia = totalInscritosColeccion > 0 
+          const tasaAsistencia = totalInscritosColeccion > 0
             ? ((totalAsistieronColeccion / totalInscritosColeccion) * 100).toFixed(1)
             : '0.0';
 
@@ -772,7 +819,7 @@ export const getResumenCompletoEventos = async (req, res) => {
     }
 
     // 3. Calcular estadísticas generales
-    const tasaAsistenciaGeneral = totalInscripciones > 0 
+    const tasaAsistenciaGeneral = totalInscripciones > 0
       ? ((totalAsistieron / totalInscripciones) * 100).toFixed(1)
       : '0.0';
 
@@ -810,10 +857,10 @@ export const getEstadisticasGenerales = async (req, res) => {
     const { db } = await connectMongo();
 
     const coleccionesEventos = [
-      'inscripciones', 
-      'asistenciainaugural', 
-      'liderazgo', 
-      'hackathon', 
+      'inscripciones',
+      'asistenciainaugural',
+      'liderazgo',
+      'hackathon',
       'technologicaltouch',
       'visitazonaamerica'
     ];
@@ -836,7 +883,7 @@ export const getEstadisticasGenerales = async (req, res) => {
         if (inscripciones.length > 0) {
           const totalInscritos = inscripciones.length;
           const totalAsistieron = inscripciones.filter(i => i.asistencia === true).length;
-          const tasaAsistencia = totalInscritos > 0 
+          const tasaAsistencia = totalInscritos > 0
             ? ((totalAsistieron / totalInscritos) * 100).toFixed(1)
             : '0.0';
 
@@ -869,11 +916,11 @@ export const getEstadisticasGenerales = async (req, res) => {
     estadisticas.total_usuarios_unicos = estadisticas.total_usuarios_unicos.size;
 
     // Calcular tasas generales
-    estadisticas.tasa_asistencia_general = estadisticas.total_inscripciones > 0 
+    estadisticas.tasa_asistencia_general = estadisticas.total_inscripciones > 0
       ? ((estadisticas.total_asistieron / estadisticas.total_inscripciones) * 100).toFixed(1)
       : '0.0';
 
-    estadisticas.tasa_participacion_unica = estadisticas.total_inscripciones > 0 
+    estadisticas.tasa_participacion_unica = estadisticas.total_inscripciones > 0
       ? ((estadisticas.total_usuarios_unicos / estadisticas.total_inscripciones) * 100).toFixed(1)
       : '0.0';
 
@@ -911,10 +958,10 @@ export const exportarDatosCompletos = async (req, res) => {
 
     // Obtener todos los datos usando la función de resumen completo
     const coleccionesEventos = [
-      'inscripciones', 
-      'asistenciainaugural', 
-      'liderazgo', 
-      'hackathon', 
+      'inscripciones',
+      'asistenciainaugural',
+      'liderazgo',
+      'hackathon',
       'technologicaltouch',
       'visitazonaamerica'
     ];
@@ -1067,7 +1114,7 @@ export const getDetallesEvento = async (req, res) => {
       total_asistieron: inscripciones.filter(i => i.asistencia === true).length,
       total_no_asistieron: inscripciones.filter(i => i.asistencia === false).length,
       total_sin_confirmar: inscripciones.filter(i => i.asistencia === undefined || i.asistencia === null).length,
-      tasa_asistencia: inscripciones.length > 0 
+      tasa_asistencia: inscripciones.length > 0
         ? ((inscripciones.filter(i => i.asistencia === true).length / inscripciones.length) * 100).toFixed(1)
         : '0.0'
     };
