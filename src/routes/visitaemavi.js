@@ -131,7 +131,7 @@ async function validarProgramaAcademico(programaNombre) {
     }
 }
 
-// ✅ Validación de campos
+// ✅ Validación de campos - SIMPLIFICADA COMO ZONA AMÉRICA
 async function validatePayload(body) {
     const errors = [];
 
@@ -170,22 +170,15 @@ async function validatePayload(body) {
         errors.push('Perfil no válido');
     }
 
-    // ✅ Validaciones específicas por perfil
+    // ✅ Validaciones específicas por perfil - SIMPLIFICADA COMO ZONA AMÉRICA
     if (body.perfil === 'Estudiante') {
         if (!body.id || !body.id.trim()) {
             errors.push('ID de estudiante es requerido');
         }
         if (!body.programa || !body.programa.trim()) {
             errors.push('Programa académico es requerido para estudiantes');
-        } else {
-            // ✅ NUEVO: Validar programa académico contra la lista dinámica
-            const programaValido = await validarProgramaAcademico(body.programa.trim());
-            if (!programaValido) {
-                const programas = await cargarProgramasAcademicos();
-                const programasNombres = programas.map(p => p.nombre);
-                errors.push(`Programa académico no válido. Programas válidos: ${programasNombres.slice(0, 5).join(', ')}...`);
-            }
         }
+        // ✅ ELIMINADA la validación específica de programas para igualar a Zona América
     }
 
     // ✅ Validar formato de correo
@@ -251,33 +244,6 @@ async function checkDuplicates(db, payload) {
     return duplicates;
 }
 
-// ✅ Endpoint para obtener programas académicos (NUEVO)
-router.get('/programas-academicos', async (req, res) => {
-    try {
-        console.log('📚 Solicitando lista de programas académicos para EMAVI');
-        
-        const programas = await cargarProgramasAcademicos();
-        
-        console.log(`✅ Enviando ${programas.length} programas académicos para EMAVI`);
-        
-        return res.json({
-            success: true,
-            data: {
-                programas: programas,
-                total: programas.length,
-                timestamp: new Date().toISOString()
-            }
-        });
-    } catch (error) {
-        console.error('❌ Error obteniendo programas académicos para EMAVI:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Error obteniendo programas académicos',
-            error: error.message
-        });
-    }
-});
-
 // ✅ Endpoint principal para registro
 router.post('/registro', async (req, res) => {
     try {
@@ -329,14 +295,6 @@ router.post('/registro', async (req, res) => {
 
         const nowIso = new Date().toISOString();
 
-        // 🔹 Obtener información adicional del programa académico si es estudiante
-        let programaInfo = null;
-        if (payload.perfil === 'Estudiante' && payload.programa) {
-            const programas = await cargarProgramasAcademicos();
-            programaInfo = programas.find(p => p.nombre === payload.programa.trim());
-            console.log('📚 Información del programa académico para EMAVI:', programaInfo);
-        }
-
         // 🔹 Construcción del documento a guardar
         const doc = {
             // Datos personales básicos
@@ -350,13 +308,7 @@ router.post('/registro', async (req, res) => {
             // Campos específicos por perfil
             ...(payload.perfil === 'Estudiante' && {
                 id: payload.id.trim(),
-                programa: payload.programa.trim(),
-                // ✅ NUEVO: Guardar información adicional del programa
-                programaInfo: programaInfo || {
-                    nombre: payload.programa.trim(),
-                    facultad: 'No especificada',
-                    nivel: 'No especificado'
-                }
+                programa: payload.programa.trim()
             }),
 
             // Campos opcionales
@@ -393,8 +345,7 @@ router.post('/registro', async (req, res) => {
                 perfil: payload.perfil,
                 ...(payload.perfil === 'Estudiante' && {
                     idEstudiante: payload.id,
-                    programa: payload.programa,
-                    programaInfo: programaInfo
+                    programa: payload.programa
                 })
             },
             actividad: 'Visita EMAVI',
@@ -439,7 +390,6 @@ router.post('/registro', async (req, res) => {
                 perfil: payload.perfil.trim(),
                 idEstudiante: payload.id?.trim(),
                 programa: payload.programa?.trim(),
-                programaInfo: programaInfo, // ✅ NUEVO: Información del programa
                 eps: payload.eps?.trim(),
                 placasVehiculo: payload.placasVehiculo?.trim(),
                 // QR con múltiples nombres para compatibilidad
@@ -479,8 +429,7 @@ router.post('/registro', async (req, res) => {
                 perfil: payload.perfil,
                 ...(payload.perfil === 'Estudiante' && {
                     idEstudiante: payload.id,
-                    programa: payload.programa,
-                    programaInfo: programaInfo // ✅ NUEVO
+                    programa: payload.programa
                 })
             },
             cupo: {
@@ -689,7 +638,6 @@ router.get('/listar', async (req, res) => {
                 perfil: insc.perfil,
                 idEstudiante: insc.id,
                 programa: insc.programa,
-                programaInfo: insc.programaInfo, // ✅ NUEVO
                 eps: insc.eps,
                 placasVehiculo: insc.placasVehiculo,
                 evento: insc.evento,
@@ -742,7 +690,6 @@ router.get('/buscar/:documento', async (req, res) => {
                 perfil: inscripcion.perfil,
                 idEstudiante: inscripcion.id,
                 programa: inscripcion.programa,
-                programaInfo: inscripcion.programaInfo, // ✅ NUEVO
                 eps: inscripcion.eps,
                 placasVehiculo: inscripcion.placasVehiculo,
                 evento: inscripcion.evento,
