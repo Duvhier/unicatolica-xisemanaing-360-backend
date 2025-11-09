@@ -32,13 +32,13 @@ export const loginOrganizador = async (req, res) => {
         nombre: 'Organizador Demo',
         rol: 'organizador',
         email: 'organizador.demo@unicatolica.edu.co',
-        telefono: '+573001234567', // ⚠️ Agregar teléfono para pruebas 2FA
+        telefono: '+573013376768', // ✅ NÚMERO REAL ACTUALIZADO
         activo: true,
         created_at: new Date().toISOString()
       };
       const resultado = await organizadoresCollection.insertOne(usuarioDemo);
       organizador = { ...usuarioDemo, _id: resultado.insertedId };
-      console.log('✅ Usuario demo creado');
+      console.log('✅ Usuario demo creado con número real');
     }
 
     if (!organizador) {
@@ -404,6 +404,8 @@ export const solicitarCodigo2FA = async (req, res) => {
 
     console.log(`📱 Código generado: ${codigo2FA} para ${organizador.telefono}`);
 
+    // ✅ MODO PRODUCCIÓN - Twilio activado (tu número ya está configurado)
+    console.log('🚀 Enviando código por WhatsApp a número real...');
     const whatsappEnviado = await enviarWhatsApp2FA(organizador.telefono, codigo2FA);
 
     if (!whatsappEnviado) {
@@ -639,7 +641,7 @@ async function enviarWhatsApp2FA(telefono, codigo) {
 
     const client = twilio(accountSid, authToken);
 
-    // Formatear número
+    // Formatear número (tu número real +573013376768)
     let numeroFormateado = telefono.trim().replace(/\D/g, '');
 
     if (numeroFormateado.startsWith('0')) {
@@ -721,6 +723,86 @@ async function registrarAcceso(usuarioId, accion, exitoso, req) {
     console.error('❌ Error registrando acceso:', error);
   }
 }
+
+// ===== FUNCIONES ADICIONALES PARA ACTUALIZACIÓN =====
+
+export const actualizarTelefonoDemo = async (req, res) => {
+  try {
+    const { db } = await connectMongo();
+    const organizadoresCollection = db.collection('usuariosOrganizadores');
+    
+    // Tu número real
+    const nuevoTelefono = '+573013376768';
+    
+    const resultado = await organizadoresCollection.updateOne(
+      { usuario: 'organizadorDemo' },
+      { $set: { telefono: nuevoTelefono } }
+    );
+    
+    console.log('✅ Número actualizado:', { nuevoTelefono, modifiedCount: resultado.modifiedCount });
+    
+    res.json({
+      success: true,
+      message: 'Número actualizado exitosamente',
+      telefono: nuevoTelefono,
+      modifiedCount: resultado.modifiedCount
+    });
+  } catch (error) {
+    console.error('❌ Error actualizando teléfono:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+};
+
+export const diagnosticoTwilio = async (req, res) => {
+  try {
+    const { db } = await connectMongo();
+    const organizadoresCollection = db.collection('usuariosOrganizadores');
+    
+    const usuarioDemo = await organizadoresCollection.findOne({ 
+      usuario: 'organizadorDemo' 
+    });
+    
+    // Probar Twilio
+    const client = twilio(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN
+    );
+    
+    const account = await client.api.accounts(process.env.TWILIO_ACCOUNT_SID).fetch();
+    
+    res.json({
+      success: true,
+      usuarioDemo: {
+        usuario: usuarioDemo?.usuario,
+        telefono: usuarioDemo?.telefono,
+        existe: !!usuarioDemo
+      },
+      twilio: {
+        accountStatus: account.status,
+        friendlyName: account.friendlyName
+      },
+      config: {
+        accountSid: process.env.TWILIO_ACCOUNT_SID ? '✅' : '❌',
+        authToken: process.env.TWILIO_AUTH_TOKEN ? '✅' : '❌',
+        whatsappFrom: process.env.TWILIO_WHATSAPP_FROM ? '✅' : '❌'
+      }
+    });
+    
+  } catch (error) {
+    res.json({
+      success: false,
+      error: error.message,
+      config: {
+        accountSid: process.env.TWILIO_ACCOUNT_SID ? '✅' : '❌',
+        authToken: process.env.TWILIO_AUTH_TOKEN ? '✅' : '❌',
+        whatsappFrom: process.env.TWILIO_WHATSAPP_FROM ? '✅' : '❌'
+      }
+    });
+  }
+};
 
 /**
  * Obtener resumen completo de todos los eventos con todos los usuarios
