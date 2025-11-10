@@ -1,9 +1,9 @@
 // organizadorRoutes.js - VERSIÓN CORREGIDA
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware.js'; // ← Ruta correcta
-import {
-  loginOrganizador,
-  getInscripciones,
+import { 
+  loginOrganizador, 
+  getInscripciones, 
   actualizarAsistencia,
   buscarInscripcionPorId,
   solicitarCodigo2FA,
@@ -11,9 +11,7 @@ import {
   getResumenCompletoEventos,
   getEstadisticasGenerales,
   exportarDatosCompletos,
-  getDetallesEvento,
-  getTwilioLogs,
-  verificarWebhooks
+  getDetallesEvento
 } from '../controllers/organizadorController.js';
 
 const router = Router();
@@ -24,10 +22,6 @@ router.post('/login', loginOrganizador);
 // Rutas públicas de autenticación 2FA
 router.post('/2fa/solicitar', solicitarCodigo2FA);
 router.post('/2fa/verificar', verificarCodigo2FA);
-
-// Y agrega estas rutas (protegidas por autenticación)
-router.get('/twilio-logs', getTwilioLogs);
-router.get('/verificar-webhooks', verificarWebhooks);
 
 // Rutas protegidas
 router.get('/inscripciones', authMiddleware, getInscripciones);
@@ -73,8 +67,8 @@ router.get('/stats', authMiddleware, async (req, res) => {
         totalInscripciones,
         totalAsistencia,
         totalSinAsistencia,
-        porcentajeAsistencia: totalInscripciones > 0
-          ? Math.round((totalAsistencia / totalInscripciones) * 100)
+        porcentajeAsistencia: totalInscripciones > 0 
+          ? Math.round((totalAsistencia / totalInscripciones) * 100) 
           : 0
       }
     });

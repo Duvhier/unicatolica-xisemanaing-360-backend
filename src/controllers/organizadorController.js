@@ -1,15 +1,16 @@
+// organizadorController.js - VERSIÓN CORREGIDA
 import jwt from 'jsonwebtoken';
 import twilio from 'twilio';
 import { connectMongo } from '../mongo.js';
+
+// ELIMINAR el middleware duplicado que habías agregado
+// Mantener solo las funciones del controlador
 
 export const loginOrganizador = async (req, res) => {
   try {
     const { usuario, password } = req.body;
 
-    console.log('📥 Login attempt:', { usuario, passwordLength: password?.length });
-
-    // ✅ VALIDACIÓN MEJORADA - Verificar que existan Y tengan contenido después del trim
-    if (!usuario?.trim() || !password?.trim()) {
+    if (!usuario || !password) {
       return res.status(400).json({
         success: false,
         message: 'Usuario y contraseña son requeridos'
@@ -19,10 +20,7 @@ export const loginOrganizador = async (req, res) => {
     const { db } = await connectMongo();
     const organizadoresCollection = db.collection('usuariosOrganizadores');
 
-    // Buscar usuario con trim
-    let organizador = await organizadoresCollection.findOne({
-      usuario: usuario.trim()
-    });
+    let organizador = await organizadoresCollection.findOne({ usuario: usuario.trim() });
 
     // Usuario demo por si no existe
     if (!organizador && usuario.trim() === 'organizadorDemo' && password.trim() === 'org123') {
@@ -32,56 +30,53 @@ export const loginOrganizador = async (req, res) => {
         nombre: 'Organizador Demo',
         rol: 'organizador',
         email: 'organizador.demo@unicatolica.edu.co',
-        telefono: '+573013376768', // ✅ NÚMERO REAL ACTUALIZADO
         activo: true,
         created_at: new Date().toISOString()
       };
       const resultado = await organizadoresCollection.insertOne(usuarioDemo);
       organizador = { ...usuarioDemo, _id: resultado.insertedId };
-      console.log('✅ Usuario demo creado con número real');
     }
 
     if (!organizador) {
-      console.log('❌ Usuario no encontrado:', usuario);
       return res.status(401).json({
         success: false,
         message: 'Credenciales inválidas'
       });
     }
 
-    // ✅ COMPARACIÓN DE CONTRASEÑA MEJORADA
-    if (organizador.password.trim() !== password.trim()) {
-      console.log('❌ Contraseña incorrecta');
+    if (organizador.password !== password.trim()) {
       return res.status(401).json({
         success: false,
         message: 'Credenciales inválidas'
       });
     }
 
-    console.log('✅ Credenciales válidas para:', organizador.usuario);
+    const token = jwt.sign(
+      {
+        id: organizador._id,
+        usuario: organizador.usuario,
+        rol: organizador.rol || 'organizador',
+        nombre: organizador.nombre
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '8h' }
+    );
 
-    // ✅ DEVOLVER user en lugar de usuario para consistencia con el frontend
     res.json({
       success: true,
-      user: {
+      token,
+      usuario: {
         id: organizador._id,
-        _id: organizador._id, // Ambos por compatibilidad
         usuario: organizador.usuario,
         nombre: organizador.nombre,
-        rol: organizador.rol || 'organizador',
-        email: organizador.email,
-        correo: organizador.email,
-        telefono: organizador.telefono
-      },
-      message: 'Login exitoso. Solicite código 2FA.'
+        rol: organizador.rol || 'organizador'
+      }
     });
-
   } catch (error) {
     console.error('❌ Error en login de organizador:', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'Error interno del servidor'
     });
   }
 };
@@ -91,6 +86,7 @@ export const getInscripciones = async (req, res) => {
     const { coleccion } = req.query;
     const { db } = await connectMongo();
 
+    // Por defecto, listar 'inscripciones' si no pasa coleccion
     let collectionName = 'inscripciones';
     let actividadInfo = null;
 
@@ -168,6 +164,7 @@ export const actualizarAsistencia = async (req, res) => {
 
     const { db } = await connectMongo();
 
+    // Si especifica coleccion válida (que exista en actividades), usar esa
     let collectionName = 'inscripciones';
     if (coleccion) {
       const actividadInfo = await db.collection('actividades').findOne({ coleccion });
@@ -192,12 +189,13 @@ export const actualizarAsistencia = async (req, res) => {
       });
     }
 
+    // CORREGIDO: Usar req.user del middleware
     const resultado = await collection.findOneAndUpdate(
       { _id: objectId },
       {
         $set: {
           asistencia: asistencia,
-          actualizado_por: req.user?.usuario || 'sistema',
+          actualizado_por: req.user?.usuario || 'sistema', // ← Ahora req.user existe
           actualizado_at: new Date().toISOString()
         }
       },
@@ -211,10 +209,12 @@ export const actualizarAsistencia = async (req, res) => {
       });
     }
 
+    const inscripcionActualizada = resultado.value;
+
     res.json({
       success: true,
       message: `Asistencia ${asistencia ? 'marcada' : 'desmarcada'} correctamente`,
-      inscripcion: resultado.value
+      inscripcion: inscripcionActualizada
     });
   } catch (error) {
     console.error('❌ Error actualizando asistencia:', error);
@@ -225,6 +225,10 @@ export const actualizarAsistencia = async (req, res) => {
   }
 };
 
+/**
+ * NUEVO: Buscar inscripción por ID para el scanner QR
+ * GET /organizador/buscar-inscripcion/:id
+ */
 export const buscarInscripcionPorId = async (req, res) => {
   try {
     const { id } = req.params;
@@ -239,11 +243,12 @@ export const buscarInscripcionPorId = async (req, res) => {
 
     const { db } = await connectMongo();
 
+    // Buscar en todas las colecciones posibles
     const colecciones = coleccion ? [coleccion] : [
-      'inscripciones',
-      'asistenciainaugural',
-      'liderazgo',
-      'hackathon',
+      'inscripciones', 
+      'asistenciainaugural', 
+      'liderazgo', 
+      'hackathon', 
       'technologicaltouch',
       'visitazonaamerica'
     ];
@@ -255,11 +260,12 @@ export const buscarInscripcionPorId = async (req, res) => {
       try {
         const collection = db.collection(colName);
         const { ObjectId } = await import('mongodb');
-
+        
         let objectId;
         try {
           objectId = new ObjectId(id);
         } catch {
+          // Si no es ObjectId válido, buscar por otros campos
           const resultado = await collection.findOne({
             $or: [
               { _id: id },
@@ -267,7 +273,7 @@ export const buscarInscripcionPorId = async (req, res) => {
               { correo: id }
             ]
           });
-
+          
           if (resultado) {
             inscripcionEncontrada = resultado;
             coleccionEncontrada = colName;
@@ -295,23 +301,26 @@ export const buscarInscripcionPorId = async (req, res) => {
       });
     }
 
+    // Formatear respuesta
+    const inscripcionFormateada = {
+      _id: inscripcionEncontrada._id,
+      nombre: inscripcionEncontrada.nombre,
+      cedula: inscripcionEncontrada.cedula,
+      correo: inscripcionEncontrada.correo,
+      telefono: inscripcionEncontrada.telefono,
+      programa: inscripcionEncontrada.programa,
+      semestre: inscripcionEncontrada.semestre,
+      actividad: inscripcionEncontrada.actividad,
+      asistencia: inscripcionEncontrada.asistencia ?? false,
+      rol: inscripcionEncontrada.rol,
+      tipoEstudiante: inscripcionEncontrada.tipoEstudiante,
+      facultad: inscripcionEncontrada.facultad,
+      coleccion: coleccionEncontrada
+    };
+
     res.json({
       success: true,
-      inscripcion: {
-        _id: inscripcionEncontrada._id,
-        nombre: inscripcionEncontrada.nombre,
-        cedula: inscripcionEncontrada.cedula,
-        correo: inscripcionEncontrada.correo,
-        telefono: inscripcionEncontrada.telefono,
-        programa: inscripcionEncontrada.programa,
-        semestre: inscripcionEncontrada.semestre,
-        actividad: inscripcionEncontrada.actividad,
-        asistencia: inscripcionEncontrada.asistencia ?? false,
-        rol: inscripcionEncontrada.rol,
-        tipoEstudiante: inscripcionEncontrada.tipoEstudiante,
-        facultad: inscripcionEncontrada.facultad,
-        coleccion: coleccionEncontrada
-      }
+      inscripcion: inscripcionFormateada
     });
 
   } catch (error) {
@@ -323,14 +332,17 @@ export const buscarInscripcionPorId = async (req, res) => {
   }
 };
 
+/**
+ * Solicitar código de verificación 2FA por WhatsApp
+ * POST /organizador/2fa/solicitar
+ * Body: { usuarioId: string }
+ */
 export const solicitarCodigo2FA = async (req, res) => {
   let objectId = null;
   let organizadoresCollection = null;
-
+  
   try {
     const { usuarioId } = req.body;
-
-    console.log('📱 Solicitud 2FA para usuario:', usuarioId);
 
     if (!usuarioId) {
       return res.status(400).json({
@@ -342,6 +354,7 @@ export const solicitarCodigo2FA = async (req, res) => {
     const { db } = await connectMongo();
     organizadoresCollection = db.collection('usuariosOrganizadores');
 
+    // Buscar el usuario organizador
     const { ObjectId } = await import('mongodb');
     try {
       objectId = new ObjectId(usuarioId);
@@ -361,14 +374,24 @@ export const solicitarCodigo2FA = async (req, res) => {
       });
     }
 
+    // Verificar que el usuario tenga un número de teléfono registrado
     if (!organizador.telefono) {
       return res.status(400).json({
         success: false,
-        message: 'El usuario no tiene un número de teléfono registrado'
+        message: 'El usuario no tiene un número de teléfono registrado para enviar WhatsApp'
       });
     }
 
-    // Rate limiting
+    // Validar formato básico del teléfono
+    const telefono = organizador.telefono.trim();
+    if (telefono.length < 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'El número de teléfono registrado es inválido'
+      });
+    }
+
+    // Verificar rate limiting (máximo 3 solicitudes en 10 minutos)
     const diezMinutosAtras = new Date(Date.now() - 10 * 60 * 1000);
     if (organizador.ultimoIntento2FA && organizador.ultimoIntento2FA > diezMinutosAtras) {
       const solicitudesRecientes = await organizadoresCollection.countDocuments({
@@ -379,14 +402,16 @@ export const solicitarCodigo2FA = async (req, res) => {
       if (solicitudesRecientes >= 3) {
         return res.status(429).json({
           success: false,
-          message: 'Demasiadas solicitudes. Espera 10 minutos.'
+          message: 'Demasiadas solicitudes. Espera 10 minutos antes de solicitar otro código.'
         });
       }
     }
 
+    // Generar código de 6 dígitos
     const codigo2FA = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiracion = new Date(Date.now() + 2 * 60 * 1000);
+    const expiracion = new Date(Date.now() + 2 * 60 * 1000); // 2 minutos
 
+    // Guardar el código en la base de datos
     await organizadoresCollection.updateOne(
       { _id: objectId },
       {
@@ -402,26 +427,30 @@ export const solicitarCodigo2FA = async (req, res) => {
       }
     );
 
-    console.log(`📱 Código generado: ${codigo2FA} para ${organizador.telefono}`);
-
-    // ✅ MODO PRODUCCIÓN - Twilio activado (tu número ya está configurado)
-    console.log('🚀 Enviando código por WhatsApp a número real...');
-    const whatsappEnviado = await enviarWhatsApp2FA(organizador.telefono, codigo2FA);
+    // 📱 ENVIAR WHATSAPP
+    console.log(`📱 Intentando enviar WhatsApp a: ${telefono}`);
+    const whatsappEnviado = await enviarWhatsApp2FA(telefono, codigo2FA);
 
     if (!whatsappEnviado) {
+      // Revertir la creación del código si falla el envío
       await organizadoresCollection.updateOne(
         { _id: objectId },
-        { $unset: { codigo2FA: "" } }
+        {
+          $unset: { codigo2FA: "" }
+        }
       );
 
       return res.status(500).json({
         success: false,
-        message: 'Error al enviar el código por WhatsApp',
-        sugerencia: 'Verifica que tu número esté suscrito al sandbox de Twilio'
+        message: 'Error al enviar el código por WhatsApp. Verifica tu número de teléfono o intenta más tarde.',
+        sugerencia: 'Si estás usando el sandbox de Twilio, asegúrate de suscribir tu número enviando "join [palabra-clave]" al número de Twilio desde WhatsApp.'
       });
     }
 
-    const ultimosDigitos = organizador.telefono.slice(-4);
+    console.log(`✅ Código 2FA ${codigo2FA} enviado por WhatsApp a ${telefono}`);
+
+    // Obtener los últimos 4 dígitos para mostrar al usuario
+    const ultimosDigitos = telefono.slice(-4);
 
     res.json({
       success: true,
@@ -434,9 +463,15 @@ export const solicitarCodigo2FA = async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error solicitando código 2FA:', error);
-
+    console.error('📋 Detalles del error:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    });
+    
+    // Intentar revertir la creación del código si existe
     try {
-      if (objectId && organizadoresCollection) {
+      if (objectId) {
         await organizadoresCollection.updateOne(
           { _id: objectId },
           { $unset: { codigo2FA: "" } }
@@ -445,20 +480,23 @@ export const solicitarCodigo2FA = async (req, res) => {
     } catch (cleanupError) {
       console.error('❌ Error limpiando código 2FA:', cleanupError);
     }
-
+    
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor',
+      message: error.message || 'Error interno del servidor al solicitar código de verificación',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
 
+/**
+ * Verificar código 2FA y generar token de acceso
+ * POST /organizador/2fa/verificar
+ * Body: { usuarioId: string, codigo: string }
+ */
 export const verificarCodigo2FA = async (req, res) => {
   try {
     const { usuarioId, codigo } = req.body;
-
-    console.log('🔐 Verificando código 2FA:', { usuarioId, codigo });
 
     if (!usuarioId || !codigo) {
       return res.status(400).json({
@@ -497,37 +535,43 @@ export const verificarCodigo2FA = async (req, res) => {
       });
     }
 
+    // Verificar si existe código 2FA
     if (!organizador.codigo2FA) {
       return res.status(400).json({
         success: false,
-        message: 'No hay código de verificación pendiente'
+        message: 'No hay código de verificación pendiente. Solicita uno nuevo.'
       });
     }
 
     const { codigo: codigoGuardado, expiracion, intentos, usado } = organizador.codigo2FA;
 
+    // Verificar si el código ya fue usado
     if (usado) {
       return res.status(400).json({
         success: false,
-        message: 'Este código ya fue utilizado'
+        message: 'Este código ya fue utilizado. Solicita uno nuevo.'
       });
     }
 
+    // Verificar expiración
     if (new Date() > new Date(expiracion)) {
       return res.status(400).json({
         success: false,
-        message: 'El código ha expirado'
+        message: 'El código ha expirado. Solicita uno nuevo.'
       });
     }
 
+    // Verificar intentos máximos (3 intentos)
     if (intentos >= 3) {
       return res.status(400).json({
         success: false,
-        message: 'Demasiados intentos fallidos'
+        message: 'Demasiados intentos fallidos. Solicita un nuevo código.'
       });
     }
 
+    // Verificar código
     if (codigo !== codigoGuardado) {
+      // Incrementar contador de intentos fallidos
       await organizadoresCollection.updateOne(
         { _id: objectId },
         {
@@ -540,24 +584,27 @@ export const verificarCodigo2FA = async (req, res) => {
 
       return res.status(400).json({
         success: false,
-        message: `Código incorrecto. Te quedan ${intentosRestantes} intentos`,
+        message: `Código incorrecto. Te quedan ${intentosRestantes} intentos.`,
         intentosRestantes
       });
     }
 
-    // ✅ Código válido
+    // ✅ Código válido - Generar token de acceso
     const token = jwt.sign(
       {
         id: organizador._id,
         usuario: organizador.usuario,
         rol: organizador.rol || 'organizador',
         nombre: organizador.nombre,
-        authMethod: '2fa'
+        authMethod: '2fa' // Indicar que se autenticó con 2FA
       },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
 
+    // Marcar código como usado y limpiar datos 2FA
+    // Usar solo $unset para eliminar codigo2FA y $set para los otros campos
+    // (No se pueden usar $set y $unset en el mismo campo simultáneamente)
     await organizadoresCollection.updateOne(
       { _id: objectId },
       {
@@ -566,29 +613,25 @@ export const verificarCodigo2FA = async (req, res) => {
           ultimoLogin2FA: new Date()
         },
         $unset: {
-          codigo2FA: ""
+          codigo2FA: "" // Limpiar el código después de uso exitoso
         }
       }
     );
 
+    // Registrar el acceso exitoso
     await registrarAcceso(organizador._id, '2fa_login', true, req);
 
-    console.log(`✅ Login 2FA exitoso para: ${organizador.usuario}`);
+    console.log(`✅ Login 2FA exitoso para usuario: ${organizador.usuario}`);
 
     res.json({
       success: true,
       token,
-      user: {
-        id: organizador._id,
-        usuario: organizador.usuario,
-        nombre: organizador.nombre,
-        rol: organizador.rol || 'organizador'
-      },
       usuario: {
         id: organizador._id,
         usuario: organizador.usuario,
         nombre: organizador.nombre,
-        rol: organizador.rol || 'organizador'
+        rol: organizador.rol || 'organizador',
+        telefono: organizador.telefono ? organizador.telefono.slice(-4) : null
       },
       message: 'Autenticación exitosa'
     });
@@ -597,115 +640,167 @@ export const verificarCodigo2FA = async (req, res) => {
     console.error('❌ Error verificando código 2FA:', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor'
+      message: 'Error interno del servidor al verificar código'
     });
   }
 };
 
 // ===== FUNCIONES AUXILIARES =====
 
+/**
+ * Función para enviar código 2FA por WhatsApp
+ * @param {string} telefono - Número de teléfono
+ * @param {string} codigo - Código de 6 dígitos
+ */
 async function enviarWhatsApp2FA(telefono, codigo) {
   try {
-    console.log('🔧 Configurando Twilio...');
 
-    // Verificar variables de entorno con más detalle
-    if (!process.env.TWILIO_ACCOUNT_SID) {
-      console.error('❌ TWILIO_ACCOUNT_SID no está definida');
+    // Validar configuración de Twilio
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_WHATSAPP_FROM) {
+      console.error('❌ Configuración de Twilio WhatsApp incompleta');
+      console.error('📋 Variables faltantes:', {
+        TWILIO_ACCOUNT_SID: !process.env.TWILIO_ACCOUNT_SID ? 'FALTA' : 'OK',
+        TWILIO_AUTH_TOKEN: !process.env.TWILIO_AUTH_TOKEN ? 'FALTA' : 'OK',
+        TWILIO_WHATSAPP_FROM: !process.env.TWILIO_WHATSAPP_FROM ? 'FALTA' : 'OK'
+      });
       return false;
     }
 
-    if (!process.env.TWILIO_AUTH_TOKEN) {
-      console.error('❌ TWILIO_AUTH_TOKEN no está definida');
-      return false;
-    }
-
-    if (!process.env.TWILIO_WHATSAPP_FROM) {
-      console.error('❌ TWILIO_WHATSAPP_FROM no está definida');
-      return false;
-    }
-
+    // Verificar que las credenciales no estén vacías
     const accountSid = process.env.TWILIO_ACCOUNT_SID.trim();
     const authToken = process.env.TWILIO_AUTH_TOKEN.trim();
-    const fromNumber = process.env.TWILIO_WHATSAPP_FROM.trim();
-
-    console.log('🔧 Twilio config:', {
-      accountSid: accountSid ? '✅ Definida' : '❌ No definida',
-      authToken: authToken ? '✅ Definida' : '❌ No definida',
-      fromNumber: fromNumber ? '✅ Definida' : '❌ No definida'
-    });
-
-    if (!accountSid || !authToken || !fromNumber) {
-      console.error('❌ Credenciales de Twilio incompletas');
+    
+    if (accountSid === '' || authToken === '') {
+      console.error('❌ Credenciales de Twilio están vacías');
       return false;
     }
 
-    const client = twilio(accountSid, authToken);
-
-    // Formatear número (tu número real +573013376768)
-    let numeroFormateado = telefono.trim().replace(/\D/g, '');
-
-    if (numeroFormateado.startsWith('0')) {
-      numeroFormateado = 'whatsapp:+57' + numeroFormateado.substring(1);
-    } else if (numeroFormateado.startsWith('57') && numeroFormateado.length === 12) {
-      numeroFormateado = 'whatsapp:+' + numeroFormateado;
-    } else if (numeroFormateado.length === 10) {
-      numeroFormateado = 'whatsapp:+57' + numeroFormateado;
-    } else {
-      numeroFormateado = 'whatsapp:+' + numeroFormateado;
+    // Validar formato básico de las credenciales
+    if (accountSid.length < 30 || authToken.length < 30) {
+      console.error('❌ Credenciales de Twilio parecen estar incompletas');
+      console.error('💡 Verifica que hayas copiado completamente el Account SID y Auth Token desde Twilio');
+      console.error('📋 Account SID debe empezar con "AC" y tener ~34 caracteres');
+      console.error('📋 Auth Token debe tener ~32 caracteres');
+      return false;
     }
 
-    console.log(`📱 Enviando WhatsApp:`, {
-      from: fromNumber,
-      to: numeroFormateado,
-      codigo: codigo
-    });
+    // Inicializar cliente de Twilio
+    const client = twilio(
+      accountSid.trim(),
+      authToken.trim()
+    );
 
-    const mensaje = `🔐 *Semana de la Ingeniería Unicatólica*
+    // Formatear número de teléfono para WhatsApp
+    let numeroFormateado = telefono.trim();
+    
+    // Formatear número para WhatsApp (debe empezar con whatsapp:+)
+    if (!numeroFormateado.startsWith('whatsapp:+')) {
+      // Remover cualquier espacio, guión, paréntesis, y el símbolo +
+      numeroFormateado = numeroFormateado.replace(/\D/g, '');
+      
+      // Si empieza con 0, removerlo y agregar código de país
+      if (numeroFormateado.startsWith('0')) {
+        numeroFormateado = 'whatsapp:+57' + numeroFormateado.substring(1);
+      }
+      // Si ya tiene el código de país 57 al inicio (12 dígitos: 57 + 10 dígitos)
+      else if (numeroFormateado.startsWith('57') && numeroFormateado.length === 12) {
+        numeroFormateado = 'whatsapp:+' + numeroFormateado;
+      }
+      // Si empieza con código de país pero no es 57, agregar whatsapp:+
+      else if (numeroFormateado.length > 10 && numeroFormateado.length <= 15) {
+        numeroFormateado = 'whatsapp:+' + numeroFormateado;
+      }
+      // Si tiene 10 dígitos (número colombiano sin código), agregar +57
+      else if (numeroFormateado.length === 10) {
+        numeroFormateado = 'whatsapp:+57' + numeroFormateado;
+      }
+      // Si tiene otro formato, agregar whatsapp:+ (intentar enviar tal cual)
+      else {
+        console.warn('⚠️ Formato de teléfono no reconocido, intentando enviar:', numeroFormateado);
+        numeroFormateado = 'whatsapp:+' + numeroFormateado;
+      }
+    }
+
+    // Validar formato final del número
+    if (!/^whatsapp:\+\d{10,15}$/.test(numeroFormateado)) {
+      console.error('❌ Formato de WhatsApp inválido:', numeroFormateado);
+      console.error('📱 Número original recibido:', telefono);
+      return false;
+    }
+
+    console.log(`📱 Formateando número: ${telefono} → ${numeroFormateado}`);
+
+    // Mensaje personalizado para WhatsApp
+    const mensaje = `🔐 *Semana de la Ingeniería UC*
 
 Tu código de verificación es:
 *${codigo}*
 
 ⏰ *Válido por 2 minutos*
 
-⚠️ *No compartas este código.*`;
+⚠️ *No compartas este código con nadie.*
 
+_Sistema de Confirmación de Asistencia_`;
+
+    // Enviar mensaje por WhatsApp
     const message = await client.messages.create({
       body: mensaje,
-      from: fromNumber,
+      from: process.env.TWILIO_WHATSAPP_FROM, // Número de WhatsApp de Twilio
       to: numeroFormateado
     });
 
     console.log(`✅ WhatsApp enviado exitosamente:`, {
       messageId: message.sid,
+      to: numeroFormateado,
       status: message.status,
-      to: message.to
+      codigo: codigo,
+      timestamp: new Date().toISOString()
     });
 
-    return true;
+    return message.sid !== undefined;
 
   } catch (error) {
-    console.error('❌ Error detallado enviando WhatsApp:', {
-      error: error.message,
+    console.error('❌ Error enviando WhatsApp:', error);
+    console.error('📋 Detalles del error de Twilio:', {
       code: error.code,
-      moreInfo: error.moreInfo,
-      stack: error.stack
+      message: error.message,
+      status: error.status,
+      moreInfo: error.moreInfo
     });
-
-    // Errores específicos de Twilio
-    if (error.code === 21211) {
-      console.error('❌ Número de teléfono inválido');
+    
+    // Manejar errores específicos de Twilio WhatsApp
+    if (error.code === 20003) {
+      console.error('❌ ERROR DE AUTENTICACIÓN DE TWILIO');
+      console.error('🔑 El Account SID o Auth Token son incorrectos');
+      console.error('💡 Verifica tus credenciales en: https://console.twilio.com/');
+      console.error('📋 Asegúrate de copiar las credenciales correctas desde tu consola de Twilio');
+    } else if (error.code === 21211) {
+      console.error('❌ Número de WhatsApp inválido:', numeroFormateado);
     } else if (error.code === 21408) {
-      console.error('❌ No tienes permisos para enviar a este número');
+      console.error('❌ No tien permisos para enviar WhatsApp a este número');
     } else if (error.code === 21610) {
-      console.error('❌ El número no está en el sandbox de Twilio');
-    } else if (error.code === 20404) {
-      console.error('❌ Account SID o Auth Token incorrectos');
+      console.error('❌ Número bloqueado o no suscrito al sandbox');
+      console.error('💡 Tip: El número debe estar suscrito al sandbox de Twilio WhatsApp');
+    } else if (error.code === 30007) {
+      console.error('❌ Límite de mensajes de WhatsApp excedido');
+    } else if (error.code === 63016) {
+      console.error('❌ El número no está suscrito al sandbox de WhatsApp');
+      console.error('💡 Tip: Envía "join [palabra-clave]" al número de Twilio desde tu WhatsApp');
+    } else {
+      console.error('❌ Error desconocido de Twilio:', error.code || 'Sin código');
     }
-
+    
     return false;
   }
 }
 
+/**
+ * Registrar acceso en logs de auditoría
+ * @param {string} usuarioId - ID del usuario
+ * @param {string} accion - Tipo de acción
+ * @param {boolean} exitoso - Si fue exitoso
+ * @param {object} req - Request object para obtener IP y User-Agent
+ */
 async function registrarAcceso(usuarioId, accion, exitoso, req) {
   try {
     const { db } = await connectMongo();
@@ -716,7 +811,7 @@ async function registrarAcceso(usuarioId, accion, exitoso, req) {
       accion: accion,
       exitoso: exitoso,
       fecha: new Date(),
-      ip: req?.ip || 'Desconocida',
+      ip: req?.ip || req?.socket?.remoteAddress || 'Desconocida',
       userAgent: req?.headers?.['user-agent'] || 'Desconocido'
     });
   } catch (error) {
@@ -724,83 +819,29 @@ async function registrarAcceso(usuarioId, accion, exitoso, req) {
   }
 }
 
-// ===== FUNCIONES ADICIONALES PARA ACTUALIZACIÓN =====
-
-export const actualizarTelefonoDemo = async (req, res) => {
+/**
+ * Limpiar códigos 2FA expirados (ejecutar periódicamente)
+ */
+export const limpiarCodigos2FAExpirados = async () => {
   try {
     const { db } = await connectMongo();
     const organizadoresCollection = db.collection('usuariosOrganizadores');
-    
-    // Tu número real
-    const nuevoTelefono = '+573013376768';
-    
-    const resultado = await organizadoresCollection.updateOne(
-      { usuario: 'organizadorDemo' },
-      { $set: { telefono: nuevoTelefono } }
-    );
-    
-    console.log('✅ Número actualizado:', { nuevoTelefono, modifiedCount: resultado.modifiedCount });
-    
-    res.json({
-      success: true,
-      message: 'Número actualizado exitosamente',
-      telefono: nuevoTelefono,
-      modifiedCount: resultado.modifiedCount
-    });
-  } catch (error) {
-    console.error('❌ Error actualizando teléfono:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
-    });
-  }
-};
 
-export const diagnosticoTwilio = async (req, res) => {
-  try {
-    const { db } = await connectMongo();
-    const organizadoresCollection = db.collection('usuariosOrganizadores');
-    
-    const usuarioDemo = await organizadoresCollection.findOne({ 
-      usuario: 'organizadorDemo' 
-    });
-    
-    // Probar Twilio
-    const client = twilio(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN
+    const resultado = await organizadoresCollection.updateMany(
+      {
+        'codigo2FA.expiracion': { $lt: new Date() }
+      },
+      {
+        $unset: { codigo2FA: "" }
+      }
     );
+
+    console.log(`🧹 Limpiados ${resultado.modifiedCount} códigos 2FA expirados`);
     
-    const account = await client.api.accounts(process.env.TWILIO_ACCOUNT_SID).fetch();
-    
-    res.json({
-      success: true,
-      usuarioDemo: {
-        usuario: usuarioDemo?.usuario,
-        telefono: usuarioDemo?.telefono,
-        existe: !!usuarioDemo
-      },
-      twilio: {
-        accountStatus: account.status,
-        friendlyName: account.friendlyName
-      },
-      config: {
-        accountSid: process.env.TWILIO_ACCOUNT_SID ? '✅' : '❌',
-        authToken: process.env.TWILIO_AUTH_TOKEN ? '✅' : '❌',
-        whatsappFrom: process.env.TWILIO_WHATSAPP_FROM ? '✅' : '❌'
-      }
-    });
-    
+    return resultado.modifiedCount;
   } catch (error) {
-    res.json({
-      success: false,
-      error: error.message,
-      config: {
-        accountSid: process.env.TWILIO_ACCOUNT_SID ? '✅' : '❌',
-        authToken: process.env.TWILIO_AUTH_TOKEN ? '✅' : '❌',
-        whatsappFrom: process.env.TWILIO_WHATSAPP_FROM ? '✅' : '❌'
-      }
-    });
+    console.error('❌ Error limpiando códigos 2FA expirados:', error);
+    return 0;
   }
 };
 
@@ -818,10 +859,10 @@ export const getResumenCompletoEventos = async (req, res) => {
 
     // 2. Obtener inscripciones de todas las colecciones
     const coleccionesEventos = [
-      'inscripciones',
-      'asistenciainaugural',
-      'liderazgo',
-      'hackathon',
+      'inscripciones', 
+      'asistenciainaugural', 
+      'liderazgo', 
+      'hackathon', 
       'technologicaltouch',
       'visitazonaamerica'
     ];
@@ -870,7 +911,7 @@ export const getResumenCompletoEventos = async (req, res) => {
 
           const totalInscritosColeccion = inscripciones.length;
           const totalAsistieronColeccion = inscripciones.filter(i => i.asistencia === true).length;
-          const tasaAsistencia = totalInscritosColeccion > 0
+          const tasaAsistencia = totalInscritosColeccion > 0 
             ? ((totalAsistieronColeccion / totalInscritosColeccion) * 100).toFixed(1)
             : '0.0';
 
@@ -901,7 +942,7 @@ export const getResumenCompletoEventos = async (req, res) => {
     }
 
     // 3. Calcular estadísticas generales
-    const tasaAsistenciaGeneral = totalInscripciones > 0
+    const tasaAsistenciaGeneral = totalInscripciones > 0 
       ? ((totalAsistieron / totalInscripciones) * 100).toFixed(1)
       : '0.0';
 
@@ -939,10 +980,10 @@ export const getEstadisticasGenerales = async (req, res) => {
     const { db } = await connectMongo();
 
     const coleccionesEventos = [
-      'inscripciones',
-      'asistenciainaugural',
-      'liderazgo',
-      'hackathon',
+      'inscripciones', 
+      'asistenciainaugural', 
+      'liderazgo', 
+      'hackathon', 
       'technologicaltouch',
       'visitazonaamerica'
     ];
@@ -965,7 +1006,7 @@ export const getEstadisticasGenerales = async (req, res) => {
         if (inscripciones.length > 0) {
           const totalInscritos = inscripciones.length;
           const totalAsistieron = inscripciones.filter(i => i.asistencia === true).length;
-          const tasaAsistencia = totalInscritos > 0
+          const tasaAsistencia = totalInscritos > 0 
             ? ((totalAsistieron / totalInscritos) * 100).toFixed(1)
             : '0.0';
 
@@ -998,11 +1039,11 @@ export const getEstadisticasGenerales = async (req, res) => {
     estadisticas.total_usuarios_unicos = estadisticas.total_usuarios_unicos.size;
 
     // Calcular tasas generales
-    estadisticas.tasa_asistencia_general = estadisticas.total_inscripciones > 0
+    estadisticas.tasa_asistencia_general = estadisticas.total_inscripciones > 0 
       ? ((estadisticas.total_asistieron / estadisticas.total_inscripciones) * 100).toFixed(1)
       : '0.0';
 
-    estadisticas.tasa_participacion_unica = estadisticas.total_inscripciones > 0
+    estadisticas.tasa_participacion_unica = estadisticas.total_inscripciones > 0 
       ? ((estadisticas.total_usuarios_unicos / estadisticas.total_inscripciones) * 100).toFixed(1)
       : '0.0';
 
@@ -1040,10 +1081,10 @@ export const exportarDatosCompletos = async (req, res) => {
 
     // Obtener todos los datos usando la función de resumen completo
     const coleccionesEventos = [
-      'inscripciones',
-      'asistenciainaugural',
-      'liderazgo',
-      'hackathon',
+      'inscripciones', 
+      'asistenciainaugural', 
+      'liderazgo', 
+      'hackathon', 
       'technologicaltouch',
       'visitazonaamerica'
     ];
@@ -1196,7 +1237,7 @@ export const getDetallesEvento = async (req, res) => {
       total_asistieron: inscripciones.filter(i => i.asistencia === true).length,
       total_no_asistieron: inscripciones.filter(i => i.asistencia === false).length,
       total_sin_confirmar: inscripciones.filter(i => i.asistencia === undefined || i.asistencia === null).length,
-      tasa_asistencia: inscripciones.length > 0
+      tasa_asistencia: inscripciones.length > 0 
         ? ((inscripciones.filter(i => i.asistencia === true).length / inscripciones.length) * 100).toFixed(1)
         : '0.0'
     };
@@ -1254,384 +1295,6 @@ export const getDetallesEvento = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor'
-    });
-  }
-};
-
-// ===== WEBHOOKS TWILIO =====
-
-/**
- * Webhook para recibir actualizaciones de estado de mensajes de Twilio (GET)
- * GET /webhooks/twilio/status-callback
- */
-export const twilioStatusCallback = async (req, res) => {
-  try {
-    const {
-      MessageSid,
-      MessageStatus,
-      To,
-      From,
-      ErrorCode,
-      ErrorMessage,
-      DateSent,
-      DateUpdated
-    } = req.query;
-
-    console.log('📱 Twilio Status Callback recibido:', {
-      MessageSid,
-      MessageStatus,
-      To,
-      From,
-      ErrorCode,
-      ErrorMessage,
-      DateSent,
-      DateUpdated
-    });
-
-    // Validar que sea una solicitud de Twilio
-    if (!MessageSid || !MessageStatus) {
-      console.warn('⚠️ Status callback inválido - faltan campos requeridos');
-      return res.status(400).send('Invalid callback data');
-    }
-
-    const { db } = await connectMongo();
-    const logsCollection = db.collection('twilioMessageLogs');
-
-    // Guardar el log del estado del mensaje
-    await logsCollection.insertOne({
-      messageSid: MessageSid,
-      status: MessageStatus,
-      to: To,
-      from: From,
-      errorCode: ErrorCode || null,
-      errorMessage: ErrorMessage || null,
-      dateSent: DateSent ? new Date(DateSent) : null,
-      dateUpdated: DateUpdated ? new Date(DateUpdated) : null,
-      receivedAt: new Date(),
-      type: 'status_callback'
-    });
-
-    // Actualizar el estado en la colección de mensajes si existe
-    const messagesCollection = db.collection('sentMessages');
-    await messagesCollection.updateOne(
-      { messageSid: MessageSid },
-      {
-        $set: {
-          status: MessageStatus,
-          errorCode: ErrorCode || null,
-          errorMessage: ErrorMessage || null,
-          dateUpdated: new Date(),
-          lastStatusUpdate: new Date()
-        }
-      },
-      { upsert: true } // Crear si no existe
-    );
-
-    console.log(`✅ Status actualizado para ${MessageSid}: ${MessageStatus}`);
-
-    // Responder a Twilio con 200 OK
-    res.set('Content-Type', 'text/plain');
-    res.status(200).send('OK');
-
-  } catch (error) {
-    console.error('❌ Error procesando status callback de Twilio:', error);
-    
-    // Aún así responder 200 para que Twilio no reintente
-    res.set('Content-Type', 'text/plain');
-    res.status(200).send('OK');
-  }
-};
-
-/**
- * Webhook para recibir mensajes entrantes de WhatsApp (POST)
- * POST /webhooks/twilio/incoming-message
- */
-export const twilioIncomingMessage = async (req, res) => {
-  try {
-    const {
-      MessageSid,
-      Body,
-      From,
-      To,
-      NumMedia,
-      MediaContentType0,
-      MediaUrl0
-    } = req.body;
-
-    console.log('📱 Mensaje entrante de Twilio:', {
-      MessageSid,
-      From,
-      To,
-      Body: Body?.substring(0, 100), // Log parcial del mensaje
-      NumMedia,
-      MediaContentType0
-    });
-
-    const { db } = await connectMongo();
-    const incomingMessagesCollection = db.collection('incomingWhatsAppMessages');
-
-    // Guardar el mensaje entrante
-    await incomingMessagesCollection.insertOne({
-      messageSid: MessageSid,
-      from: From,
-      to: To,
-      body: Body,
-      numMedia: parseInt(NumMedia) || 0,
-      mediaType: MediaContentType0 || null,
-      mediaUrl: MediaUrl0 || null,
-      receivedAt: new Date(),
-      processed: false
-    });
-
-    // Procesar respuestas automáticas para códigos 2FA
-    if (Body && Body.trim().length === 6 && /^\d+$/.test(Body.trim())) {
-      await procesarRespuesta2FA(From, Body.trim());
-    }
-
-    // Responder a Twilio
-    res.set('Content-Type', 'text/xml');
-    res.status(200).send(`
-      <Response>
-        <Message>✅ Gracias por tu mensaje. Si es un código de verificación, será procesado automáticamente.</Message>
-      </Response>
-    `);
-
-  } catch (error) {
-    console.error('❌ Error procesando mensaje entrante de Twilio:', error);
-    
-    // Siempre responder 200 a Twilio
-    res.set('Content-Type', 'text/xml');
-    res.status(200).send('<Response></Response>');
-  }
-};
-
-/**
- * Procesar respuesta automática de códigos 2FA
- */
-async function procesarRespuesta2FA(fromNumber, codigo) {
-  try {
-    console.log(`🔐 Procesando posible código 2FA: ${codigo} de ${fromNumber}`);
-    
-    const { db } = await connectMongo();
-    const organizadoresCollection = db.collection('usuariosOrganizadores');
-    
-    // Buscar usuario con este número
-    const organizador = await organizadoresCollection.findOne({
-      telefono: { $regex: fromNumber.replace('whatsapp:', '').replace('+', '') }
-    });
-    
-    if (!organizador) {
-      console.log('❌ No se encontró usuario con este número:', fromNumber);
-      return false;
-    }
-    
-    if (!organizador.codigo2FA) {
-      console.log('❌ Usuario no tiene código 2FA pendiente');
-      return false;
-    }
-    
-    const { codigo: codigoGuardado, expiracion, usado } = organizador.codigo2FA;
-    
-    if (usado) {
-      console.log('⚠️ Código 2FA ya fue usado');
-      return false;
-    }
-    
-    if (new Date() > new Date(expiracion)) {
-      console.log('⚠️ Código 2FA expirado');
-      return false;
-    }
-    
-    if (codigo === codigoGuardado) {
-      console.log(`✅ Código 2FA válido recibido por WhatsApp para: ${organizador.usuario}`);
-      
-      // Marcar código como usado
-      await organizadoresCollection.updateOne(
-        { _id: organizador._id },
-        { $set: { 'codigo2FA.usado': true } }
-      );
-      
-      return true;
-    }
-    
-    return false;
-    
-  } catch (error) {
-    console.error('❌ Error procesando respuesta 2FA:', error);
-    return false;
-  }
-}
-
-/**
- * Endpoint para diagnosticar webhooks de Twilio
- * GET /webhooks/twilio/diagnostic
- */
-export const twilioDiagnostic = async (req, res) => {
-  try {
-    const { db } = await connectMongo();
-    
-    const statusLogs = await db.collection('twilioMessageLogs')
-      .find({})
-      .sort({ receivedAt: -1 })
-      .limit(10)
-      .toArray();
-
-    const incomingMessages = await db.collection('incomingWhatsAppMessages')
-      .find({})
-      .sort({ receivedAt: -1 })
-      .limit(5)
-      .toArray();
-
-    // Obtener estadísticas de mensajes
-    const sentMessagesStats = await db.collection('sentMessages')
-      .aggregate([
-        {
-          $group: {
-            _id: '$status',
-            count: { $sum: 1 }
-          }
-        }
-      ]).toArray();
-
-    res.json({
-      success: true,
-      webhooks: {
-        statusCallback: {
-          url: `${req.protocol}://${req.get('host')}/webhooks/twilio/status-callback`,
-          method: 'GET',
-          description: 'Recibe actualizaciones de estado de mensajes'
-        },
-        incomingMessage: {
-          url: `${req.protocol}://${req.get('host')}/webhooks/twilio/incoming-message`,
-          method: 'POST',
-          description: 'Recibe mensajes entrantes de WhatsApp'
-        }
-      },
-      statistics: {
-        statusLogs: statusLogs.length,
-        incomingMessages: incomingMessages.length,
-        sentMessages: sentMessagesStats
-      },
-      recentStatusLogs: statusLogs,
-      recentIncomingMessages: incomingMessages,
-      config: {
-        accountSid: process.env.TWILIO_ACCOUNT_SID ? '✅ Definida' : '❌ No definida',
-        authToken: process.env.TWILIO_AUTH_TOKEN ? '✅ Definida' : '❌ No definida',
-        whatsappFrom: process.env.TWILIO_WHATSAPP_FROM ? '✅ Definida' : '❌ No definida'
-      }
-    });
-
-  } catch (error) {
-    console.error('❌ Error en diagnóstico de webhooks:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-};
-
-/**
- * Obtener logs de mensajes Twilio
- * GET /organizador/twilio-logs?limit=50
- */
-export const getTwilioLogs = async (req, res) => {
-  try {
-    const { limit = 50 } = req.query;
-    
-    const { db } = await connectMongo();
-    
-    const statusLogs = await db.collection('twilioMessageLogs')
-      .find({})
-      .sort({ receivedAt: -1 })
-      .limit(parseInt(limit))
-      .toArray();
-
-    const incomingMessages = await db.collection('incomingWhatsAppMessages')
-      .find({})
-      .sort({ receivedAt: -1 })
-      .limit(parseInt(limit))
-      .toArray();
-
-    const sentMessages = await db.collection('sentMessages')
-      .find({})
-      .sort({ dateUpdated: -1 })
-      .limit(parseInt(limit))
-      .toArray();
-
-    res.json({
-      success: true,
-      logs: {
-        status: statusLogs,
-        incoming: incomingMessages,
-        sent: sentMessages
-      },
-      totals: {
-        status: statusLogs.length,
-        incoming: incomingMessages.length,
-        sent: sentMessages.length
-      }
-    });
-
-  } catch (error) {
-    console.error('❌ Error obteniendo logs de Twilio:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error interno del servidor'
-    });
-  }
-};
-
-/**
- * Verificar configuración de webhooks
- * GET /organizador/verificar-webhooks
- */
-export const verificarWebhooks = async (req, res) => {
-  try {
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    
-    const webhookUrls = {
-      statusCallback: `${baseUrl}/webhooks/twilio/status-callback`,
-      incomingMessage: `${baseUrl}/webhooks/twilio/incoming-message`
-    };
-
-    // Verificar que las colecciones existan
-    const { db } = await connectMongo();
-    const collections = await db.listCollections().toArray();
-    const collectionNames = collections.map(c => c.name);
-
-    const collectionsStatus = {
-      twilioMessageLogs: collectionNames.includes('twilioMessageLogs'),
-      incomingWhatsAppMessages: collectionNames.includes('incomingWhatsAppMessages'),
-      sentMessages: collectionNames.includes('sentMessages')
-    };
-
-    res.json({
-      success: true,
-      webhookUrls,
-      collectionsStatus,
-      configInstructions: `
-CONFIGURACIÓN EN TWILIO SANDBOX:
-
-1. STATUS CALLBACK URL (GET):
-   ${webhookUrls.statusCallback}
-
-2. WHEN A MESSAGE COMES IN (POST):
-   ${webhookUrls.incomingMessage}
-
-COLECCIONES EN MONGO:
-• twilioMessageLogs: ${collectionsStatus.twilioMessageLogs ? '✅' : '❌'}
-• incomingWhatsAppMessages: ${collectionsStatus.incomingWhatsAppMessages ? '✅' : '❌'} 
-• sentMessages: ${collectionsStatus.sentMessages ? '✅' : '❌'}
-
-⚠️ IMPORTANTE: Las URLs deben ser públicas y accesibles por Twilio
-      `
-    });
-
-  } catch (error) {
-    console.error('❌ Error verificando webhooks:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message
     });
   }
 };

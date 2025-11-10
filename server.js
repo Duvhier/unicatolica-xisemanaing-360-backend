@@ -19,7 +19,6 @@ import tallervueloRoutes from './src/routes/tallervuelo.js';
 import iapracticaRoutes from './src/routes/ia-practica.js';
 import tallerwordpressRoutes from "./src/routes/tallerwordpress.js"
 import clausuraRoutes from "./src/routes/clausura.js"
-import webhookRoutes from './routes/webhooks.js';
 import dns from "dns";
 
 dotenv.config();
@@ -122,7 +121,6 @@ app.use('/tallervuelo', tallervueloRoutes);
 app.use('/ia-practica', iapracticaRoutes);
 app.use('/tallerwordpress', tallerwordpressRoutes);
 app.use('/clausura', clausuraRoutes);
-app.use('/webhooks', webhookRoutes);
 
 // =========================================================
 // 🚀 INICIALIZACIÓN
