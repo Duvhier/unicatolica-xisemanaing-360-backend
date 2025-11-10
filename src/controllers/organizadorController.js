@@ -660,7 +660,7 @@ async function enviarWhatsApp2FA(telefono, codigo) {
       codigo: codigo
     });
 
-    const mensaje = `🔐 *Semana de la Ingeniería UC*
+    const mensaje = `🔐 *Semana de la Ingeniería Unicatólica*
 
 Tu código de verificación es:
 *${codigo}*
@@ -1254,6 +1254,384 @@ export const getDetallesEvento = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor'
+    });
+  }
+};
+
+// ===== WEBHOOKS TWILIO =====
+
+/**
+ * Webhook para recibir actualizaciones de estado de mensajes de Twilio (GET)
+ * GET /webhooks/twilio/status-callback
+ */
+export const twilioStatusCallback = async (req, res) => {
+  try {
+    const {
+      MessageSid,
+      MessageStatus,
+      To,
+      From,
+      ErrorCode,
+      ErrorMessage,
+      DateSent,
+      DateUpdated
+    } = req.query;
+
+    console.log('📱 Twilio Status Callback recibido:', {
+      MessageSid,
+      MessageStatus,
+      To,
+      From,
+      ErrorCode,
+      ErrorMessage,
+      DateSent,
+      DateUpdated
+    });
+
+    // Validar que sea una solicitud de Twilio
+    if (!MessageSid || !MessageStatus) {
+      console.warn('⚠️ Status callback inválido - faltan campos requeridos');
+      return res.status(400).send('Invalid callback data');
+    }
+
+    const { db } = await connectMongo();
+    const logsCollection = db.collection('twilioMessageLogs');
+
+    // Guardar el log del estado del mensaje
+    await logsCollection.insertOne({
+      messageSid: MessageSid,
+      status: MessageStatus,
+      to: To,
+      from: From,
+      errorCode: ErrorCode || null,
+      errorMessage: ErrorMessage || null,
+      dateSent: DateSent ? new Date(DateSent) : null,
+      dateUpdated: DateUpdated ? new Date(DateUpdated) : null,
+      receivedAt: new Date(),
+      type: 'status_callback'
+    });
+
+    // Actualizar el estado en la colección de mensajes si existe
+    const messagesCollection = db.collection('sentMessages');
+    await messagesCollection.updateOne(
+      { messageSid: MessageSid },
+      {
+        $set: {
+          status: MessageStatus,
+          errorCode: ErrorCode || null,
+          errorMessage: ErrorMessage || null,
+          dateUpdated: new Date(),
+          lastStatusUpdate: new Date()
+        }
+      },
+      { upsert: true } // Crear si no existe
+    );
+
+    console.log(`✅ Status actualizado para ${MessageSid}: ${MessageStatus}`);
+
+    // Responder a Twilio con 200 OK
+    res.set('Content-Type', 'text/plain');
+    res.status(200).send('OK');
+
+  } catch (error) {
+    console.error('❌ Error procesando status callback de Twilio:', error);
+    
+    // Aún así responder 200 para que Twilio no reintente
+    res.set('Content-Type', 'text/plain');
+    res.status(200).send('OK');
+  }
+};
+
+/**
+ * Webhook para recibir mensajes entrantes de WhatsApp (POST)
+ * POST /webhooks/twilio/incoming-message
+ */
+export const twilioIncomingMessage = async (req, res) => {
+  try {
+    const {
+      MessageSid,
+      Body,
+      From,
+      To,
+      NumMedia,
+      MediaContentType0,
+      MediaUrl0
+    } = req.body;
+
+    console.log('📱 Mensaje entrante de Twilio:', {
+      MessageSid,
+      From,
+      To,
+      Body: Body?.substring(0, 100), // Log parcial del mensaje
+      NumMedia,
+      MediaContentType0
+    });
+
+    const { db } = await connectMongo();
+    const incomingMessagesCollection = db.collection('incomingWhatsAppMessages');
+
+    // Guardar el mensaje entrante
+    await incomingMessagesCollection.insertOne({
+      messageSid: MessageSid,
+      from: From,
+      to: To,
+      body: Body,
+      numMedia: parseInt(NumMedia) || 0,
+      mediaType: MediaContentType0 || null,
+      mediaUrl: MediaUrl0 || null,
+      receivedAt: new Date(),
+      processed: false
+    });
+
+    // Procesar respuestas automáticas para códigos 2FA
+    if (Body && Body.trim().length === 6 && /^\d+$/.test(Body.trim())) {
+      await procesarRespuesta2FA(From, Body.trim());
+    }
+
+    // Responder a Twilio
+    res.set('Content-Type', 'text/xml');
+    res.status(200).send(`
+      <Response>
+        <Message>✅ Gracias por tu mensaje. Si es un código de verificación, será procesado automáticamente.</Message>
+      </Response>
+    `);
+
+  } catch (error) {
+    console.error('❌ Error procesando mensaje entrante de Twilio:', error);
+    
+    // Siempre responder 200 a Twilio
+    res.set('Content-Type', 'text/xml');
+    res.status(200).send('<Response></Response>');
+  }
+};
+
+/**
+ * Procesar respuesta automática de códigos 2FA
+ */
+async function procesarRespuesta2FA(fromNumber, codigo) {
+  try {
+    console.log(`🔐 Procesando posible código 2FA: ${codigo} de ${fromNumber}`);
+    
+    const { db } = await connectMongo();
+    const organizadoresCollection = db.collection('usuariosOrganizadores');
+    
+    // Buscar usuario con este número
+    const organizador = await organizadoresCollection.findOne({
+      telefono: { $regex: fromNumber.replace('whatsapp:', '').replace('+', '') }
+    });
+    
+    if (!organizador) {
+      console.log('❌ No se encontró usuario con este número:', fromNumber);
+      return false;
+    }
+    
+    if (!organizador.codigo2FA) {
+      console.log('❌ Usuario no tiene código 2FA pendiente');
+      return false;
+    }
+    
+    const { codigo: codigoGuardado, expiracion, usado } = organizador.codigo2FA;
+    
+    if (usado) {
+      console.log('⚠️ Código 2FA ya fue usado');
+      return false;
+    }
+    
+    if (new Date() > new Date(expiracion)) {
+      console.log('⚠️ Código 2FA expirado');
+      return false;
+    }
+    
+    if (codigo === codigoGuardado) {
+      console.log(`✅ Código 2FA válido recibido por WhatsApp para: ${organizador.usuario}`);
+      
+      // Marcar código como usado
+      await organizadoresCollection.updateOne(
+        { _id: organizador._id },
+        { $set: { 'codigo2FA.usado': true } }
+      );
+      
+      return true;
+    }
+    
+    return false;
+    
+  } catch (error) {
+    console.error('❌ Error procesando respuesta 2FA:', error);
+    return false;
+  }
+}
+
+/**
+ * Endpoint para diagnosticar webhooks de Twilio
+ * GET /webhooks/twilio/diagnostic
+ */
+export const twilioDiagnostic = async (req, res) => {
+  try {
+    const { db } = await connectMongo();
+    
+    const statusLogs = await db.collection('twilioMessageLogs')
+      .find({})
+      .sort({ receivedAt: -1 })
+      .limit(10)
+      .toArray();
+
+    const incomingMessages = await db.collection('incomingWhatsAppMessages')
+      .find({})
+      .sort({ receivedAt: -1 })
+      .limit(5)
+      .toArray();
+
+    // Obtener estadísticas de mensajes
+    const sentMessagesStats = await db.collection('sentMessages')
+      .aggregate([
+        {
+          $group: {
+            _id: '$status',
+            count: { $sum: 1 }
+          }
+        }
+      ]).toArray();
+
+    res.json({
+      success: true,
+      webhooks: {
+        statusCallback: {
+          url: `${req.protocol}://${req.get('host')}/webhooks/twilio/status-callback`,
+          method: 'GET',
+          description: 'Recibe actualizaciones de estado de mensajes'
+        },
+        incomingMessage: {
+          url: `${req.protocol}://${req.get('host')}/webhooks/twilio/incoming-message`,
+          method: 'POST',
+          description: 'Recibe mensajes entrantes de WhatsApp'
+        }
+      },
+      statistics: {
+        statusLogs: statusLogs.length,
+        incomingMessages: incomingMessages.length,
+        sentMessages: sentMessagesStats
+      },
+      recentStatusLogs: statusLogs,
+      recentIncomingMessages: incomingMessages,
+      config: {
+        accountSid: process.env.TWILIO_ACCOUNT_SID ? '✅ Definida' : '❌ No definida',
+        authToken: process.env.TWILIO_AUTH_TOKEN ? '✅ Definida' : '❌ No definida',
+        whatsappFrom: process.env.TWILIO_WHATSAPP_FROM ? '✅ Definida' : '❌ No definida'
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error en diagnóstico de webhooks:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Obtener logs de mensajes Twilio
+ * GET /organizador/twilio-logs?limit=50
+ */
+export const getTwilioLogs = async (req, res) => {
+  try {
+    const { limit = 50 } = req.query;
+    
+    const { db } = await connectMongo();
+    
+    const statusLogs = await db.collection('twilioMessageLogs')
+      .find({})
+      .sort({ receivedAt: -1 })
+      .limit(parseInt(limit))
+      .toArray();
+
+    const incomingMessages = await db.collection('incomingWhatsAppMessages')
+      .find({})
+      .sort({ receivedAt: -1 })
+      .limit(parseInt(limit))
+      .toArray();
+
+    const sentMessages = await db.collection('sentMessages')
+      .find({})
+      .sort({ dateUpdated: -1 })
+      .limit(parseInt(limit))
+      .toArray();
+
+    res.json({
+      success: true,
+      logs: {
+        status: statusLogs,
+        incoming: incomingMessages,
+        sent: sentMessages
+      },
+      totals: {
+        status: statusLogs.length,
+        incoming: incomingMessages.length,
+        sent: sentMessages.length
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error obteniendo logs de Twilio:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+};
+
+/**
+ * Verificar configuración de webhooks
+ * GET /organizador/verificar-webhooks
+ */
+export const verificarWebhooks = async (req, res) => {
+  try {
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    
+    const webhookUrls = {
+      statusCallback: `${baseUrl}/webhooks/twilio/status-callback`,
+      incomingMessage: `${baseUrl}/webhooks/twilio/incoming-message`
+    };
+
+    // Verificar que las colecciones existan
+    const { db } = await connectMongo();
+    const collections = await db.listCollections().toArray();
+    const collectionNames = collections.map(c => c.name);
+
+    const collectionsStatus = {
+      twilioMessageLogs: collectionNames.includes('twilioMessageLogs'),
+      incomingWhatsAppMessages: collectionNames.includes('incomingWhatsAppMessages'),
+      sentMessages: collectionNames.includes('sentMessages')
+    };
+
+    res.json({
+      success: true,
+      webhookUrls,
+      collectionsStatus,
+      configInstructions: `
+CONFIGURACIÓN EN TWILIO SANDBOX:
+
+1. STATUS CALLBACK URL (GET):
+   ${webhookUrls.statusCallback}
+
+2. WHEN A MESSAGE COMES IN (POST):
+   ${webhookUrls.incomingMessage}
+
+COLECCIONES EN MONGO:
+• twilioMessageLogs: ${collectionsStatus.twilioMessageLogs ? '✅' : '❌'}
+• incomingWhatsAppMessages: ${collectionsStatus.incomingWhatsAppMessages ? '✅' : '❌'} 
+• sentMessages: ${collectionsStatus.sentMessages ? '✅' : '❌'}
+
+⚠️ IMPORTANTE: Las URLs deben ser públicas y accesibles por Twilio
+      `
+    });
+
+  } catch (error) {
+    console.error('❌ Error verificando webhooks:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 };
