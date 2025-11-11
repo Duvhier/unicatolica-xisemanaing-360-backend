@@ -230,8 +230,8 @@ router.post('/registro', async (req, res) => {
       // Metadatos del evento - ACTUALIZADO PARA CONSTRUCCIÓN
       evento: 'Actividad de Construcción',
       tipo_evento: 'construccion',
-      horario: 'Por definir - Actividad de Construcción',
-      lugar: 'Por definir - Campus Universitario',
+      horario: 'Vie 14 Nov, 6:30 pm - 8:00 pm',
+      lugar: 'Auditorio LUMEN - Sede Meléndez',
       created_at: nowIso,
       updated_at: nowIso
     };
@@ -257,8 +257,8 @@ router.post('/registro', async (req, res) => {
       },
       actividad: 'Actividad de Construcción',
       evento: 'Actividad de Construcción',
-      horario: 'Por definir - Actividad de Construcción',
-      lugar: 'Por definir - Campus Universitario',
+      horario: 'Vie 14 Nov, 6:30 pm - 8:00 pm',
+      lugar: 'Auditorio LUMEN - Sede Meléndez',
       emitido: nowIso
     };
 
