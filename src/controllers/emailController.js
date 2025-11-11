@@ -5397,6 +5397,376 @@ Fundación Universitaria Católica Lumen Gentium
         `
         };
     },
+    // ✅ PLANTILLA PARA CONSTRUCCIÓN
+construccion: (usuario) => {
+    const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
+    const imagenConstruccion = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762456332/CONSTRUCCION-8_z7niyw.png";
+
+    return {
+        asunto: "🌐 Confirmación de Registro - Construcción Red de Ingenieros Integrados",
+        html: `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación - Construcción Red de Ingenieros</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .logo {
+            max-width: 250px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        .header-title {
+            color: white;
+            font-family: 'Poppins', Arial, sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 10px 0 5px 0;
+        }
+        
+        .header-subtitle {
+            color: #d6eaff;
+            font-size: 16px;
+            font-weight: 400;
+        }
+        
+        .conferencia-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-title {
+            color: #4f46e5;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-text {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .info-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #4f46e5;
+        }
+        
+        .card-title {
+            color: #4f46e5;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .info-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .info-list li strong {
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        
+        .qr-section {
+            text-align: center;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 2px dashed #4f46e5;
+        }
+        
+        .qr-image {
+            width: 200px;
+            height: 200px;
+            border: 3px solid #4f46e5;
+            border-radius: 12px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .networking-section {
+            background: #e0e7ff;
+            border: 1px solid #818cf8;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: #e0e7ff;
+            font-size: 12px;
+        }
+        
+        .footer-logo {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        
+        @media screen and (max-width: 480px) {
+            .header { padding: 20px 15px; }
+            .logo { max-width: 200px; }
+            .content { padding: 20px 15px; }
+            .info-grid { grid-template-columns: 1fr; gap: 20px; }
+            .qr-image { width: 160px; height: 160px; }
+            .conferencia-image { max-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="logo">
+            <div class="header-title">XI Semana de la Ingeniería</div>
+            <div class="header-subtitle">"360°: Innovación, Liderazgo y Futuro"</div>
+        </div>
+        
+        <img src="${imagenConstruccion}" alt="Construcción Red de Ingenieros Integrados" class="conferencia-image">
+        
+        <div class="content">
+            <div class="welcome-section">
+                <h1 class="welcome-title">¡Registro a Construcción de Red Confirmado!</h1>
+                <p class="welcome-text">
+                    Hola <strong>${usuario.nombre}</strong>,<br>
+                    Tu registro para la <strong>Construcción Red de Ingenieros Integrados</strong> ha sido procesado exitosamente.
+                </p>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3 class="card-title">👤 Información del Participante</h3>
+                    <ul class="info-list">
+                        <li><strong>Nombre:</strong> ${usuario.nombre}</li>
+                        <li><strong>Cédula:</strong> ${usuario.cedula}</li>
+                        <li><strong>Correo:</strong> ${usuario.correo}</li>
+                        <li><strong>Teléfono:</strong> ${usuario.telefono}</li>
+                        <li><strong>Rol:</strong> ${usuario.rol}</li>
+                        ${usuario.idEstudiante ? `<li><strong>ID Estudiante:</strong> ${usuario.idEstudiante}</li>` : ''}
+                        ${usuario.programa ? `<li><strong>Programa:</strong> ${usuario.programa}</li>` : ''}
+                        ${usuario.facultad ? `<li><strong>Facultad:</strong> ${usuario.facultad}</li>` : ''}
+                        ${usuario.semestre ? `<li><strong>Semestre:</strong> ${usuario.semestre}</li>` : ''}
+                        ${usuario.area ? `<li><strong>Área:</strong> ${usuario.area}</li>` : ''}
+                        ${usuario.cargo ? `<li><strong>Cargo:</strong> ${usuario.cargo}</li>` : ''}
+                        ${usuario.empresa ? `<li><strong>Empresa:</strong> ${usuario.empresa}</li>` : ''}
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3 class="card-title">📅 Detalles del Evento de Networking</h3>
+                    <ul class="info-list">
+                        <li><strong>Evento:</strong> Construcción Red de Ingenieros</li>
+                        <li><strong>XI Semana de la Ingeniería:</strong> "360°: Innovación, Liderazgo y Futuro"</li>
+                        <li><strong>Fecha:</strong> 14 de Noviembre 2025</li>
+                        <li><strong>Hora:</strong> 6:30 pm - 8:00 pm</li>
+                        <li><strong>Lugar:</strong> Auditorio Lumen</li>
+                        <li><strong>Sede:</strong> Meléndez</li>
+                        <li><strong>Duración:</strong> 90 minutos</li>
+                        <li><strong>Tipo:</strong> Networking Profesional</li>
+                        <li><strong>Enfoque:</strong> Construcción de redes profesionales</li>
+                    </ul>
+                </div>
+            </div>
+
+            ${usuario.qr ? `
+            <div class="qr-section">
+                <h3 class="card-title">🎫 Código QR de Acceso</h3>
+                <img src="${usuario.qr}" alt="Código QR" class="qr-image">
+                <p class="welcome-text">Presenta este código QR en la entrada del auditorio</p>
+            </div>
+            ` : ''}
+
+            <div class="networking-section">
+                <h3 style="color: #4f46e5; margin: 0 0 15px 0; font-size: 18px;">🌐 ¡Construye Tu Red Profesional!</h3>
+                <p style="color: #4f46e5; margin: 0; font-size: 14px; line-height: 1.5;">
+                    Este evento está diseñado específicamente para que conectes con profesionales, 
+                    compartas experiencias y construyas relaciones valiosas en el campo de la ingeniería. 
+                    Una oportunidad única para expandir tu red de contactos profesionales.
+                </p>
+            </div>
+
+            <div style="background: #eef2ff; border: 1px solid #818cf8; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #4f46e5; margin: 0 0 15px 0; font-size: 18px;">💼 Prepárate para el Networking</h3>
+                <ul style="color: #4f46e5; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Llega 15 minutos antes del inicio (6:15 pm)</li>
+                    <li>Trae tus tarjetas de presentación (opcional)</li>
+                    <li>Prepara tu pitch profesional de 30 segundos</li>
+                    <li>Vestimenta business casual</li>
+                    <li>Actitud abierta para conversar y conectar</li>
+                    <li>Desactiva tu celular o ponlo en modo silencio</li>
+                </ul>
+            </div>
+
+            <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #0369a1; margin: 0 0 15px 0; font-size: 18px;">🤝 Dinámicas de Conexión</h3>
+                <ul style="color: #0369a1; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Sesiones de networking dirigido</li>
+                    <li>Intercambio de experiencias profesionales</li>
+                    <li>Mesas de conversación por áreas de interés</li>
+                    <li>Actividades de ice-breaking</li>
+                    <li>Espacios para intercambio de contactos</li>
+                    <li>Oportunidades de colaboración futura</li>
+                </ul>
+            </div>
+
+            <div style="background: #f3e8ff; border: 1px solid #a855f7; border-radius: 12px; padding: 25px; margin: 25px 0;">
+                <h3 style="color: #7c3aed; margin: 0 0 15px 0; font-size: 18px;">🎯 Beneficios de Participar</h3>
+                <ul style="color: #7c3aed; margin: 0; padding-left: 20px; font-size: 14px;">
+                    <li>Amplía tu red de contactos profesionales</li>
+                    <li>Conoce oportunidades de colaboración</li>
+                    <li>Comparte experiencias con colegas</li>
+                    <li>Fortalece tu presencia profesional</li>
+                    <li>Accede a posibles oportunidades laborales</li>
+                    <li>Construye relaciones duraderas</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <img src="${logoUnicatolica}" alt="UNICATÓLICA" class="footer-logo">
+            <p>
+                <strong>Fundación Universitaria Católica Lumen Gentium</strong><br>
+                – Resolución No. 944 de 1996 MEN – SNIES 2731
+            </p>
+            <p style="margin-top: 15px; font-size: 11px; opacity: 0.8;">
+                © 2025 XI Semana de la Ingeniería - Construcción Red de Ingenieros Integrados
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+        `,
+        texto: `
+CONFIRMACIÓN DE REGISTRO - CONSTRUCCIÓN RED DE INGENIEROS INTEGRADOS
+XI Semana de la Ingeniería "360°: Innovación, Liderazgo y Futuro"
+
+🌐 ¡REGISTRO A CONSTRUCCIÓN DE RED CONFIRMADO!
+
+Hola ${usuario.nombre},
+
+Tu registro para la Construcción Red de Ingenieros Integrados ha sido procesado exitosamente.
+
+👤 INFORMACIÓN DEL PARTICIPANTE:
+- Nombre: ${usuario.nombre}
+- Cédula: ${usuario.cedula}
+- Correo: ${usuario.correo}
+- Teléfono: ${usuario.telefono}
+- Rol: ${usuario.rol}
+${usuario.idEstudiante ? `- ID Estudiante: ${usuario.idEstudiante}\n` : ''}
+${usuario.programa ? `- Programa: ${usuario.programa}\n` : ''}
+${usuario.facultad ? `- Facultad: ${usuario.facultad}\n` : ''}
+${usuario.semestre ? `- Semestre: ${usuario.semestre}\n` : ''}
+${usuario.area ? `- Área: ${usuario.area}\n` : ''}
+${usuario.cargo ? `- Cargo: ${usuario.cargo}\n` : ''}
+${usuario.empresa ? `- Empresa: ${usuario.empresa}\n` : ''}
+
+📅 DETALLES DEL EVENTO DE NETWORKING:
+- Evento: Construcción Red de Ingenieros
+- XI Semana de la Ingeniería: "360°: Innovación, Liderazgo y Futuro"
+- Fecha: 14 de Noviembre de 2025
+- Hora: 6:30 pm - 8:00 pm
+- Lugar: Auditorio Lumen - Sede Meléndez
+- Duración: 90 minutos
+- Tipo: Networking Profesional
+- Enfoque: Construcción de redes profesionales
+
+🌐 ¡CONSTRUYE TU RED PROFESIONAL!
+Este evento está diseñado específicamente para que conectes con profesionales, 
+compartas experiencias y construyas relaciones valiosas en el campo de la ingeniería. 
+Una oportunidad única para expandir tu red de contactos profesionales.
+
+💼 PREPÁRATE PARA EL NETWORKING:
+• Llega 15 minutos antes (6:15 pm)
+• Trae tus tarjetas de presentación (opcional)
+• Prepara tu pitch profesional de 30 segundos
+• Vestimenta business casual
+• Actitud abierta para conversar y conectar
+
+🤝 DINÁMICAS DE CONEXIÓN:
+• Sesiones de networking dirigido
+• Intercambio de experiencias profesionales
+• Mesas de conversación por áreas de interés
+• Actividades de ice-breaking
+• Espacios para intercambio de contactos
+• Oportunidades de colaboración futura
+
+🎯 BENEFICIOS DE PARTICIPAR:
+• Amplía tu red de contactos profesionales
+• Conoce oportunidades de colaboración
+• Comparte experiencias con colegas
+• Fortalece tu presencia profesional
+• Accede a posibles oportunidades laborales
+• Construye relaciones duraderas
+
+--
+Fundación Universitaria Católica Lumen Gentium
+© 2025 XI Semana de la Ingeniería - Construcción Red de Ingenieros Integrados
+        `
+    };
+},
     // ✅ PLANTILLA PARA ASISTENCIA INAUGURAL
     asistenciainaugural: (usuario) => {
         const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
