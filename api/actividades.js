@@ -117,6 +117,13 @@ const actividadesIniciales = [
     tipo: "Evento",
     coleccion: "clausura"
   },
+  {
+    id: 19,
+    nombre: "Construcción Red de Ingenieros Integrados",
+    cupoMaximo: 500,
+    tipo: "Networking",
+    coleccion: "construccion"
+  },
 ];
 
 // Inicializar actividades en la base de datos
