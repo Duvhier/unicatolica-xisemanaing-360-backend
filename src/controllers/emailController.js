@@ -5400,7 +5400,7 @@ Fundación Universitaria Católica Lumen Gentium
     // ✅ PLANTILLA PARA CONSTRUCCIÓN
 construccion: (usuario) => {
     const logoUnicatolica = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1761203793/unnamed_guotmp.png";
-    const imagenConstruccion = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762456332/CONSTRUCCION-8_z7niyw.png";
+    const imagenConstruccion = "https://res.cloudinary.com/dufzjm2mn/image/upload/v1762856931/CONSTRUCCION-RED_8_fpekgz.jpg";
 
     return {
         asunto: "🌐 Confirmación de Registro - Construcción Red de Ingenieros Integrados",
