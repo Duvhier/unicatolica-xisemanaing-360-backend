@@ -568,4 +568,97 @@ router.get('/buscar/:cedula', async (req, res) => {
   }
 });
 
+// ✅ Endpoint para CONFIRMAR ASISTENCIA escaneando QR
+router.post('/confirmar-asistencia', async (req, res) => {
+  try {
+    const { qrData } = req.body;
+    
+    console.log('🎯 CONFIRMANDO ASISTENCIA');
+    console.log('📥 QR recibido:', qrData);
+
+    if (!qrData) {
+      return res.status(400).json({
+        success: false,
+        message: 'Datos del QR no proporcionados'
+      });
+    }
+
+    // Parsear el QR (viene como JSON string)
+    let qrPayload;
+    try {
+      qrPayload = typeof qrData === 'string' ? JSON.parse(qrData) : qrData;
+    } catch (e) {
+      return res.status(400).json({
+        success: false,
+        message: 'Formato de QR inválido'
+      });
+    }
+
+    const { db } = await connectMongo();
+    const col = db.collection('asistenciainaugural');
+
+    // Buscar el participante por ID del QR
+    const participante = await col.findOne({
+      _id: new ObjectId(qrPayload.id)
+    });
+
+    if (!participante) {
+      return res.status(404).json({
+        success: false,
+        message: 'Participante no encontrado'
+      });
+    }
+
+    // Verificar si ya confirmó asistencia
+    if (participante.asistencia_confirmada) {
+      return res.status(409).json({
+        success: false,
+        message: 'Asistencia ya confirmada previamente',
+        participante: {
+          nombre: participante.nombre,
+          cedula: participante.cedula,
+          rol: participante.rol,
+          confirmada_en: participante.asistencia_confirmada_at
+        }
+      });
+    }
+
+    // Confirmar asistencia
+    const ahora = new Date().toISOString();
+    await col.updateOne(
+      { _id: participante._id },
+      {
+        $set: {
+          asistencia_confirmada: true,
+          asistencia_confirmada_at: ahora
+        }
+      }
+    );
+
+    console.log('✅ Asistencia confirmada para:', participante.nombre);
+
+    return res.json({
+      success: true,
+      message: 'Asistencia confirmada exitosamente',
+      participante: {
+        nombre: participante.nombre,
+        cedula: participante.cedula,
+        correo: participante.correo,
+        rol: participante.rol,
+        programa: participante.programa,
+        facultad: participante.facultad,
+        confirmada_en: ahora
+      }
+    });
+
+  } catch (err) {
+    console.error('❌ Error en /confirmar-asistencia:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor',
+      error: err.message
+    });
+  }
+});
+
 export default router;
