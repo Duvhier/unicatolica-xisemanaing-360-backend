@@ -124,6 +124,13 @@ const actividadesIniciales = [
     tipo: "Networking",
     coleccion: "construccion"
   },
+  {
+    id: 25,
+    nombre: "Confirmacion Asistencia Inaugural",
+    cupoMaximo: 200,
+    tipo: "Evento",
+    coleccion: "confirmaciondeasistencia"
+  },
 ];
 
 // Inicializar actividades en la base de datos

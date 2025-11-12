@@ -20,6 +20,7 @@ import iapracticaRoutes from './src/routes/ia-practica.js';
 import tallerwordpressRoutes from "./src/routes/tallerwordpress.js"
 import clausuraRoutes from "./src/routes/clausura.js"
 import construccionRoutes from "./src/routes/construccion.js"
+import confirmaciondeasistenciaRoutes from "./src/routes/confirmaciondeasistencia.js"
 import dns from "dns";
 
 dotenv.config();
@@ -123,6 +124,7 @@ app.use('/ia-practica', iapracticaRoutes);
 app.use('/tallerwordpress', tallerwordpressRoutes);
 app.use('/clausura', clausuraRoutes);
 app.use('/construccion', construccionRoutes);
+app.use('/confirmaciondeasistencia', confirmaciondeasistenciaRoutes);
 
 // =========================================================
 // 🚀 INICIALIZACIÓN
