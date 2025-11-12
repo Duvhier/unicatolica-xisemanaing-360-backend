@@ -59,7 +59,6 @@ async function validatePayload(body) {
         'tipoDocumento',
         'numeroDocumento',
         'telefono',
-        'facultadArea',
         'perfil',
         'email'
     ];
@@ -93,26 +92,60 @@ async function validatePayload(body) {
         errors.push('El teléfono debe contener solo números');
     }
 
-    // Validación extra si el perfil es estudiante
+    // 🔥 NUEVA LÓGICA: Validaciones condicionales por perfil
+    const perfilesAcademicos = ['Estudiante', 'Docente', 'Egresado'];
+    const perfilesNoAcademicos = ['Administrativo', 'Invitado'];
+
+    // Validar que el perfil sea válido
+    const perfilesValidos = [...perfilesAcademicos, ...perfilesNoAcademicos];
+    if (body.perfil && !perfilesValidos.includes(body.perfil)) {
+        errors.push('Perfil no válido');
+    }
+
+    // 🔥 FACULTAD: Requerida solo para perfiles académicos
+    if (perfilesAcademicos.includes(body.perfil)) {
+        if (!body.facultadArea?.trim()) {
+            errors.push('Facultad/Área es requerida para estudiantes, docentes y egresados');
+        }
+        
+        // Validar que la facultad sea válida si está presente
+        if (body.facultadArea) {
+            const facultadesValidas = [
+                "Facultad de Educación, Ciencias Sociales, Humanas y Derecho",
+                "Facultad de Ciencias Administrativas", 
+                "Facultad de Ingeniería"
+            ];
+            
+            if (!facultadesValidas.includes(body.facultadArea)) {
+                errors.push('Facultad no válida');
+            }
+        }
+    }
+
+    // 🔥 PROGRAMA ACADÉMICO: Requerido solo para perfiles académicos
+    if (perfilesAcademicos.includes(body.perfil)) {
+        if (!body.programaAcademico?.trim()) {
+            errors.push('Programa académico es requerido para estudiantes, docentes y egresados');
+        }
+    }
+
+    // 🔥 ID ESTUDIANTE: Requerido solo para estudiantes
     if (body.perfil === 'Estudiante') {
         if (!body.idEstudiante?.trim()) {
             errors.push('ID de estudiante es requerido para estudiantes');
         }
-        if (!body.programaAcademico?.trim()) {
-            errors.push('Programa académico es requerido para estudiantes');
-        }
     }
 
-    // Validar que la facultad y programa académico coincidan con las opciones válidas
-    if (body.facultadArea && body.programaAcademico) {
-        const facultadesValidas = [
-            "Facultad de Educación, Ciencias Sociales, Humanas y Derecho",
-            "Facultad de Ciencias Administrativas", 
-            "Facultad de Ingeniería"
-        ];
-        
-        if (!facultadesValidas.includes(body.facultadArea)) {
-            errors.push('Facultad no válida');
+    // Para perfiles no académicos, limpiar campos académicos si vienen vacíos
+    if (perfilesNoAcademicos.includes(body.perfil)) {
+        if (!body.facultadArea?.trim()) {
+            body.facultadArea = 'No aplica';
+        }
+        if (!body.programaAcademico?.trim()) {
+            body.programaAcademico = 'No aplica';
+        }
+        if (!body.idEstudiante?.trim()) {
+            body.idEstudiante = '';
         }
     }
 
@@ -138,7 +171,7 @@ async function checkDuplicates(db, payload) {
         duplicates.push(`El correo ${payload.email} ya está registrado`);
     }
 
-    if (payload.idEstudiante) {
+    if (payload.idEstudiante && payload.idEstudiante.trim()) {
         const existingId = await col.findOne({
             idEstudiante: payload.idEstudiante.trim()
         });
@@ -184,23 +217,37 @@ router.post('/registro', async (req, res) => {
             });
         }
 
-        // ✅ Construir documento
+        // ✅ Construir documento con lógica condicional
         const nowIso = new Date().toISOString();
+        
+        // Determinar valores para campos académicos basados en el perfil
+        const perfilesAcademicos = ['Estudiante', 'Docente', 'Egresado'];
+        const esPerfilAcademico = perfilesAcademicos.includes(payload.perfil);
+        
+        const facultadArea = esPerfilAcademico 
+            ? payload.facultadArea.trim() 
+            : (payload.facultadArea?.trim() || 'No aplica');
+            
+        const programaAcademico = esPerfilAcademico 
+            ? payload.programaAcademico.trim() 
+            : (payload.programaAcademico?.trim() || 'No aplica');
+
         const doc = {
             nombres: payload.nombres.trim(),
             apellido: payload.apellido.trim(),
             tipoDocumento: payload.tipoDocumento.trim(),
             numeroDocumento: payload.numeroDocumento.trim(),
             telefono: payload.telefono.trim(),
-            facultadArea: payload.facultadArea.trim(),
+            facultadArea: facultadArea,
             perfil: payload.perfil.trim(),
-            programaAcademico: payload.programaAcademico?.trim(),
-            idEstudiante: payload.idEstudiante?.trim(),
+            programaAcademico: programaAcademico,
+            idEstudiante: payload.idEstudiante?.trim() || '',
             email: payload.email.trim().toLowerCase(),
-            evento: 'ACTO DE CLAUSURA - XI SEMANA DE LA INGENIERÍA',
+            evento: 'CONFIRMACION DE ASISTENCIA',
             actividad: 'cierre-inaugural',
             fechaRegistro: nowIso,
-            estado: 'activo'
+            estado: 'activo',
+            esPerfilAcademico: esPerfilAcademico // Campo adicional para filtros
         };
 
         const col = db.collection('cierreinaugural');
@@ -216,11 +263,11 @@ router.post('/registro', async (req, res) => {
                 tipoDocumento: payload.tipoDocumento,
                 numeroDocumento: payload.numeroDocumento,
                 perfil: payload.perfil,
-                programaAcademico: payload.programaAcademico,
-                idEstudiante: payload.idEstudiante
+                programaAcademico: programaAcademico,
+                idEstudiante: payload.idEstudiante || ''
             },
             actividad: 'Cierre Inaugural',
-            evento: 'ACTO DE CLAUSURA - XI SEMANA DE LA INGENIERÍA',
+            evento: 'CONFIRMACION DE ASISTENCIA',
             emitido: nowIso
         };
 
@@ -240,7 +287,7 @@ router.post('/registro', async (req, res) => {
             const datosCorreo = {
                 ...doc,
                 qr: qrDataUrl,
-                evento: 'ACTO DE CLAUSURA - XI SEMANA DE LA INGENIERÍA',
+                evento: 'CONFIRMACION DE ASISTENCIA',
                 destinatario: 'duvier.tavera01@unicatolica.edu.co' // Correo específico para cierre
             };
             await enviarCorreoRegistro(datosCorreo, 'cierreinaugural');
@@ -257,9 +304,10 @@ router.post('/registro', async (req, res) => {
             cupo: {
                 disponibles: infoActualizada.cuposDisponibles,
                 maximo: infoRegistros.cupoMaximo,
-                inscritos: infoActualizada.inscritos
+                inscritos: infoActualizada.inscrits
             },
-            evento: 'ACTO DE CLAUSURA - XI SEMANA DE LA INGENIERÍA'
+            evento: 'CONFIRMACION DE ASISTENCIA',
+            perfil: payload.perfil
         });
 
     } catch (err) {
@@ -300,7 +348,7 @@ router.get('/listar', async (req, res) => {
         res.json({
             message: 'Registros de cierre inaugural encontrados',
             total: registros.length,
-            evento: 'ACTO DE CLAUSURA - XI SEMANA DE LA INGENIERÍA',
+            evento: 'CONFIRMACION DE ASISTENCIA',
             registros
         });
     } catch (err) {
@@ -330,7 +378,7 @@ router.get('/buscar/:documento', async (req, res) => {
 
         res.json({ 
             message: 'Registro encontrado', 
-            evento: 'ACTO DE CLAUSURA - XI SEMANA DE LA INGENIERÍA',
+            evento: 'CONFIRMACION DE ASISTENCIA',
             registro 
         });
     } catch (err) {
@@ -356,8 +404,14 @@ router.get('/estadisticas-facultades', async (req, res) => {
                     docentes: {
                         $sum: { $cond: [{ $eq: ['$perfil', 'Docente'] }, 1, 0] }
                     },
+                    egresados: {
+                        $sum: { $cond: [{ $eq: ['$perfil', 'Egresado'] }, 1, 0] }
+                    },
                     administrativos: {
                         $sum: { $cond: [{ $eq: ['$perfil', 'Administrativo'] }, 1, 0] }
+                    },
+                    invitados: {
+                        $sum: { $cond: [{ $eq: ['$perfil', 'Invitado'] }, 1, 0] }
                     }
                 }
             },
@@ -366,11 +420,58 @@ router.get('/estadisticas-facultades', async (req, res) => {
 
         res.json({
             success: true,
-            evento: 'ACTO DE CLAUSURA - XI SEMANA DE LA INGENIERÍA',
+            evento: 'CONFIRMACION DE ASISTENCIA',
             estadisticas: stats
         });
     } catch (err) {
         console.error('❌ Error en /estadisticas-facultades:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// Estadísticas por perfil
+router.get('/estadisticas-perfiles', async (req, res) => {
+    try {
+        const { db } = await connectMongo();
+        const col = db.collection('cierreinaugural');
+        
+        const stats = await col.aggregate([
+            {
+                $group: {
+                    _id: '$perfil',
+                    total: { $sum: 1 },
+                    conFacultad: {
+                        $sum: { 
+                            $cond: [{ 
+                                $and: [
+                                    { $ne: ['$facultadArea', 'No aplica'] },
+                                    { $ne: ['$facultadArea', ''] }
+                                ]
+                            }, 1, 0] 
+                        }
+                    },
+                    conPrograma: {
+                        $sum: { 
+                            $cond: [{ 
+                                $and: [
+                                    { $ne: ['$programaAcademico', 'No aplica'] },
+                                    { $ne: ['$programaAcademico', ''] }
+                                ]
+                            }, 1, 0] 
+                        }
+                    }
+                }
+            },
+            { $sort: { total: -1 } }
+        ]).toArray();
+
+        res.json({
+            success: true,
+            evento: 'CONFIRMACION DE ASISTENCIA',
+            estadisticas: stats
+        });
+    } catch (err) {
+        console.error('❌ Error en /estadisticas-perfiles:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 });
