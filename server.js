@@ -22,6 +22,7 @@ import clausuraRoutes from "./src/routes/clausura.js"
 import construccionRoutes from "./src/routes/construccion.js"
 import confirmaciondeasistenciaRoutes from "./src/routes/confirmaciondeasistencia.js"
 import cierreinauguralRoutes from "./src/routes/cierreinaugural.js"
+import cierreeventosRoutes from "./src/routes/cierreeventos.js"
 import dns from "dns";
 
 dotenv.config();
@@ -127,6 +128,7 @@ app.use('/clausura', clausuraRoutes);
 app.use('/construccion', construccionRoutes);
 app.use('/confirmaciondeasistencia', confirmaciondeasistenciaRoutes);
 app.use('/cierreinaugural', cierreinauguralRoutes);
+app.use('/cierreeventos', cierreeventosRoutes);
 
 // =========================================================
 // 🚀 INICIALIZACIÓN
