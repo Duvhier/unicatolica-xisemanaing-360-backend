@@ -10,6 +10,69 @@ const router = Router();
 /* 🧩 FUNCIONES AUXILIARES                                                    */
 /* -------------------------------------------------------------------------- */
 
+// ✅ Función para generar número de rifa único (000-500) - MOVER AL INICIO
+async function generarNumeroRifaUnico(db) {
+    const col = db.collection('cierreinaugural');
+    
+    // Obtener todos los números de rifa ya asignados
+    const registrosConRifa = await col.find(
+        { numeroRifa: { $exists: true } },
+        { projection: { numeroRifa: 1 } }
+    ).toArray();
+    
+    const numerosUsados = registrosConRifa.map(r => r.numeroRifa);
+    const numerosDisponibles = [];
+    
+    // Generar array de números del 0 al 500
+    for (let i = 0; i <= 500; i++) {
+        const numeroFormateado = i.toString().padStart(3, '0');
+        if (!numerosUsados.includes(numeroFormateado)) {
+            numerosDisponibles.push(numeroFormateado);
+        }
+    }
+    
+    // Si no hay números disponibles
+    if (numerosDisponibles.length === 0) {
+        throw new Error('No hay números de rifa disponibles');
+    }
+    
+    // Seleccionar un número aleatorio de los disponibles
+    const numeroAleatorio = numerosDisponibles[Math.floor(Math.random() * numerosDisponibles.length)];
+    
+    return numeroAleatorio;
+}
+
+// ✅ Función para verificar duplicados (ACTUALIZADA) - MOVER AL INICIO
+async function checkDuplicates(db, payload) {
+    const col = db.collection('cierreinaugural');
+    const duplicates = [];
+
+    const existingDocumento = await col.findOne({
+        numeroDocumento: payload.numeroDocumento.trim()
+    });
+    if (existingDocumento) {
+        duplicates.push(`El número de documento ${payload.numeroDocumento} ya está registrado`);
+    }
+
+    const existingEmail = await col.findOne({
+        email: payload.email.trim().toLowerCase()
+    });
+    if (existingEmail) {
+        duplicates.push(`El correo ${payload.email} ya está registrado`);
+    }
+
+    if (payload.idEstudiante && payload.idEstudiante.trim()) {
+        const existingId = await col.findOne({
+            idEstudiante: payload.idEstudiante.trim()
+        });
+        if (existingId) {
+            duplicates.push(`El ID de estudiante ${payload.idEstudiante} ya está registrado`);
+        }
+    }
+
+    return duplicates;
+}
+
 // ✅ Obtener información de registros
 async function obtenerInfoRegistros(db) {
     try {
@@ -184,11 +247,12 @@ async function checkDuplicates(db, payload) {
 }
 
 /* -------------------------------------------------------------------------- */
-// 🧾 ENDPOINT PRINCIPAL: REGISTRO DE CIERRE INAUGURAL (ACTUALIZADO)
+/* 🧾 ENDPOINT PRINCIPAL: REGISTRO DE CIERRE INAUGURAL                       */
+/* -------------------------------------------------------------------------- */
 router.post('/registro', async (req, res) => {
     try {
         const payload = req.body || {};
-        console.log('🎯 Iniciando registro de Asistencia a La Clausura');
+        console.log('🎯 Iniciando registro de Cierre Inaugural');
         console.log('📥 Payload recibido:', JSON.stringify(payload, null, 2));
 
         // ✅ Validar datos
@@ -213,19 +277,6 @@ router.post('/registro', async (req, res) => {
             return res.status(409).json({
                 message: 'Datos duplicados encontrados',
                 errors: duplicateErrors
-            });
-        }
-
-        // ✅ GENERAR NÚMERO DE RIFA ÚNICO
-        let numeroRifa;
-        try {
-            numeroRifa = await generarNumeroRifaUnico(db);
-            console.log(`🎲 Número de rifa asignado: ${numeroRifa}`);
-        } catch (error) {
-            console.error('❌ Error generando número de rifa:', error);
-            return res.status(500).json({
-                message: 'Error asignando número de participación',
-                error: error.message
             });
         }
 
@@ -259,17 +310,14 @@ router.post('/registro', async (req, res) => {
             actividad: 'cierre-inaugural',
             fechaRegistro: nowIso,
             estado: 'activo',
-            esPerfilAcademico: esPerfilAcademico,
-            // 🔥 NUEVO CAMPO: Número de rifa único
-            numeroRifa: numeroRifa,
-            participaRifa: true
+            esPerfilAcademico: esPerfilAcademico // Campo adicional para filtros
         };
 
         const col = db.collection('cierreinaugural');
         const insertRes = await col.insertOne(doc);
         const insertedId = insertRes.insertedId;
 
-        // ✅ Generar QR (ACTUALIZADO con número de rifa)
+        // ✅ Generar QR
         const qrPayload = {
             id: insertedId.toString(),
             participante: {
@@ -279,9 +327,7 @@ router.post('/registro', async (req, res) => {
                 numeroDocumento: payload.numeroDocumento,
                 perfil: payload.perfil,
                 programaAcademico: programaAcademico,
-                idEstudiante: payload.idEstudiante || '',
-                // 🔥 NUEVO: Incluir número de rifa en el QR
-                numeroRifa: numeroRifa
+                idEstudiante: payload.idEstudiante || ''
             },
             actividad: 'Cierre Inaugural',
             evento: 'CONFIRMACION DE ASISTENCIA',
@@ -299,33 +345,29 @@ router.post('/registro', async (req, res) => {
             }
         });
 
-        // ✅ Enviar correo (ACTUALIZADO con número de rifa)
+        // ✅ Enviar correo
         try {
             const datosCorreo = {
                 ...doc,
                 qr: qrDataUrl,
                 evento: 'CONFIRMACION DE ASISTENCIA',
-                numeroRifa: numeroRifa, // 🔥 NUEVO
-                destinatario: 'duvier.tavera01@unicatolica.edu.co'
+                destinatario: 'duvier.tavera01@unicatolica.edu.co' // Correo específico para cierre
             };
             await enviarCorreoRegistro(datosCorreo, 'cierreinaugural');
         } catch (err) {
             console.error('⚠️ Error enviando correo:', err);
         }
 
-        // ✅ Respuesta (ACTUALIZADA con número de rifa)
+        // ✅ Respuesta
         const infoActualizada = await obtenerInfoRegistros(db);
         res.status(201).json({
             message: 'Registro para el Acto de Clausura realizado correctamente',
             id: insertedId,
             qr: qrDataUrl,
-            // 🔥 NUEVO: Incluir número de rifa en la respuesta
-            numeroRifa: numeroRifa,
-            participaRifa: true,
             cupo: {
                 disponibles: infoActualizada.cuposDisponibles,
                 maximo: infoRegistros.cupoMaximo,
-                inscritos: infoActualizada.inscritos
+                inscritos: infoActualizada.inscrits
             },
             evento: 'CONFIRMACION DE ASISTENCIA',
             perfil: payload.perfil
@@ -336,6 +378,7 @@ router.post('/registro', async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor', error: err.message });
     }
 });
+
 /* -------------------------------------------------------------------------- */
 /* 🧭 OTROS ENDPOINTS                                                         */
 /* -------------------------------------------------------------------------- */
@@ -560,103 +603,5 @@ async function checkDuplicates(db, payload) {
 
     return duplicates;
 }
-
-// 🎲 NUEVO ENDPOINT: Consultar números de rifa asignados
-router.get('/numeros-rifa', async (req, res) => {
-    try {
-        const { db } = await connectMongo();
-        const col = db.collection('cierreinaugural');
-        
-        const numerosRifa = await col.find(
-            { numeroRifa: { $exists: true } },
-            { 
-                projection: { 
-                    numeroRifa: 1, 
-                    nombres: 1, 
-                    apellido: 1, 
-                    numeroDocumento: 1,
-                    perfil: 1,
-                    facultadArea: 1,
-                    programaAcademico: 1
-                } 
-            }
-        ).sort({ numeroRifa: 1 }).toArray();
-
-        // Calcular números disponibles
-        const numerosAsignados = numerosRifa.map(r => parseInt(r.numeroRifa));
-        const numerosDisponibles = [];
-        
-        for (let i = 0; i <= 500; i++) {
-            const numeroFormateado = i.toString().padStart(3, '0');
-            if (!numerosAsignados.includes(i)) {
-                numerosDisponibles.push(numeroFormateado);
-            }
-        }
-
-        res.json({
-            success: true,
-            totalAsignados: numerosRifa.length,
-            totalDisponibles: numerosDisponibles.length,
-            numerosAsignados: numerosRifa,
-            numerosDisponibles: numerosDisponibles,
-            rango: '000-500'
-        });
-    } catch (err) {
-        console.error('❌ Error en /numeros-rifa:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
-
-// 🎲 NUEVO ENDPOINT: Realizar sorteo
-router.get('/realizar-sorteo/:cantidad?', async (req, res) => {
-    try {
-        const cantidad = parseInt(req.params.cantidad) || 5;
-        const { db } = await connectMongo();
-        const col = db.collection('cierreinaugural');
-        
-        // Obtener registros con números de rifa
-        const participantes = await col.find(
-            { numeroRifa: { $exists: true } },
-            { 
-                projection: { 
-                    numeroRifa: 1, 
-                    nombres: 1, 
-                    apellido: 1, 
-                    numeroDocumento: 1,
-                    perfil: 1,
-                    email: 1,
-                    telefono: 1
-                } 
-            }
-        ).toArray();
-
-        if (participantes.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'No hay participantes para el sorteo'
-            });
-        }
-
-        // Realizar sorteo aleatorio
-        const ganadores = [];
-        const participantesCopia = [...participantes];
-        
-        for (let i = 0; i < Math.min(cantidad, participantes.length); i++) {
-            const indiceAleatorio = Math.floor(Math.random() * participantesCopia.length);
-            ganadores.push(participantesCopia.splice(indiceAleatorio, 1)[0]);
-        }
-
-        res.json({
-            success: true,
-            totalParticipantes: participantes.length,
-            ganadoresSeleccionados: ganadores.length,
-            ganadores: ganadores,
-            fechaSorteo: new Date().toISOString()
-        });
-    } catch (err) {
-        console.error('❌ Error en /realizar-sorteo:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-});
 
 export default router;
