@@ -497,14 +497,14 @@ router.get('/buscar/:documento', async (req, res) => {
     }
 });
 
-// 🎲 ENDPOINT: Realizar sorteo (ACTUALIZADO - solo activos)
+// 🎲 ENDPOINT: Realizar sorteo (ACTUALIZADO con más campos)
 router.get('/realizar-sorteo/:cantidad?', async (req, res) => {
     try {
         const cantidad = parseInt(req.params.cantidad) || 5;
         const { db } = await connectMongo();
         const col = db.collection('cierreinaugural');
         
-        // Obtener registros activos con números de rifa
+        // Obtener registros activos con números de rifa - INCLUYENDO MÁS CAMPOS
         const participantes = await col.find(
             { 
                 numeroRifa: { $exists: true },
@@ -515,10 +515,14 @@ router.get('/realizar-sorteo/:cantidad?', async (req, res) => {
                     numeroRifa: 1, 
                     nombres: 1, 
                     apellido: 1, 
-                    numeroDocumento: 1,
+                    programaAcademico: 1,
+                    idEstudiante: 1,
                     perfil: 1,
                     email: 1,
-                    telefono: 1
+                    telefono: 1,
+                    facultadArea: 1,
+                    tipoDocumento: 1,
+                    numeroDocumento: 1
                 } 
             }
         ).toArray();
@@ -550,6 +554,53 @@ router.get('/realizar-sorteo/:cantidad?', async (req, res) => {
         console.error('❌ Error en /realizar-sorteo:', err);
         res.status(500).json({ success: false, message: err.message });
     }
+});
+
+// 🆕 ENDPOINT: Reiniciar sorteo completo
+router.post('/reiniciar-sorteo', async (req, res) => {
+  try {
+    const { db } = await connectMongo();
+    const col = db.collection('cierreinaugural');
+    
+    console.log('🔄 Iniciando reinicio de sorteo...');
+    
+    // Obtener todos los registros activos
+    const registrosActivos = await col.find({ estado: 'activo' }).toArray();
+    
+    if (registrosActivos.length === 0) {
+      return res.json({
+        success: true,
+        message: 'No hay registros activos para resetear',
+        registrosAfectados: 0
+      });
+    }
+    
+    // Contar participantes únicos
+    const participantesUnicos = new Set(registrosActivos.map(r => r.numeroDocumento)).size;
+    
+    console.log(`📊 Estadísticas antes del reset: ${registrosActivos.length} registros, ${participantesUnicos} participantes únicos`);
+    
+    // Aquí podrías agregar lógica para guardar historial si lo necesitas
+    // Por ahora simplemente retornamos éxito ya que el sorteo es aleatorio cada vez
+    
+    console.log(`✅ Sorteo reiniciado - ${registrosActivos.length} participantes pueden volver a participar`);
+    
+    res.json({
+      success: true,
+      message: `Sorteo reiniciado correctamente. ${registrosActivos.length} participantes pueden volver a participar en el próximo sorteo.`,
+      registrosAfectados: registrosActivos.length,
+      participantesUnicos: participantesUnicos,
+      fechaReinicio: new Date().toISOString()
+    });
+    
+  } catch (err) {
+    console.error('❌ Error en /reiniciar-sorteo:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno del servidor al resetear el sorteo',
+      error: err.message 
+    });
+  }
 });
 
 export default router;
